@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mirza Md Shakil — Portfolio
 
-## Getting Started
+A personal portfolio website with a public case-study showcase and a password-protected admin panel for managing content. Design is inspired by clean, editorial portfolio sites with light/dark theme support.
 
-First, run the development server:
+## Tech stack
+
+- **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS, [shadcn/ui](https://ui.shadcn.com/)
+- **Database & auth:** [Supabase](https://supabase.com/) (PostgreSQL, Auth, Storage)
+- **Deployment:** [Vercel](https://vercel.com/)
+- **Theming:** next-themes (light / dark / system)
+
+## Features
+
+- Homepage with hero, rotating fun facts, and project grid
+- Project case study pages with sections and quick facts
+- About page with experience, education, and writing
+- Fun projects page
+- Admin panel for projects, about content, and resume upload
+- SEO metadata, loading skeletons, and error pages
+
+## Local setup
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+- A Supabase project
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/ImMirzaShakil/Portfolio.git
+cd Portfolio
+npm install
+```
+
+### 2. Environment variables
+
+Copy the example file and fill in your values:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Description |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-only, never expose to the browser) |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL for Open Graph links (e.g. `http://localhost:3000` locally) |
+
+### 3. Supabase setup
+
+Follow your **Developer Guide PDF** for full Supabase project setup. In summary:
+
+1. Create a Supabase project and copy the URL and API keys into `.env.local`.
+2. Create the database tables (see project schema in your developer guide).
+3. Run `supabase/rls-policies.sql` in the Supabase SQL editor for public read policies.
+4. Create **public** storage buckets:
+   - `project-images` — project and profile images
+   - `resume` — PDF resume file (`resume.pdf`)
+5. Create an admin user in Supabase Auth (email + password).
+6. Seed sample data (optional):
+
+```bash
+npm run seed
+```
+
+### 4. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) for the public site and [http://localhost:3000/admin/login](http://localhost:3000/admin/login) for the admin panel.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push your code to GitHub.
+2. Import the repository in [Vercel](https://vercel.com/new).
+3. Add all environment variables from `.env.example` in the Vercel project settings.
+4. Set `NEXT_PUBLIC_SITE_URL` to your production domain (e.g. `https://yourdomain.com`).
+5. Deploy. Vercel detects Next.js automatically (`vercel.json` is included).
 
-## Learn More
+For detailed deployment steps, refer to your **Developer Guide PDF**.
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  (public)/          Public pages (home, about, fun, projects)
+  admin/             Admin panel (login, projects, about, resume)
+  api/               API routes (upload, resume, revalidate)
+components/          UI and page components
+lib/                 Supabase clients, types, utilities
+scripts/seed.mjs     Database seed script
+supabase/            SQL policies
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run seed` | Seed database with sample content |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private project — all rights reserved.

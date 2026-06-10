@@ -103,7 +103,7 @@ export function ResumeUpload({ initialResumeUrl }: ResumeUploadProps) {
         )}
       </div>
 
-      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+      <div className="rounded-2xl border border-border bg-muted p-4 text-sm text-muted-foreground">
         Uploading a new file will replace the current resume immediately.
       </div>
 

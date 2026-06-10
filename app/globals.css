@@ -26,6 +26,9 @@
     --input: #d4cfc9;
     --ring: #1a1a1a;
     --radius: 0.625rem;
+    --footer-background: #1a1a1a;
+    --footer-foreground: #f0ece6;
+    --footer-muted: #888888;
   }
 
   .dark {
@@ -48,6 +51,9 @@
     --border: #2e2e2e;
     --input: #2e2e2e;
     --ring: #f0ece6;
+    --footer-background: #1a1a1a;
+    --footer-foreground: #f0ece6;
+    --footer-muted: #888888;
   }
 
   * {

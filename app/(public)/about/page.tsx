@@ -39,9 +39,10 @@ const superpowerIcons = [Zap, Sparkles, Rocket];
 export default async function AboutPage() {
   const supabase = createAdminClient();
 
-  const [{ data: about }, { data: experiences }, { data: writings }] =
+  const [{ data: about }, { data: settings }, { data: experiences }, { data: writings }] =
     await Promise.all([
       supabase.from("about_content").select("*").limit(1).maybeSingle(),
+      supabase.from("site_settings").select("site_title").limit(1).maybeSingle(),
       supabase
         .from("experiences")
         .select("*")
@@ -73,7 +74,11 @@ export default async function AboutPage() {
           <div className="relative mx-auto size-40 shrink-0 overflow-hidden rounded-full border border-border md:mx-0 md:size-48">
             <Image
               src={about.profile_image_url}
-              alt="Profile photo"
+              alt={
+                settings?.site_title
+                  ? `Profile photo of ${settings.site_title}`
+                  : "Profile photo"
+              }
               fill
               className="object-cover"
               sizes="(max-width: 768px) 160px, 192px"

@@ -42,6 +42,7 @@ export function FunProjectCard({ project }: FunProjectCardProps) {
         href={project.url}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label={`${project.title} (opens in new tab)`}
         className={className}
       >
         {content}

@@ -103,7 +103,7 @@ export function AdminSidebar({ siteTitle }: AdminSidebarProps) {
         <button
           type="button"
           onClick={() => setMobileOpen((open) => !open)}
-          className="inline-flex size-10 items-center justify-center rounded-lg border border-border"
+          className="inline-flex size-11 items-center justify-center rounded-lg border border-border focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           aria-label={mobileOpen ? "Close sidebar" : "Open sidebar"}
         >
           {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}

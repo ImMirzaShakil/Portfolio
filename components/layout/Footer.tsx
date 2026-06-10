@@ -57,9 +57,9 @@ export function Footer({ settings, about }: FooterProps) {
   const tagline = settings?.footer_tagline ?? "Building thoughtful digital experiences";
 
   return (
-    <footer className="bg-[#1a1a1a] text-[#f0ece6]">
+    <footer className="bg-footer text-footer-foreground">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-6 py-8 md:flex-row md:items-center md:justify-between md:px-12">
-        <p className="text-sm text-[#888888]">
+        <p className="text-sm text-footer-muted">
           © {year} · {tagline}
         </p>
 
@@ -76,7 +76,7 @@ export function Footer({ settings, about }: FooterProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
-                className="text-[#888888] transition-colors hover:text-[#f0ece6]"
+                className="text-footer-muted transition-colors hover:text-footer-foreground"
               >
                 <Icon className="size-5" />
               </a>
@@ -86,7 +86,7 @@ export function Footer({ settings, about }: FooterProps) {
             <Link
               href={`mailto:${about.email}`}
               aria-label="Email"
-              className="text-[#888888] transition-colors hover:text-[#f0ece6]"
+              className="text-footer-muted transition-colors hover:text-footer-foreground"
             >
               <Mail className="size-5" />
             </Link>

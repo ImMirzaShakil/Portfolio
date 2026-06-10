@@ -43,6 +43,11 @@ const config: Config = {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        footer: {
+          DEFAULT: "var(--footer-background)",
+          foreground: "var(--footer-foreground)",
+          muted: "var(--footer-muted)",
+        },
         chart: {
           "1": "var(--chart-1)",
           "2": "var(--chart-2)",

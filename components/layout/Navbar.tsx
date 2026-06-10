@@ -45,7 +45,7 @@ export function Navbar({ siteTitle, resumeUrl }: NavbarProps) {
 
   const linkClass = (href: string) =>
     cn(
-      "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+      "min-h-11 rounded-full px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
       isActivePath(pathname, href)
         ? "bg-foreground text-background"
         : "text-muted-foreground hover:text-foreground"
@@ -86,7 +86,7 @@ export function Navbar({ siteTitle, resumeUrl }: NavbarProps) {
           <button
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
-            className="inline-flex size-10 items-center justify-center rounded-full border border-border text-foreground"
+            className="inline-flex size-11 items-center justify-center rounded-full border border-border text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
           >
