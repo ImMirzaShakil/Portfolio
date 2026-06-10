@@ -1,10 +1,10 @@
 import { HeroSection } from "@/components/home/HeroSection";
 import { ProjectGrid } from "@/components/home/ProjectGrid";
 import { getFunFacts } from "@/lib/homepage";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function HomePage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const [{ data: about }, { data: settings }, { data: projects }] =
     await Promise.all([

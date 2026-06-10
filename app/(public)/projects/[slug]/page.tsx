@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { CaseStudySection } from "@/components/project/CaseStudySection";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createStaticClient } from "@/lib/supabase/static";
 import type { Metadata } from "next";
 
@@ -12,7 +12,7 @@ interface ProjectPageProps {
 }
 
 async function getProject(slug: string) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: project, error } = await supabase
     .from("projects")

@@ -1,13 +1,13 @@
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const [{ data: settings }, { data: about }] = await Promise.all([
     supabase.from("site_settings").select("*").limit(1).maybeSingle(),
