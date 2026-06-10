@@ -15,7 +15,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { createClient } from "@/lib/supabase/client";
+import {
+  deleteProjectAction,
+  toggleProjectPublishedAction,
+} from "@/app/admin/projects/actions";
 import type { Project } from "@/lib/types";
 
 interface ProjectsTableProps {
@@ -35,11 +38,7 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
       )
     );
 
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("projects")
-      .update({ is_published: checked })
-      .eq("id", project.id);
+    const { error } = await toggleProjectPublishedAction(project.id, checked);
 
     if (error) {
       setProjects((current) =>
@@ -59,12 +58,7 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
     if (!deleteTarget) return;
 
     setDeleting(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("projects")
-      .delete()
-      .eq("id", deleteTarget.id);
-
+    const { error } = await deleteProjectAction(deleteTarget.id);
     setDeleting(false);
 
     if (error) {

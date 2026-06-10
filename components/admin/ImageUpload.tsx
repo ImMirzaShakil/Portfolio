@@ -3,8 +3,6 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
-import { getPublicImageUrl } from "@/lib/utils";
 
 interface ImageUploadProps {
   value?: string | null;
@@ -32,28 +30,31 @@ export function ImageUpload({
     setUploading(true);
     setProgress(10);
 
-    const extension = file.name.split(".").pop() ?? "jpg";
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
-
-    const supabase = createClient();
     setProgress(40);
 
-    const { error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(path, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("bucket", bucket);
 
-    if (uploadError) {
-      setError(uploadError.message);
+    const response = await fetch("/api/admin/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = (await response.json()) as {
+      url?: string;
+      error?: string;
+    };
+
+    if (!response.ok || !result.url) {
+      setError(result.error ?? "Upload failed.");
       setUploading(false);
       setProgress(0);
       return;
     }
 
     setProgress(100);
-    onChange(getPublicImageUrl(bucket, path));
+    onChange(result.url);
     setUploading(false);
 
     if (inputRef.current) {

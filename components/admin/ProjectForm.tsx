@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { createClient } from "@/lib/supabase/client";
+import { saveProjectAction } from "@/app/admin/projects/actions";
 import type { Project, ProjectSection, ProjectStatus } from "@/lib/types";
 import { generateSlug } from "@/lib/utils";
 
@@ -82,67 +82,27 @@ export function ProjectForm({
     setSaving(true);
     setError(null);
 
-    const supabase = createClient();
     const parsedOrderIndex = Number.parseInt(orderIndex, 10);
-
-    const projectPayload = {
-      ...(project?.id ? { id: project.id } : {}),
-      title: title.trim(),
-      slug: slug.trim(),
-      subtitle: subtitle.trim() || null,
-      status: status || null,
-      company: company.trim() || null,
-      type: type.trim() || null,
-      year: year.trim() || null,
-      summary: summary.trim() || null,
+    const result = await saveProjectAction({
+      id: project?.id,
+      title,
+      slug,
+      subtitle,
+      status,
+      company,
+      type,
+      year,
+      summary,
       cover_image_url: coverImageUrl,
       is_published: isPublished,
       order_index: Number.isNaN(parsedOrderIndex) ? 0 : parsedOrderIndex,
-      updated_at: new Date().toISOString(),
-    };
+      sections: sectionItems,
+    });
 
-    const { data: savedProject, error: saveError } = await supabase
-      .from("projects")
-      .upsert(projectPayload)
-      .select()
-      .single();
-
-    if (saveError || !savedProject) {
+    if (result.error) {
       setSaving(false);
-      setError(saveError?.message ?? "Failed to save project.");
+      setError(result.error);
       return;
-    }
-
-    const { error: deleteError } = await supabase
-      .from("project_sections")
-      .delete()
-      .eq("project_id", savedProject.id);
-
-    if (deleteError) {
-      setSaving(false);
-      setError(deleteError.message);
-      return;
-    }
-
-    if (sectionItems.length > 0) {
-      const sectionsPayload = sectionItems.map((section, index) => ({
-        project_id: savedProject.id,
-        section_type: section.section_type,
-        title: section.title.trim() || null,
-        content: section.content.trim() || null,
-        image_url: section.image_url,
-        order_index: index,
-      }));
-
-      const { error: sectionsError } = await supabase
-        .from("project_sections")
-        .insert(sectionsPayload);
-
-      if (sectionsError) {
-        setSaving(false);
-        setError(sectionsError.message);
-        return;
-      }
     }
 
     setSaving(false);
