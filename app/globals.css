@@ -1,49 +1,53 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --background: #f5f0eb;
+    --foreground: #1a1a1a;
+    --card: #ede8e3;
+    --card-foreground: #1a1a1a;
+    --popover: #ede8e3;
+    --popover-foreground: #1a1a1a;
+    --primary: #1a1a1a;
+    --primary-foreground: #f5f0eb;
+    --secondary: #ede8e3;
+    --secondary-foreground: #1a1a1a;
+    --muted: #ede8e3;
+    --muted-foreground: #6b6b6b;
+    --accent: #1a1a1a;
+    --accent-foreground: #f5f0eb;
+    --destructive: #dc2626;
+    --destructive-foreground: #f5f0eb;
+    --border: #d4cfc9;
+    --input: #d4cfc9;
+    --ring: #1a1a1a;
     --radius: 0.625rem;
   }
 
   .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --background: #141414;
+    --foreground: #f0ece6;
+    --card: #1f1f1f;
+    --card-foreground: #f0ece6;
+    --popover: #1f1f1f;
+    --popover-foreground: #f0ece6;
+    --primary: #f0ece6;
+    --primary-foreground: #141414;
+    --secondary: #1f1f1f;
+    --secondary-foreground: #f0ece6;
+    --muted: #1f1f1f;
+    --muted-foreground: #888888;
+    --accent: #f0ece6;
+    --accent-foreground: #141414;
+    --destructive: #ef4444;
+    --destructive-foreground: #f0ece6;
+    --border: #2e2e2e;
+    --input: #2e2e2e;
+    --ring: #f0ece6;
   }
 
   * {
@@ -51,6 +55,6 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
   }
 }
