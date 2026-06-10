@@ -1,50 +1,23 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
+import { loginAction } from "./actions";
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? "Signing in..." : "Login"}
+    </Button>
+  );
+}
 
 export default function AdminLoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        router.replace("/admin");
-      }
-    });
-  }, [router]);
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (signInError) {
-      setError(signInError.message);
-      return;
-    }
-
-    router.push("/admin");
-    router.refresh();
-  };
+  const [state, formAction] = useFormState(loginAction, { error: null });
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
@@ -56,14 +29,13 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        <form action={formAction} className="mt-8 space-y-5">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
               autoComplete="email"
               required
@@ -74,24 +46,21 @@ export default function AdminLoginPage() {
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
               placeholder="••••••••"
               autoComplete="current-password"
               required
             />
           </div>
 
-          {error ? (
+          {state.error ? (
             <p className="text-sm text-destructive" role="alert">
-              {error}
+              {state.error}
             </p>
           ) : null}
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Login"}
-          </Button>
+          <SubmitButton />
         </form>
       </div>
     </div>
