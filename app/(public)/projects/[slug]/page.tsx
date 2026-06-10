@@ -1,6 +1,11 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { CaseStudySection } from "@/components/project/CaseStudySection";
+import {
+  buildOpenGraph,
+  buildTwitter,
+  getSiteUrl,
+} from "@/lib/metadata";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createStaticClient } from "@/lib/supabase/static";
 import type { Metadata } from "next";
@@ -58,18 +63,26 @@ export async function generateMetadata({
   }
 
   const { project } = data;
-  const description = project.subtitle ?? project.summary ?? undefined;
+  const description =
+    project.subtitle ?? project.summary ?? `Case study: ${project.title}`;
+  const images = project.cover_image_url
+    ? [project.cover_image_url]
+    : undefined;
 
   return {
     title: project.title,
     description,
-    openGraph: {
+    openGraph: buildOpenGraph({
       title: project.title,
       description,
-      images: project.cover_image_url
-        ? [{ url: project.cover_image_url }]
-        : undefined,
-    },
+      images,
+      url: `${getSiteUrl()}/projects/${project.slug}`,
+    }),
+    twitter: buildTwitter({
+      title: project.title,
+      description,
+      images,
+    }),
   };
 }
 

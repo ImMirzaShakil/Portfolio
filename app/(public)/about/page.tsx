@@ -2,12 +2,37 @@ import Image from "next/image";
 import { Rocket, Sparkles, Zap } from "lucide-react";
 import { ExperienceList } from "@/components/about/ExperienceList";
 import { WritingList } from "@/components/about/WritingList";
+import {
+  buildOpenGraph,
+  buildTwitter,
+  getSiteContext,
+  getSiteUrl,
+} from "@/lib/metadata";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "About",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { about, siteName } = await getSiteContext();
+  const title = `About ${siteName}`;
+  const description =
+    about?.intro_text?.trim().slice(0, 160) ??
+    `Learn more about ${siteName}.`;
+  const images = about?.profile_image_url
+    ? [about.profile_image_url]
+    : undefined;
+
+  return {
+    title,
+    description,
+    openGraph: buildOpenGraph({
+      title,
+      description,
+      images,
+      url: `${getSiteUrl()}/about`,
+    }),
+    twitter: buildTwitter({ title, description, images }),
+  };
+}
 
 const superpowerIcons = [Zap, Sparkles, Rocket];
 

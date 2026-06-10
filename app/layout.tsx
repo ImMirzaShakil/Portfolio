@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { getDefaultMetadata } from "@/lib/metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,14 +9,9 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Mirza Md Shakil",
-    template: "%s | Mirza Md Shakil",
-  },
-  description:
-    "Portfolio of Mirza Md Shakil — software engineer building thoughtful digital experiences.",
-};
+export async function generateMetadata() {
+  return getDefaultMetadata();
+}
 
 export default function RootLayout({
   children,
