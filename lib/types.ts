@@ -1,6 +1,6 @@
 export type ProjectStatus = "SHIPPED" | "ACQUIRED" | "WIP" | "CONCEPT";
 
-export type ExperienceType = "job" | "internship";
+export type ExperienceType = "job" | "internship" | "education";
 
 export interface Project {
   id: string;
