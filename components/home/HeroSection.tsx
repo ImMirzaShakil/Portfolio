@@ -100,7 +100,9 @@ export function HeroSection({ name, about, funFacts }: HeroSectionProps) {
           ) : null}
 
           <div className="mt-6 space-y-4 text-center lg:text-left">
-            <h2 className="text-2xl font-bold">Nice to meet you!</h2>
+            <h2 className="text-2xl font-bold">
+              {about?.greeting_text ?? "Nice to meet you!"}
+            </h2>
             {about?.intro_text ? (
               <p className="text-base leading-relaxed text-muted-foreground">
                 {about.intro_text}

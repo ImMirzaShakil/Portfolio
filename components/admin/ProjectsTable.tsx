@@ -120,13 +120,25 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <Switch
-                      checked={project.is_published}
-                      onCheckedChange={(checked) =>
-                        handlePublishedToggle(project, checked)
-                      }
-                      aria-label={`Toggle published state for ${project.title}`}
-                    />
+                    <label className="flex cursor-pointer items-center gap-3">
+                      <Switch
+                        checked={project.is_published}
+                        onCheckedChange={(checked) =>
+                          handlePublishedToggle(project, checked)
+                        }
+                        aria-label={`Toggle published state for ${project.title}`}
+                        className="data-unchecked:bg-muted-foreground/40"
+                      />
+                      <span
+                        className={
+                          project.is_published
+                            ? "text-sm font-medium text-foreground"
+                            : "text-sm text-muted-foreground"
+                        }
+                      >
+                        {project.is_published ? "Published" : "Draft"}
+                      </span>
+                    </label>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {project.year ?? "—"}
