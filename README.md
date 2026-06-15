@@ -112,3 +112,4 @@ supabase/            SQL policies
 ## License
 
 Private project — all rights reserved.
+2026
