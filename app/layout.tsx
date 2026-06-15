@@ -1,12 +1,13 @@
-import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { getDefaultMetadata } from "@/lib/metadata";
 import "./globals.css";
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-manrope",
 });
 
 export async function generateMetadata() {
@@ -20,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans`}>
+      <body className={`${manrope.variable} font-sans`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

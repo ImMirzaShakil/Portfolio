@@ -59,7 +59,7 @@ export function Footer({ settings, about }: FooterProps) {
   return (
     <footer className="bg-footer text-footer-foreground">
       <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-6 py-8 md:flex-row md:items-center md:justify-between md:px-12">
-        <p className="text-sm text-footer-muted">
+        <p className="text-sm text-footer-foreground">
           © {year} · {tagline}
         </p>
 
@@ -76,7 +76,7 @@ export function Footer({ settings, about }: FooterProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
-                className="text-footer-muted transition-colors hover:text-footer-foreground"
+                className="text-footer-foreground transition-opacity hover:opacity-80"
               >
                 <Icon className="size-5" />
               </a>
@@ -86,7 +86,7 @@ export function Footer({ settings, about }: FooterProps) {
             <Link
               href={`mailto:${about.email}`}
               aria-label="Email"
-              className="text-footer-muted transition-colors hover:text-footer-foreground"
+              className="text-footer-foreground transition-opacity hover:opacity-80"
             >
               <Mail className="size-5" />
             </Link>

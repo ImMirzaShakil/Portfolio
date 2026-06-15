@@ -32,6 +32,8 @@ const config: Config = {
           DEFAULT: "var(--muted)",
           foreground: "var(--muted-foreground)",
         },
+        description: "var(--description-foreground)",
+        meta: "var(--text-meta)",
         accent: {
           DEFAULT: "var(--accent)",
           foreground: "var(--accent-foreground)",
@@ -43,6 +45,13 @@ const config: Config = {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        nav: {
+          inactive: "var(--nav-inactive)",
+          active: {
+            DEFAULT: "var(--nav-active-bg)",
+            foreground: "var(--nav-active-text)",
+          },
+        },
         footer: {
           DEFAULT: "var(--footer-background)",
           foreground: "var(--footer-foreground)",
@@ -72,7 +81,7 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
       },
     },
   },
