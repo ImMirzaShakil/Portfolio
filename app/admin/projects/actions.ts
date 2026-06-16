@@ -106,6 +106,7 @@ export async function saveProjectAction(
   }
 
   revalidatePath("/");
+  revalidatePath("/work");
   revalidatePath("/admin/projects");
   revalidatePath(`/projects/${savedProject.slug}`);
 
@@ -133,6 +134,34 @@ export async function toggleProjectPublishedAction(
   }
 
   revalidatePath("/");
+  revalidatePath("/work");
+  revalidatePath("/admin/projects");
+
+  return { error: null };
+}
+
+export async function toggleProjectFeaturedAction(
+  projectId: string,
+  isFeatured: boolean
+): Promise<{ error: string | null }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { error: "Unauthorized" };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("projects")
+    .update({ is_featured: isFeatured })
+    .eq("id", projectId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/work");
   revalidatePath("/admin/projects");
 
   return { error: null };
@@ -155,6 +184,7 @@ export async function deleteProjectAction(
   }
 
   revalidatePath("/");
+  revalidatePath("/work");
   revalidatePath("/admin/projects");
 
   return { error: null };
