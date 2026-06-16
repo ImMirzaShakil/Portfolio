@@ -1,5 +1,9 @@
 import { Mail } from "lucide-react";
 import Link from "next/link";
+import {
+  isSocialLinkVisible,
+  type SocialLinkKey,
+} from "@/lib/social-links";
 import type { AboutContent, SiteSettings } from "@/lib/types";
 
 interface FooterProps {
@@ -46,11 +50,23 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
-const socialLinks = [
-  { key: "twitter_url", label: "Twitter", icon: XIcon },
-  { key: "linkedin_url", label: "LinkedIn", icon: LinkedInIcon },
-  { key: "github_url", label: "GitHub", icon: GitHubIcon },
-] as const;
+const socialIcons: Record<
+  Exclude<SocialLinkKey, "email">,
+  { label: string; icon: typeof XIcon }
+> = {
+  twitter: { label: "Twitter", icon: XIcon },
+  linkedin: { label: "LinkedIn", icon: LinkedInIcon },
+  github: { label: "GitHub", icon: GitHubIcon },
+};
+
+const socialFields: Record<
+  Exclude<SocialLinkKey, "email">,
+  keyof Pick<AboutContent, "twitter_url" | "linkedin_url" | "github_url">
+> = {
+  twitter: "twitter_url",
+  linkedin: "linkedin_url",
+  github: "github_url",
+};
 
 export function Footer({ settings, about }: FooterProps) {
   const year = new Date().getFullYear();
@@ -64,25 +80,31 @@ export function Footer({ settings, about }: FooterProps) {
         </p>
 
         <div className="flex items-center gap-4">
-          {socialLinks.map(({ key, label, icon: Icon }) => {
-            const href = about?.[key];
+          {(Object.keys(socialIcons) as Array<Exclude<SocialLinkKey, "email">>).map(
+            (key) => {
+              if (!isSocialLinkVisible(about, key)) return null;
 
-            if (!href) return null;
+              const field = socialFields[key];
+              const href = about?.[field];
+              if (!href) return null;
 
-            return (
-              <a
-                key={key}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={label}
-                className="text-footer-foreground transition-opacity hover:opacity-80"
-              >
-                <Icon className="size-5" />
-              </a>
-            );
-          })}
-          {about?.email ? (
+              const { label, icon: Icon } = socialIcons[key];
+
+              return (
+                <a
+                  key={key}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="text-footer-foreground transition-opacity hover:opacity-80"
+                >
+                  <Icon className="size-5" />
+                </a>
+              );
+            }
+          )}
+          {isSocialLinkVisible(about, "email") && about?.email ? (
             <Link
               href={`mailto:${about.email}`}
               aria-label="Email"

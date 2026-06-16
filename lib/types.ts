@@ -14,9 +14,18 @@ export interface Project {
   year: string | null;
   cover_image_url: string | null;
   is_published: boolean;
+  is_featured: boolean;
   order_index: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface NavItem {
+  id: string;
+  label: string;
+  href: string;
+  is_visible: boolean;
+  order_index: number;
 }
 
 export interface ProjectSection {
@@ -38,6 +47,11 @@ export interface AboutContent {
   currently_role: string | null;
   currently_company: string | null;
   previously_companies: string | null;
+  show_currently: boolean;
+  show_previously: boolean;
+  currently_label: string | null;
+  previously_label: string | null;
+  visible_social_links: string[] | null;
   superpower_1: string | null;
   superpower_2: string | null;
   superpower_3: string | null;
@@ -82,5 +96,8 @@ export interface SiteSettings {
   id: string;
   resume_url: string | null;
   site_title: string;
+  logo_url: string | null;
+  hero_heading: string | null;
+  nav_items: NavItem[] | null;
   footer_tagline: string | null;
 }

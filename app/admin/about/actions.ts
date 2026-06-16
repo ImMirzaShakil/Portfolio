@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import type { NavItem } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
 export interface AboutFormPayload {
@@ -13,6 +14,11 @@ export interface AboutFormPayload {
   currently_role: string;
   currently_company: string;
   previously_companies: string;
+  show_currently: boolean;
+  show_previously: boolean;
+  currently_label: string;
+  previously_label: string;
+  visible_social_links: string[];
   superpower_1: string;
   superpower_2: string;
   superpower_3: string;
@@ -21,6 +27,10 @@ export interface AboutFormPayload {
   github_url: string;
   email: string;
   footer_tagline: string;
+  site_title: string;
+  logo_url: string | null;
+  hero_heading: string;
+  nav_items: NavItem[];
   settings_id?: string;
 }
 
@@ -47,6 +57,11 @@ export async function saveAboutAction(
     currently_role: payload.currently_role.trim() || null,
     currently_company: payload.currently_company.trim() || null,
     previously_companies: payload.previously_companies.trim() || null,
+    show_currently: payload.show_currently,
+    show_previously: payload.show_previously,
+    currently_label: payload.currently_label.trim() || "Currently",
+    previously_label: payload.previously_label.trim() || "Previously at",
+    visible_social_links: payload.visible_social_links,
     superpower_1: payload.superpower_1.trim() || null,
     superpower_2: payload.superpower_2.trim() || null,
     superpower_3: payload.superpower_3.trim() || null,
@@ -69,7 +84,14 @@ export async function saveAboutAction(
     const { error: settingsError } = await admin
       .from("site_settings")
       .update({
+        site_title: payload.site_title.trim() || "Mirza Md Shakil",
+        logo_url: payload.logo_url,
+        hero_heading: payload.hero_heading.trim() || null,
         footer_tagline: payload.footer_tagline.trim() || null,
+        nav_items: payload.nav_items.map((item, index) => ({
+          ...item,
+          order_index: index,
+        })),
       })
       .eq("id", payload.settings_id);
 
@@ -79,6 +101,7 @@ export async function saveAboutAction(
   }
 
   revalidatePath("/");
+  revalidatePath("/work");
   revalidatePath("/about");
   revalidatePath("/admin/about");
 

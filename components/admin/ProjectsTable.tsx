@@ -17,6 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import {
   deleteProjectAction,
+  toggleProjectFeaturedAction,
   toggleProjectPublishedAction,
 } from "@/app/admin/projects/actions";
 import type { Project } from "@/lib/types";
@@ -30,6 +31,29 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
   const [projects, setProjects] = useState(initialProjects);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const handleFeaturedToggle = async (project: Project, checked: boolean) => {
+    setProjects((current) =>
+      current.map((item) =>
+        item.id === project.id ? { ...item, is_featured: checked } : item
+      )
+    );
+
+    const { error } = await toggleProjectFeaturedAction(project.id, checked);
+
+    if (error) {
+      setProjects((current) =>
+        current.map((item) =>
+          item.id === project.id
+            ? { ...item, is_featured: project.is_featured }
+            : item
+        )
+      );
+      return;
+    }
+
+    router.refresh();
+  };
 
   const handlePublishedToggle = async (project: Project, checked: boolean) => {
     setProjects((current) =>
@@ -91,6 +115,7 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
                 <th className="px-4 py-3 font-medium">Title</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Published</th>
+                <th className="px-4 py-3 font-medium">Featured</th>
                 <th className="px-4 py-3 font-medium">Year</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
@@ -127,7 +152,6 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
                           handlePublishedToggle(project, checked)
                         }
                         aria-label={`Toggle published state for ${project.title}`}
-                        className="data-unchecked:bg-muted-foreground/40"
                       />
                       <span
                         className={
@@ -137,6 +161,26 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
                         }
                       >
                         {project.is_published ? "Published" : "Draft"}
+                      </span>
+                    </label>
+                  </td>
+                  <td className="px-4 py-3">
+                    <label className="flex cursor-pointer items-center gap-3">
+                      <Switch
+                        checked={project.is_featured}
+                        onCheckedChange={(checked) =>
+                          handleFeaturedToggle(project, checked)
+                        }
+                        aria-label={`Toggle featured state for ${project.title}`}
+                      />
+                      <span
+                        className={
+                          project.is_featured
+                            ? "text-sm font-medium text-foreground"
+                            : "text-sm text-muted-foreground"
+                        }
+                      >
+                        {project.is_featured ? "Featured" : "Hidden"}
                       </span>
                     </label>
                   </td>

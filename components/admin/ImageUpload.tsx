@@ -1,14 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useId, useRef, useState } from "react";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
   value?: string | null;
   onChange: (url: string | null) => void;
   bucket?: string;
   label?: string;
+  previewClassName?: string;
 }
 
 export function ImageUpload({
@@ -16,7 +18,9 @@ export function ImageUpload({
   onChange,
   bucket = "project-images",
   label = "Image",
+  previewClassName = "aspect-[16/9] max-w-md",
 }: ImageUploadProps) {
+  const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -29,36 +33,38 @@ export function ImageUpload({
     setError(null);
     setUploading(true);
     setProgress(10);
-
     setProgress(40);
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("bucket", bucket);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("bucket", bucket);
 
-    const response = await fetch("/api/admin/upload", {
-      method: "POST",
-      body: formData,
-    });
+      const response = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-    const result = (await response.json()) as {
-      url?: string;
-      error?: string;
-    };
+      const result = (await response.json()) as {
+        url?: string;
+        error?: string;
+      };
 
-    if (!response.ok || !result.url) {
-      setError(result.error ?? "Upload failed.");
+      if (!response.ok || !result.url) {
+        setError(result.error ?? "Upload failed.");
+        return;
+      }
+
+      setProgress(100);
+      onChange(result.url);
+    } catch {
+      setError("Upload failed. Please try again.");
+    } finally {
       setUploading(false);
       setProgress(0);
-      return;
-    }
-
-    setProgress(100);
-    onChange(result.url);
-    setUploading(false);
-
-    if (inputRef.current) {
-      inputRef.current.value = "";
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
     }
   };
 
@@ -67,7 +73,12 @@ export function ImageUpload({
       <p className="text-sm font-medium">{label}</p>
 
       {value ? (
-        <div className="relative aspect-[16/9] max-w-md overflow-hidden rounded-xl border border-border">
+        <div
+          className={cn(
+            "relative overflow-hidden rounded-xl border border-border",
+            previewClassName
+          )}
+        >
           <Image
             src={value}
             alt="Uploaded preview"
@@ -81,24 +92,30 @@ export function ImageUpload({
       <div className="flex flex-wrap items-center gap-3">
         <input
           ref={inputRef}
+          id={inputId}
           type="file"
           accept="image/*"
           onChange={handleFileChange}
-          className="hidden"
-          id={`image-upload-${label.replace(/\s+/g, "-").toLowerCase()}`}
-        />
-        <Button
-          type="button"
-          variant="outline"
+          className="sr-only"
           disabled={uploading}
-          onClick={() => inputRef.current?.click()}
+        />
+        <label
+          htmlFor={inputId}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            uploading ? "pointer-events-none opacity-50" : "cursor-pointer"
+          )}
         >
           {uploading ? `Uploading ${progress}%` : value ? "Replace image" : "Upload image"}
-        </Button>
+        </label>
         {value ? (
-          <Button type="button" variant="ghost" onClick={() => onChange(null)}>
+          <button
+            type="button"
+            className={cn(buttonVariants({ variant: "ghost" }))}
+            onClick={() => onChange(null)}
+          >
             Remove
-          </Button>
+          </button>
         ) : null}
       </div>
 

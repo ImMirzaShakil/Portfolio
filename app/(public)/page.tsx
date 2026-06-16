@@ -48,6 +48,7 @@ export default async function HomePage() {
         .from("projects")
         .select("*")
         .eq("is_published", true)
+        .eq("is_featured", true)
         .order("order_index", { ascending: true }),
     ]);
 
@@ -55,10 +56,14 @@ export default async function HomePage() {
     <div className="space-y-20">
       <HeroSection
         name={settings?.site_title}
+        heroHeading={settings?.hero_heading}
         about={about}
         funFacts={getFunFacts(about)}
       />
-      <ProjectGrid projects={projects ?? []} />
+      <ProjectGrid
+        projects={projects ?? []}
+        emptyMessage="No featured projects yet. Mark projects as featured in the admin panel."
+      />
     </div>
   );
 }

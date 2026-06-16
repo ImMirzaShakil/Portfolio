@@ -3,12 +3,20 @@
 import { Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import {
+  heroHeadingTextClass,
+  RotatingHeroLines,
+} from "@/components/home/RotatingHeroLines";
+import {
+  isSocialLinkVisible,
+  type SocialLinkKey,
+} from "@/lib/social-links";
 import type { AboutContent } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface HeroSectionProps {
   name?: string | null;
+  heroHeading?: string | null;
   about?: AboutContent | null;
   funFacts: string[];
 }
@@ -37,31 +45,39 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
-const socialLinks = [
-  { key: "twitter_url", label: "Twitter", icon: XIcon },
-  { key: "linkedin_url", label: "LinkedIn", icon: LinkedInIcon },
-  { key: "github_url", label: "GitHub", icon: GitHubIcon },
-] as const;
+const socialIcons: Record<
+  Exclude<SocialLinkKey, "email">,
+  { label: string; icon: typeof XIcon }
+> = {
+  twitter: { label: "Twitter", icon: XIcon },
+  linkedin: { label: "LinkedIn", icon: LinkedInIcon },
+  github: { label: "GitHub", icon: GitHubIcon },
+};
 
-export function HeroSection({ name, about, funFacts }: HeroSectionProps) {
-  const [factIndex, setFactIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
+const socialFields: Record<
+  Exclude<SocialLinkKey, "email">,
+  keyof Pick<AboutContent, "twitter_url" | "linkedin_url" | "github_url">
+> = {
+  twitter: "twitter_url",
+  linkedin: "linkedin_url",
+  github: "github_url",
+};
+
+function getHeroHeading(name?: string | null, heroHeading?: string | null) {
+  if (heroHeading?.trim()) {
+    return heroHeading.trim();
+  }
+
   const displayName = name ?? "Mirza Md Shakil";
   const firstName = displayName.split(" ")[0] ?? displayName;
+  return `Hello, I'm ${firstName}`;
+}
 
-  useEffect(() => {
-    if (funFacts.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setFactIndex((current) => (current + 1) % funFacts.length);
-        setVisible(true);
-      }, 300);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [funFacts.length]);
+export function HeroSection({ name, heroHeading, about, funFacts }: HeroSectionProps) {
+  const displayName = name ?? "Mirza Md Shakil";
+  const heading = getHeroHeading(name, heroHeading);
+  const showCurrently = about?.show_currently !== false;
+  const showPreviously = about?.show_previously !== false;
 
   const currently =
     about?.currently_role && about?.currently_company
@@ -69,88 +85,96 @@ export function HeroSection({ name, about, funFacts }: HeroSectionProps) {
       : about?.currently_role ?? about?.currently_company ?? "—";
 
   return (
-    <section className="space-y-12">
-      <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-16">
-        <div className="lg:w-[60%]">
-          <h1 className="font-bold text-6xl md:text-7xl lg:text-8xl">
-            Hello, I&apos;m {firstName}
-          </h1>
-          <p
-            className={cn(
-              "mt-6 min-h-[2rem] text-lg text-muted-foreground transition-opacity duration-300 md:text-xl",
-              visible ? "opacity-100" : "opacity-0"
-            )}
-          >
-            {funFacts[factIndex]}
-          </p>
+    <section className="space-y-10 sm:space-y-12">
+      <div className="flex flex-col gap-8 sm:gap-10 lg:flex-row lg:items-start lg:gap-16">
+        <div className="min-w-0 lg:w-[60%]">
+          <h1 className={cn(heroHeadingTextClass, "text-balance")}>{heading}</h1>
+          <RotatingHeroLines lines={funFacts} />
+
+          {showCurrently || showPreviously ? (
+            <div className="mt-8 grid gap-6 sm:mt-10 sm:grid-cols-2 sm:gap-8">
+              {showCurrently ? (
+                <div>
+                  <p className="text-sm font-bold sm:text-base">
+                    {about?.currently_label ?? "Currently"}
+                  </p>
+                  <p className="mt-1 text-sm text-foreground sm:text-base">{currently}</p>
+                </div>
+              ) : null}
+              {showPreviously ? (
+                <div>
+                  <p className="text-sm font-bold sm:text-base">
+                    {about?.previously_label ?? "Previously at"}
+                  </p>
+                  <p className="mt-1 text-sm text-foreground sm:text-base">
+                    {about?.previously_companies ?? "—"}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
-        <div className="lg:w-[40%]">
+        <div className="min-w-0 lg:w-[40%]">
           {about?.profile_image_url ? (
-            <div className="relative mx-auto size-40 overflow-hidden rounded-full border border-border lg:mx-0 lg:size-48">
+            <div className="relative mx-auto size-32 overflow-hidden rounded-full border border-border sm:size-40 lg:mx-0 lg:size-48">
               <Image
                 src={about.profile_image_url}
                 alt={displayName}
                 fill
                 className="object-cover"
-                sizes="(max-width: 1024px) 160px, 192px"
+                sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 192px"
                 priority
               />
             </div>
           ) : null}
 
-          <div className="mt-6 space-y-4 text-center lg:text-left">
-            <h2 className="text-2xl font-bold">
+          <div className="mt-5 space-y-3 text-center sm:mt-6 sm:space-y-4 lg:text-left">
+            <h2 className="text-xl font-bold sm:text-2xl">
               {about?.greeting_text ?? "Nice to meet you!"}
             </h2>
             {about?.intro_text ? (
-              <p className="text-base leading-relaxed text-muted-foreground">
+              <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {about.intro_text}
               </p>
             ) : null}
 
             <div className="flex items-center justify-center gap-4 lg:justify-start">
-              {socialLinks.map(({ key, label, icon: Icon }) => {
-                const href = about?.[key];
-                if (!href) return null;
+              {(Object.keys(socialIcons) as Array<Exclude<SocialLinkKey, "email">>).map(
+                (key) => {
+                  if (!isSocialLinkVisible(about, key)) return null;
 
-                return (
-                  <a
-                    key={key}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <Icon className="size-5" />
-                  </a>
-                );
-              })}
-              {about?.email ? (
+                  const field = socialFields[key];
+                  const href = about?.[field];
+                  if (!href) return null;
+
+                  const { label, icon: Icon } = socialIcons[key];
+
+                  return (
+                    <a
+                      key={key}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      className="text-foreground transition-opacity hover:opacity-70"
+                    >
+                      <Icon className="size-5" />
+                    </a>
+                  );
+                }
+              )}
+              {isSocialLinkVisible(about, "email") && about?.email ? (
                 <Link
                   href={`mailto:${about.email}`}
                   aria-label="Email"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-foreground transition-opacity hover:opacity-70"
                 >
                   <Mail className="size-5" />
                 </Link>
               ) : null}
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="grid gap-6 border-t border-border pt-8 md:grid-cols-2">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Currently</p>
-          <p className="mt-1 text-base">{currently}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Previously at</p>
-          <p className="mt-1 text-base">
-            {about?.previously_companies ?? "—"}
-          </p>
         </div>
       </div>
     </section>
