@@ -151,20 +151,6 @@
     transform: translateX(1rem);
   }
 
-  .site-logo-mark {
-    overflow: hidden;
-    border-radius: 9999px;
-    background: #f1f1ee;
-  }
-
-  .dark .site-logo-mark {
-    background: #f5f0eb;
-  }
-
-  .dark .site-logo-mark--with-dark-variant {
-    background: transparent;
-  }
-
   @keyframes hero-line-enter {
     0% {
       transform: translateY(-110%);

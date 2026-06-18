@@ -229,8 +229,8 @@ export function AboutForm({ about, settings }: AboutFormProps) {
           previewClassName="size-20 rounded-full bg-[#1a1a1a]"
         />
         <p className="text-sm text-muted-foreground">
-          Optional white or light logo for dark mode. Shown without a background circle when
-          set. Falls back to the light logo if removed.
+          Optional white or light logo for dark mode. Falls back to the light logo if
+          removed.
         </p>
       </section>
 
