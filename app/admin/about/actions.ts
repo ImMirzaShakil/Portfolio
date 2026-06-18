@@ -102,6 +102,7 @@ export async function saveAboutAction(
     }
   }
 
+  revalidatePath("/", "layout");
   revalidatePath("/");
   revalidatePath("/work");
   revalidatePath("/about");
