@@ -65,11 +65,21 @@ export function buildTwitter({
 }
 
 export async function getDefaultMetadata(): Promise<Metadata> {
-  const { siteName, description, about } = await getSiteContext();
+  const { siteName, description, about, settings } = await getSiteContext();
   const siteUrl = getSiteUrl();
   const images = about?.profile_image_url
     ? [about.profile_image_url]
     : undefined;
+  const logoUrl = settings?.logo_url?.trim();
+  const logoUrlDark = settings?.logo_url_dark?.trim();
+  const faviconUrl = logoUrl || "/favicon.svg";
+  const faviconIcons =
+    logoUrl && logoUrlDark
+      ? [
+          { url: logoUrl, media: "(prefers-color-scheme: light)" },
+          { url: logoUrlDark, media: "(prefers-color-scheme: dark)" },
+        ]
+      : [{ url: faviconUrl }];
 
   return {
     metadataBase: new URL(siteUrl),
@@ -78,6 +88,11 @@ export async function getDefaultMetadata(): Promise<Metadata> {
       template: `%s | ${siteName}`,
     },
     description,
+    icons: {
+      icon: faviconIcons,
+      shortcut: faviconIcons,
+      apple: faviconIcons,
+    },
     openGraph: buildOpenGraph({
       title: siteName,
       description,

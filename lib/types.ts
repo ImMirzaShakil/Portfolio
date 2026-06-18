@@ -97,6 +97,7 @@ export interface SiteSettings {
   resume_url: string | null;
   site_title: string;
   logo_url: string | null;
+  logo_url_dark: string | null;
   hero_heading: string | null;
   nav_items: NavItem[] | null;
   footer_tagline: string | null;

@@ -19,6 +19,7 @@ export default async function PublicLayout({
       <Navbar
         siteTitle={settings?.site_title}
         logoUrl={settings?.logo_url}
+        logoUrlDark={settings?.logo_url_dark}
         resumeUrl={settings?.resume_url}
         navItems={settings?.nav_items}
       />

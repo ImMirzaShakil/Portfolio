@@ -29,6 +29,7 @@ export interface AboutFormPayload {
   footer_tagline: string;
   site_title: string;
   logo_url: string | null;
+  logo_url_dark: string | null;
   hero_heading: string;
   nav_items: NavItem[];
   settings_id?: string;
@@ -86,6 +87,7 @@ export async function saveAboutAction(
       .update({
         site_title: payload.site_title.trim() || "Mirza Md Shakil",
         logo_url: payload.logo_url,
+        logo_url_dark: payload.logo_url_dark,
         hero_heading: payload.hero_heading.trim() || null,
         footer_tagline: payload.footer_tagline.trim() || null,
         nav_items: payload.nav_items.map((item, index) => ({
