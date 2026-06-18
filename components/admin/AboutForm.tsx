@@ -42,6 +42,9 @@ export function AboutForm({ about, settings }: AboutFormProps) {
     settings?.site_title ?? "Mirza Md Shakil"
   );
   const [logoUrl, setLogoUrl] = useState<string | null>(settings?.logo_url ?? null);
+  const [logoUrlDark, setLogoUrlDark] = useState<string | null>(
+    settings?.logo_url_dark ?? null
+  );
   const [heroHeading, setHeroHeading] = useState(settings?.hero_heading ?? "");
   const [introText, setIntroText] = useState(about?.intro_text ?? "");
   const [greetingText, setGreetingText] = useState(
@@ -134,6 +137,7 @@ export function AboutForm({ about, settings }: AboutFormProps) {
       profile_image_url: profileImageUrl,
       site_title: siteTitle,
       logo_url: logoUrl,
+      logo_url_dark: logoUrlDark,
       hero_heading: heroHeading,
       intro_text: introText,
       greeting_text: greetingText,
@@ -208,14 +212,25 @@ export function AboutForm({ about, settings }: AboutFormProps) {
         </div>
 
         <ImageUpload
-          label="Site logo"
+          label="Site logo (light mode)"
           value={logoUrl}
           onChange={setLogoUrl}
           previewClassName="size-20 rounded-full"
         />
         <p className="text-sm text-muted-foreground">
-          Shown in the top-left navigation. Use a transparent PNG. Falls back to initials
-          if removed.
+          Shown in the navbar on light backgrounds. Use a transparent PNG. Falls back to
+          initials if removed.
+        </p>
+
+        <ImageUpload
+          label="Site logo (dark mode)"
+          value={logoUrlDark}
+          onChange={setLogoUrlDark}
+          previewClassName="size-20 rounded-full bg-[#1a1a1a]"
+        />
+        <p className="text-sm text-muted-foreground">
+          Optional white or light logo for dark mode. Shown without a background circle when
+          set. Falls back to the light logo if removed.
         </p>
       </section>
 

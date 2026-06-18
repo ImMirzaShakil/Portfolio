@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 interface NavbarProps {
   siteTitle?: string | null;
   logoUrl?: string | null;
+  logoUrlDark?: string | null;
   resumeUrl?: string | null;
   navItems?: NavItem[] | null;
 }
@@ -47,11 +48,18 @@ function HamburgerIcon({ className }: { className?: string }) {
   );
 }
 
-export function Navbar({ siteTitle, logoUrl, resumeUrl, navItems }: NavbarProps) {
+export function Navbar({
+  siteTitle,
+  logoUrl,
+  logoUrlDark,
+  resumeUrl,
+  navItems,
+}: NavbarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const initials = getInitials(siteTitle);
   const links = getNavItems(navItems);
+  const hasLogo = Boolean(logoUrl || logoUrlDark);
 
   const linkClass = (href: string) =>
     cn(
@@ -90,9 +98,12 @@ export function Navbar({ siteTitle, logoUrl, resumeUrl, navItems }: NavbarProps)
         <Link
           href="/"
           className={cn(
-            "relative flex size-12 shrink-0 items-center justify-center transition-opacity hover:opacity-80",
-            logoUrl
-              ? "site-logo-mark"
+            "relative flex size-14 shrink-0 items-center justify-center transition-opacity hover:opacity-80",
+            hasLogo
+              ? cn(
+                  "overflow-hidden rounded-full",
+                  logoUrl && cn("site-logo-mark", logoUrlDark && "site-logo-mark--with-dark-variant")
+                )
               : "overflow-hidden rounded-full bg-primary text-sm font-semibold text-primary-foreground"
           )}
           aria-label="Home"
@@ -102,13 +113,25 @@ export function Navbar({ siteTitle, logoUrl, resumeUrl, navItems }: NavbarProps)
               src={logoUrl}
               alt={siteTitle ?? "Site logo"}
               fill
-              className="object-contain p-1.5"
-              sizes="48px"
+              className={cn(
+                "object-contain p-1.5",
+                logoUrlDark && "dark:hidden"
+              )}
+              sizes="56px"
               priority
             />
-          ) : (
-            initials
-          )}
+          ) : null}
+          {logoUrlDark ? (
+            <Image
+              src={logoUrlDark}
+              alt={siteTitle ?? "Site logo"}
+              fill
+              className="hidden object-contain p-1.5 dark:block"
+              sizes="56px"
+              priority
+            />
+          ) : null}
+          {!hasLogo ? initials : null}
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

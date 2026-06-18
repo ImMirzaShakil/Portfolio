@@ -81,15 +81,15 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    opacity: 0.45;
+    opacity: 0.65;
     mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-repeat: repeat;
-    background-size: 220px 220px;
+    background-size: 180px 180px;
   }
 
   .dark .site-texture {
-    opacity: 0.35;
+    opacity: 0.5;
   }
   .nav-glass {
     background: color-mix(in srgb, var(--background) 50%, transparent);
@@ -159,6 +159,10 @@
 
   .dark .site-logo-mark {
     background: #f5f0eb;
+  }
+
+  .dark .site-logo-mark--with-dark-variant {
+    background: transparent;
   }
 
   @keyframes hero-line-enter {
