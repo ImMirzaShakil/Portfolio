@@ -22,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${manrope.variable} font-sans`}>
+        <div className="site-texture" aria-hidden="true" />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
