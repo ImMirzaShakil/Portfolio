@@ -55,14 +55,14 @@ export function Navbar({ siteTitle, logoUrl, resumeUrl, navItems }: NavbarProps)
 
   const linkClass = (href: string) =>
     cn(
-      "min-h-11 rounded-full px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+      "min-h-11 rounded-full px-4 py-2.5 text-base font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
       isNavLinkActive(pathname, href)
         ? "bg-nav-active text-nav-active-foreground"
         : "text-nav-inactive hover:text-foreground"
     );
 
   const inactiveLinkClass =
-    "min-h-11 rounded-full px-4 py-2.5 text-sm font-medium text-nav-inactive transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+    "min-h-11 rounded-full px-4 py-2.5 text-base font-semibold text-nav-inactive transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
   const navLinks = (
     <>
@@ -90,7 +90,7 @@ export function Navbar({ siteTitle, logoUrl, resumeUrl, navItems }: NavbarProps)
         <Link
           href="/"
           className={cn(
-            "relative flex size-10 shrink-0 items-center justify-center transition-opacity hover:opacity-80",
+            "relative flex size-12 shrink-0 items-center justify-center transition-opacity hover:opacity-80",
             logoUrl
               ? "site-logo-mark"
               : "overflow-hidden rounded-full bg-primary text-sm font-semibold text-primary-foreground"
@@ -103,7 +103,7 @@ export function Navbar({ siteTitle, logoUrl, resumeUrl, navItems }: NavbarProps)
               alt={siteTitle ?? "Site logo"}
               fill
               className="object-contain p-1.5"
-              sizes="40px"
+              sizes="48px"
               priority
             />
           ) : (
