@@ -100,10 +100,7 @@ export function Navbar({
           className={cn(
             "relative flex size-14 shrink-0 items-center justify-center transition-opacity hover:opacity-80",
             hasLogo
-              ? cn(
-                  "overflow-hidden rounded-full",
-                  logoUrl && cn("site-logo-mark", logoUrlDark && "site-logo-mark--with-dark-variant")
-                )
+              ? "overflow-hidden rounded-full"
               : "overflow-hidden rounded-full bg-primary text-sm font-semibold text-primary-foreground"
           )}
           aria-label="Home"
