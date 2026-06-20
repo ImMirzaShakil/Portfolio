@@ -3,6 +3,22 @@
 @tailwind utilities;
 
 @layer base {
+  @font-face {
+    font-family: "neulis-cursive";
+    src: url("/fonts/neulis-cursive/Neulis-SemiBold.otf") format("opentype");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "neulis-cursive";
+    src: url("/fonts/neulis-cursive/Neulis-Bold.otf") format("opentype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
   :root {
     --background: #f1f1ee;
     --foreground: #000000;
@@ -91,6 +107,24 @@
   .dark .site-texture {
     opacity: 0.5;
   }
+
+  .hero-heading {
+    font-family: "neulis-cursive", var(--font-manrope), sans-serif;
+    font-weight: 700;
+  }
+
+  .hero-heading-blur {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70%;
+    overflow: hidden;
+    opacity: 0.7;
+    pointer-events: none;
+    filter: url(#hero-heading-blur-filter);
+  }
+
   .nav-glass {
     background: color-mix(in srgb, var(--background) 50%, transparent);
     backdrop-filter: blur(20px) saturate(180%);

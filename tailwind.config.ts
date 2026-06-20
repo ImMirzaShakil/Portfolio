@@ -82,6 +82,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
+        hero: ['"neulis-cursive"', "var(--font-manrope)", "sans-serif"],
       },
     },
   },
