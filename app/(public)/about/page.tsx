@@ -88,9 +88,9 @@ export default async function AboutPage() {
         ) : null}
 
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold md:text-5xl">About</h1>
+          <h1 className="text-5xl font-bold md:text-6xl">About</h1>
           {about?.intro_text ? (
-            <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
+            <p className="max-w-3xl text-lg leading-relaxed text-muted-foreground">
               {about.intro_text}
             </p>
           ) : null}
@@ -98,8 +98,8 @@ export default async function AboutPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-2xl font-bold">Day job</h2>
-        <p className="text-base">
+        <h2 className="text-3xl font-bold">Day job</h2>
+        <p className="text-lg">
           {about?.currently_role && about?.currently_company
             ? `${about.currently_role} @ ${about.currently_company}`
             : about?.currently_role ?? about?.currently_company ?? "—"}
@@ -107,15 +107,15 @@ export default async function AboutPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-2xl font-bold">Out of office</h2>
-        <p className="text-base text-muted-foreground">
+        <h2 className="text-3xl font-bold">Out of office</h2>
+        <p className="text-lg text-muted-foreground">
           {about?.previously_companies ?? "—"}
         </p>
       </section>
 
       {superpowers.length > 0 ? (
         <section className="space-y-6">
-          <h2 className="text-2xl font-bold">My super powers</h2>
+          <h2 className="text-3xl font-bold">My super powers</h2>
           <div className="grid gap-4 md:grid-cols-3">
             {superpowers.map((superpower, index) => {
               const Icon = superpowerIcons[index] ?? Sparkles;
@@ -126,7 +126,7 @@ export default async function AboutPage() {
                   className="rounded-2xl border border-border bg-card p-6"
                 >
                   <Icon className="mb-4 size-6 text-foreground" />
-                  <p className="text-base leading-relaxed">{superpower}</p>
+                  <p className="text-lg leading-relaxed">{superpower}</p>
                 </div>
               );
             })}

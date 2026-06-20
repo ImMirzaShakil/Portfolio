@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export const heroHeadingTextClass =
-  "text-[clamp(1.875rem,5.25vw+0.5rem,4rem)] font-bold leading-[1.05] tracking-[-0.02em]";
+  "text-[clamp(2.125rem,6.25vw+0.5rem,5rem)] font-bold leading-[1.05] tracking-[-0.02em]";
 
 export const heroRotatingTextClass =
-  "text-[clamp(1.125rem,2.5vw+0.65rem,3.25rem)] font-bold leading-[1.1] tracking-[-0.02em]";
+  "text-[clamp(1.5rem,3.5vw+0.75rem,4rem)] font-bold leading-[1.1] tracking-[-0.02em]";
 
 /** @deprecated Use heroHeadingTextClass */
 export const heroDisplayTextClass = heroHeadingTextClass;
