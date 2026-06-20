@@ -83,8 +83,8 @@ export function HeroSection({ name, heroHeading, about, funFacts }: HeroSectionP
 
   return (
     <section className="space-y-10 sm:space-y-12">
-      <div className="flex flex-col gap-8 sm:gap-10 lg:flex-row lg:items-start lg:gap-10 xl:gap-14">
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-col gap-8 sm:gap-10 lg:flex-row lg:items-start lg:gap-12 xl:gap-16 2xl:gap-20">
+        <div className="min-w-0 flex-1 lg:max-w-[62%]">
           <HeroHeading>{heading}</HeroHeading>
           <RotatingHeroLines lines={funFacts} />
 
@@ -112,7 +112,7 @@ export function HeroSection({ name, heroHeading, about, funFacts }: HeroSectionP
           ) : null}
         </div>
 
-        <div className="min-w-0 lg:w-auto lg:max-w-sm lg:shrink-0">
+        <div className="min-w-0 lg:w-[34%] lg:max-w-md lg:shrink-0 xl:max-w-lg">
           {about?.profile_image_url ? (
             <div className="relative mx-auto size-32 overflow-hidden rounded-full border border-border sm:size-40 lg:mx-0 lg:size-48">
               <Image
