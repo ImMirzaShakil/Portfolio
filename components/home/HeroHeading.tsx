@@ -7,7 +7,7 @@ interface HeroHeadingProps {
 }
 
 export function HeroHeading({ children, className }: HeroHeadingProps) {
-  const headingClass = cn(heroHeadingTextClass, "hero-heading", className);
+  const headingClass = cn(heroHeadingTextClass, className);
 
   return (
     <>

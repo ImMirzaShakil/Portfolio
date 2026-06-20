@@ -94,7 +94,7 @@ export function Navbar({
 
   return (
     <header className="nav-glass sticky top-0 z-50 w-full">
-      <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
         <Link
           href="/"
           className={cn(

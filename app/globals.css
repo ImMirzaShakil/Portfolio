@@ -87,6 +87,12 @@
   body {
     @apply bg-background font-sans text-foreground antialiased;
   }
+
+  h1,
+  .hero-heading-blur p {
+    font-family: "neulis-cursive", var(--font-manrope), sans-serif;
+    font-weight: 700;
+  }
 }
 
 @layer components {
@@ -106,11 +112,6 @@
 
   .dark .site-texture {
     opacity: 0.5;
-  }
-
-  .hero-heading {
-    font-family: "neulis-cursive", var(--font-manrope), sans-serif;
-    font-weight: 700;
   }
 
   .hero-heading-blur {
