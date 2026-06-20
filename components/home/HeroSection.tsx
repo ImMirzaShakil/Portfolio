@@ -3,16 +3,13 @@
 import { Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  heroHeadingTextClass,
-  RotatingHeroLines,
-} from "@/components/home/RotatingHeroLines";
+import { HeroHeading } from "@/components/home/HeroHeading";
+import { RotatingHeroLines } from "@/components/home/RotatingHeroLines";
 import {
   isSocialLinkVisible,
   type SocialLinkKey,
 } from "@/lib/social-links";
 import type { AboutContent } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 interface HeroSectionProps {
   name?: string | null;
@@ -88,7 +85,7 @@ export function HeroSection({ name, heroHeading, about, funFacts }: HeroSectionP
     <section className="space-y-10 sm:space-y-12">
       <div className="flex flex-col gap-8 sm:gap-10 lg:flex-row lg:items-start lg:gap-16">
         <div className="min-w-0 lg:w-[60%]">
-          <h1 className={cn(heroHeadingTextClass, "text-balance")}>{heading}</h1>
+          <HeroHeading>{heading}</HeroHeading>
           <RotatingHeroLines lines={funFacts} />
 
           {showCurrently || showPreviously ? (
