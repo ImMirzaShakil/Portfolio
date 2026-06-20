@@ -334,7 +334,7 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
         <div>
           <h2 className="text-xl font-bold">Featured in</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Articles, talks, and podcasts you've been featured in.
+            Articles, talks, and podcasts you&apos;ve been featured in.
           </p>
         </div>
         <FeaturedInManager value={featuredIn} onChange={setFeaturedIn} />
