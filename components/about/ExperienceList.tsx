@@ -12,7 +12,7 @@ export function ExperienceList({ title, experiences }: ExperienceListProps) {
 
   return (
     <section className="space-y-6">
-      <h2 className="text-3xl font-bold">{title}</h2>
+      <h2 className="text-2xl font-bold">{title}</h2>
       <div className="space-y-8">
         {experiences.map((experience) => (
           <article key={experience.id} className="space-y-2 border-b border-border pb-8 last:border-b-0 last:pb-0">

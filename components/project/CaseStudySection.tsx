@@ -23,10 +23,10 @@ export function CaseStudySection({
 
   return (
     <section className="space-y-6" data-section-type={section_type}>
-      {title ? <h2 className="text-3xl font-bold">{title}</h2> : null}
+      {title ? <h2 className="text-2xl font-bold">{title}</h2> : null}
 
       {paragraphs.length > 0 ? (
-        <div className="space-y-4 text-lg leading-relaxed text-muted-foreground">
+        <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
           {paragraphs.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
