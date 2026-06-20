@@ -74,7 +74,7 @@ export function Footer({ settings, about }: FooterProps) {
 
   return (
     <footer className="bg-footer text-footer-foreground">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+      <div className="site-container flex flex-col gap-4 py-8 lg:flex-row lg:items-center lg:justify-between">
         <p className="text-sm text-footer-foreground">
           © {year} · {tagline}
         </p>
