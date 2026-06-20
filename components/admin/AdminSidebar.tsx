@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Settings2,
   UserRound,
   X,
 } from "lucide-react";
@@ -23,7 +24,8 @@ interface AdminSidebarProps {
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/projects", label: "Projects", icon: FolderKanban, exact: false },
-  { href: "/admin/about", label: "About", icon: UserRound, exact: false },
+  { href: "/admin/about", label: "Edit About", icon: UserRound, exact: false },
+  { href: "/admin/settings", label: "Site Settings", icon: Settings2, exact: false },
   { href: "/admin/resume", label: "Resume", icon: FileText, exact: false },
 ] as const;
 

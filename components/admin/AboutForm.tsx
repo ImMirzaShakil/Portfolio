@@ -4,82 +4,69 @@ import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { saveAboutAction } from "@/app/admin/about/actions";
 import { AdminToggle } from "@/components/admin/AdminToggle";
+import { FeaturedInManager } from "@/components/admin/FeaturedInManager";
+import { GalleryUpload } from "@/components/admin/GalleryUpload";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { getFunFacts, MAX_HERO_LINE_LENGTH } from "@/lib/homepage";
-import { DEFAULT_NAV_ITEMS } from "@/lib/navigation";
 import {
   DEFAULT_VISIBLE_SOCIAL_LINKS,
   SOCIAL_LINK_CONFIG,
   type SocialLinkKey,
 } from "@/lib/social-links";
-import type { AboutContent, NavItem, SiteSettings } from "@/lib/types";
+import type { AboutContent, FeaturedIn } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface AboutFormProps {
   about?: AboutContent | null;
-  settings?: SiteSettings | null;
+  featuredIn?: FeaturedIn[];
 }
 
-function createNavItem(label = "", href = "/"): NavItem {
-  return {
-    id: crypto.randomUUID(),
-    label,
-    href,
-    is_visible: true,
-    order_index: 0,
-  };
-}
-
-export function AboutForm({ about, settings }: AboutFormProps) {
+export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFormProps) {
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
     about?.profile_image_url ?? null
   );
-  const [siteTitle, setSiteTitle] = useState(
-    settings?.site_title ?? "Mirza Md Shakil"
+  const [galleryImages, setGalleryImages] = useState<string[]>(
+    about?.gallery_images ?? []
   );
-  const [logoUrl, setLogoUrl] = useState<string | null>(settings?.logo_url ?? null);
-  const [logoUrlDark, setLogoUrlDark] = useState<string | null>(
-    settings?.logo_url_dark ?? null
+  const [pronunciation, setPronunciation] = useState(
+    about?.pronunciation ?? ""
   );
-  const [heroHeading, setHeroHeading] = useState(settings?.hero_heading ?? "");
   const [introText, setIntroText] = useState(about?.intro_text ?? "");
-  const [greetingText, setGreetingText] = useState(
-    about?.greeting_text ?? "Nice to meet you!"
+  const [dayJobDescription, setDayJobDescription] = useState(
+    about?.day_job_description ?? ""
   );
-  const [funFacts, setFunFacts] = useState<string[]>(() => {
-    if (about?.fun_facts && about.fun_facts.length > 0) {
-      return about.fun_facts;
-    }
-
-    const displayed = getFunFacts(about);
-    return displayed.length > 0 ? displayed : [""];
-  });
-  const [currentlyRole, setCurrentlyRole] = useState(about?.currently_role ?? "");
+  const [currentlyRole, setCurrentlyRole] = useState(
+    about?.currently_role ?? ""
+  );
   const [currentlyCompany, setCurrentlyCompany] = useState(
     about?.currently_company ?? ""
   );
-  const [previouslyCompanies, setPreviouslyCompanies] = useState(
-    about?.previously_companies ?? ""
+  const [outOfOfficeText, setOutOfOfficeText] = useState(
+    about?.out_of_office_text ?? about?.previously_companies ?? ""
   );
-  const [showCurrently, setShowCurrently] = useState(
-    about?.show_currently !== false
-  );
-  const [showPreviously, setShowPreviously] = useState(
-    about?.show_previously !== false
-  );
-  const [currentlyLabel, setCurrentlyLabel] = useState(
-    about?.currently_label ?? "Currently"
-  );
-  const [previouslyLabel, setPreviouslyLabel] = useState(
-    about?.previously_label ?? "Previously at"
+  const [internshipsDescription, setInternshipsDescription] = useState(
+    about?.internships_description ?? ""
   );
   const [superpower1, setSuperpower1] = useState(about?.superpower_1 ?? "");
+  const [superpower1Desc, setSuperpower1Desc] = useState(
+    about?.superpower_1_desc ?? ""
+  );
   const [superpower2, setSuperpower2] = useState(about?.superpower_2 ?? "");
+  const [superpower2Desc, setSuperpower2Desc] = useState(
+    about?.superpower_2_desc ?? ""
+  );
   const [superpower3, setSuperpower3] = useState(about?.superpower_3 ?? "");
+  const [superpower3Desc, setSuperpower3Desc] = useState(
+    about?.superpower_3_desc ?? ""
+  );
+  const [superpower4, setSuperpower4] = useState(about?.superpower_4 ?? "");
+  const [superpower4Desc, setSuperpower4Desc] = useState(
+    about?.superpower_4_desc ?? ""
+  );
   const [twitterUrl, setTwitterUrl] = useState(about?.twitter_url ?? "");
   const [linkedinUrl, setLinkedinUrl] = useState(about?.linkedin_url ?? "");
   const [githubUrl, setGithubUrl] = useState(about?.github_url ?? "");
@@ -88,11 +75,18 @@ export function AboutForm({ about, settings }: AboutFormProps) {
     (about?.visible_social_links as SocialLinkKey[] | null) ??
       DEFAULT_VISIBLE_SOCIAL_LINKS
   );
-  const [navItems, setNavItems] = useState<NavItem[]>(
-    settings?.nav_items?.length ? settings.nav_items : DEFAULT_NAV_ITEMS
+  const [greetingText, setGreetingText] = useState(
+    about?.greeting_text ?? "Nice to meet you!"
   );
-  const [footerTagline, setFooterTagline] = useState(
-    settings?.footer_tagline ?? ""
+  const [funFacts, setFunFacts] = useState<string[]>(() => {
+    if (about?.fun_facts && about.fun_facts.length > 0) {
+      return about.fun_facts;
+    }
+    const displayed = getFunFacts(about);
+    return displayed.length > 0 ? displayed : [""];
+  });
+  const [featuredIn, setFeaturedIn] = useState<FeaturedIn[]>(
+    initialFeaturedIn
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,19 +94,7 @@ export function AboutForm({ about, settings }: AboutFormProps) {
   const updateFunFact = (index: number, value: string) => {
     const trimmed = value.slice(0, MAX_HERO_LINE_LENGTH);
     setFunFacts((current) =>
-      current.map((fact, factIndex) => (factIndex === index ? trimmed : fact))
-    );
-  };
-
-  const updateNavItem = (
-    index: number,
-    field: keyof Pick<NavItem, "label" | "href" | "is_visible">,
-    value: string | boolean
-  ) => {
-    setNavItems((current) =>
-      current.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, [field]: value } : item
-      )
+      current.map((fact, i) => (i === index ? trimmed : fact))
     );
   };
 
@@ -133,32 +115,36 @@ export function AboutForm({ about, settings }: AboutFormProps) {
 
     const result = await saveAboutAction({
       id: about?.id,
-      settings_id: settings?.id,
       profile_image_url: profileImageUrl,
-      site_title: siteTitle,
-      logo_url: logoUrl,
-      logo_url_dark: logoUrlDark,
-      hero_heading: heroHeading,
+      gallery_images: galleryImages,
+      pronunciation,
       intro_text: introText,
       greeting_text: greetingText,
       fun_facts: funFacts,
+      day_job_description: dayJobDescription,
       currently_role: currentlyRole,
       currently_company: currentlyCompany,
-      previously_companies: previouslyCompanies,
-      show_currently: showCurrently,
-      show_previously: showPreviously,
-      currently_label: currentlyLabel,
-      previously_label: previouslyLabel,
+      out_of_office_text: outOfOfficeText,
+      previously_companies: outOfOfficeText,
+      internships_description: internshipsDescription,
+      show_currently: true,
+      show_previously: true,
+      currently_label: "Currently",
+      previously_label: "Previously at",
       superpower_1: superpower1,
+      superpower_1_desc: superpower1Desc,
       superpower_2: superpower2,
+      superpower_2_desc: superpower2Desc,
       superpower_3: superpower3,
+      superpower_3_desc: superpower3Desc,
+      superpower_4: superpower4,
+      superpower_4_desc: superpower4Desc,
       twitter_url: twitterUrl,
       linkedin_url: linkedinUrl,
       github_url: githubUrl,
       email,
       visible_social_links: visibleSocialLinks,
-      nav_items: navItems.filter((item) => item.label.trim() && item.href.trim()),
-      footer_tagline: footerTagline,
+      featured_in: featuredIn,
     });
 
     setSaving(false);
@@ -168,7 +154,7 @@ export function AboutForm({ about, settings }: AboutFormProps) {
       return;
     }
 
-    toast.success("About content saved.");
+    toast.success("About page saved.");
   };
 
   return (
@@ -176,325 +162,221 @@ export function AboutForm({ about, settings }: AboutFormProps) {
       <div>
         <h1 className="text-3xl font-bold">Edit About</h1>
         <p className="mt-2 text-muted-foreground">
-          Update homepage hero, navigation, about page, and footer content.
+          Manage your About page content — profile, intro, superpowers, gallery, and more.
         </p>
       </div>
 
+      {/* Profile image */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
         <div>
-          <h2 className="text-xl font-bold">Hero & site identity</h2>
+          <h2 className="text-xl font-bold">Profile photo</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Control the main heading and rotating subtitle on the homepage.
+            Large portrait photo shown at the top of your About page.
+          </p>
+        </div>
+        <ImageUpload
+          label="Profile photo"
+          value={profileImageUrl}
+          onChange={setProfileImageUrl}
+          previewClassName="w-48 aspect-[3/4]"
+        />
+      </section>
+
+      {/* Intro */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Intro</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The hero text shown beside your photo.
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="site-title">Site title / your name</Label>
+          <Label htmlFor="pronunciation">Pronunciation guide</Label>
           <Input
-            id="site-title"
-            value={siteTitle}
-            onChange={(event) => setSiteTitle(event.target.value)}
-            placeholder="Mirza Md Shakil"
+            id="pronunciation"
+            value={pronunciation}
+            onChange={(e) => setPronunciation(e.target.value)}
+            placeholder="/mur·zah sha·keel/"
           />
+          <p className="text-xs text-muted-foreground">
+            Shown below your name. E.g. /tah·maan·nuh/
+          </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="hero-heading">Hero heading</Label>
-          <Input
-            id="hero-heading"
-            value={heroHeading}
-            onChange={(event) => setHeroHeading(event.target.value)}
-            placeholder={`Hello, I'm ${siteTitle.split(" ")[0] ?? "Mirza"}`}
+          <Label htmlFor="intro-text">Intro paragraph</Label>
+          <Textarea
+            id="intro-text"
+            value={introText}
+            onChange={(e) => setIntroText(e.target.value)}
+            rows={4}
+            placeholder="I'm a software engineer who…"
           />
-          <p className="text-sm text-muted-foreground">
-            Leave blank to auto-generate from your first name.
-          </p>
         </div>
-
-        <ImageUpload
-          label="Site logo (light mode)"
-          value={logoUrl}
-          onChange={setLogoUrl}
-          previewClassName="size-20 rounded-full"
-        />
-        <p className="text-sm text-muted-foreground">
-          Shown in the navbar on light backgrounds. Use a transparent PNG. Falls back to
-          initials if removed.
-        </p>
-
-        <ImageUpload
-          label="Site logo (dark mode)"
-          value={logoUrlDark}
-          onChange={setLogoUrlDark}
-          previewClassName="size-20 rounded-full bg-[#1a1a1a]"
-        />
-        <p className="text-sm text-muted-foreground">
-          Optional white or light logo for dark mode. Falls back to the light logo if
-          removed.
-        </p>
       </section>
 
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold">Navigation menu</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Rename, hide, or add pages to the top navigation. Resume stays separate when uploaded.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setNavItems((current) => [...current, createNavItem()])}
-          >
-            Add menu item
-          </Button>
-        </div>
-
-        {navItems.map((item, index) => (
-          <div
-            key={item.id}
-            className="space-y-4 rounded-xl border border-border p-4"
-          >
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor={`nav-label-${item.id}`}>Label</Label>
-                <Input
-                  id={`nav-label-${item.id}`}
-                  value={item.label}
-                  onChange={(event) => updateNavItem(index, "label", event.target.value)}
-                  placeholder="Work"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`nav-href-${item.id}`}>Page path</Label>
-                <Input
-                  id={`nav-href-${item.id}`}
-                  value={item.href}
-                  onChange={(event) => updateNavItem(index, "href", event.target.value)}
-                  placeholder="/work"
-                />
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <AdminToggle
-                checked={item.is_visible}
-                onCheckedChange={(checked) => updateNavItem(index, "is_visible", checked)}
-                label="Menu visibility"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  setNavItems((current) => current.filter((_, itemIndex) => itemIndex !== index))
-                }
-                disabled={navItems.length === 1}
-              >
-                Remove menu item
-              </Button>
-            </div>
-          </div>
-        ))}
-      </section>
-
-      <ImageUpload
-        label="Profile image"
-        value={profileImageUrl}
-        onChange={setProfileImageUrl}
-      />
-
-      <div className="space-y-2">
-        <Label htmlFor="intro-text">Intro text</Label>
-        <Textarea
-          id="intro-text"
-          value={introText}
-          onChange={(event) => setIntroText(event.target.value)}
-          rows={5}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="greeting-text">Greeting text</Label>
-        <Input
-          id="greeting-text"
-          value={greetingText}
-          onChange={(event) => setGreetingText(event.target.value)}
-          placeholder="Nice to meet you!"
-        />
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <Label>Rotating hero lines</Label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Keep each line under {MAX_HERO_LINE_LENGTH} characters so it fits on
-              mobile in two lines without clipping.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setFunFacts((current) => [...current, ""])}
-          >
-            Add line
-          </Button>
-        </div>
-        {funFacts.map((fact, index) => (
-          <div key={index} className="space-y-1">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Input
-                value={fact}
-                onChange={(event) => updateFunFact(index, event.target.value)}
-                placeholder="I value empathy & user-centered design"
-                className="flex-1"
-                maxLength={MAX_HERO_LINE_LENGTH}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                className="shrink-0"
-                onClick={() =>
-                  setFunFacts((current) =>
-                    current.length === 1
-                      ? [""]
-                      : current.filter((_, factIndex) => factIndex !== index)
-                  )
-                }
-              >
-                Remove line
-              </Button>
-            </div>
-            <p
-              className={cn(
-                "text-xs text-muted-foreground",
-                fact.length >= MAX_HERO_LINE_LENGTH - 8 && "text-amber-600 dark:text-amber-400"
-              )}
-            >
-              {fact.length}/{MAX_HERO_LINE_LENGTH} characters
-            </p>
-          </div>
-        ))}
-        {funFacts.length === 0 || funFacts.every((fact) => !fact.trim()) ? (
-          <p className="text-sm text-muted-foreground">
-            No rotating lines set. The homepage will use a default fallback until you add one.
-          </p>
-        ) : null}
-      </div>
-
+      {/* Day job & out of office */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
         <div>
-          <h2 className="text-xl font-bold">Currently & previously</h2>
+          <h2 className="text-xl font-bold">Day job & out of office</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Shown below the hero text on the homepage.
+            Shown in two columns beside your intro on the About page.
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="day-job-description">Day job description</Label>
+          <Textarea
+            id="day-job-description"
+            value={dayJobDescription}
+            onChange={(e) => setDayJobDescription(e.target.value)}
+            rows={3}
+            placeholder="Currently, I am a Software Engineer at XYZ. Before that…"
+          />
+          <p className="text-xs text-muted-foreground">
+            Full paragraph. Falls back to role + company below if left blank.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="currently-role">Currently role</Label>
+            <Label htmlFor="currently-role">Current role (fallback)</Label>
             <Input
               id="currently-role"
               value={currentlyRole}
-              onChange={(event) => setCurrentlyRole(event.target.value)}
+              onChange={(e) => setCurrentlyRole(e.target.value)}
+              placeholder="Software Engineer"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="currently-company">Currently company</Label>
+            <Label htmlFor="currently-company">Current company (fallback)</Label>
             <Input
               id="currently-company"
               value={currentlyCompany}
-              onChange={(event) => setCurrentlyCompany(event.target.value)}
+              onChange={(e) => setCurrentlyCompany(e.target.value)}
+              placeholder="Tech Company"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="previously-companies">Previously companies</Label>
-          <Input
-            id="previously-companies"
-            value={previouslyCompanies}
-            onChange={(event) => setPreviouslyCompanies(event.target.value)}
-          />
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="currently-label">Currently label</Label>
-            <Input
-              id="currently-label"
-              value={currentlyLabel}
-              onChange={(event) => setCurrentlyLabel(event.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="previously-label">Previously label</Label>
-            <Input
-              id="previously-label"
-              value={previouslyLabel}
-              onChange={(event) => setPreviouslyLabel(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <AdminToggle
-            checked={showCurrently}
-            onCheckedChange={setShowCurrently}
-            label="Currently section"
-          />
-          <AdminToggle
-            checked={showPreviously}
-            onCheckedChange={setShowPreviously}
-            label="Previously section"
+          <Label htmlFor="out-of-office">Out of office</Label>
+          <Textarea
+            id="out-of-office"
+            value={outOfOfficeText}
+            onChange={(e) => setOutOfOfficeText(e.target.value)}
+            rows={3}
+            placeholder="When I'm not building things, I love…"
           />
         </div>
       </section>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="superpower-1">Superpower 1</Label>
-          <Input
-            id="superpower-1"
-            value={superpower1}
-            onChange={(event) => setSuperpower1(event.target.value)}
-          />
+      {/* Superpowers */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">My super powers</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Up to 4 skills shown in a 2×2 grid on the About page.
+          </p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="superpower-2">Superpower 2</Label>
-          <Input
-            id="superpower-2"
-            value={superpower2}
-            onChange={(event) => setSuperpower2(event.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="superpower-3">Superpower 3</Label>
-          <Input
-            id="superpower-3"
-            value={superpower3}
-            onChange={(event) => setSuperpower3(event.target.value)}
-          />
-        </div>
-      </div>
 
+        {[
+          { n: 1, title: superpower1, desc: superpower1Desc, setTitle: setSuperpower1, setDesc: setSuperpower1Desc },
+          { n: 2, title: superpower2, desc: superpower2Desc, setTitle: setSuperpower2, setDesc: setSuperpower2Desc },
+          { n: 3, title: superpower3, desc: superpower3Desc, setTitle: setSuperpower3, setDesc: setSuperpower3Desc },
+          { n: 4, title: superpower4, desc: superpower4Desc, setTitle: setSuperpower4, setDesc: setSuperpower4Desc },
+        ].map(({ n, title, desc, setTitle, setDesc }) => (
+          <div key={n} className="rounded-xl border border-border p-4 space-y-3">
+            <p className="text-sm font-semibold text-muted-foreground">
+              Superpower {n}
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor={`sp-title-${n}`}>Title</Label>
+              <Input
+                id={`sp-title-${n}`}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Structure in ambiguity"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`sp-desc-${n}`}>Description</Label>
+              <Textarea
+                id={`sp-desc-${n}`}
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+                rows={2}
+                placeholder="I have a knack for adding clarity…"
+              />
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* Gallery */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Photo gallery</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            A horizontal photo strip shown after your superpowers.
+          </p>
+        </div>
+        <GalleryUpload
+          value={galleryImages}
+          onChange={setGalleryImages}
+          label="Gallery photos"
+        />
+      </section>
+
+      {/* Featured In */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Featured in</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Articles, talks, and podcasts you've been featured in.
+          </p>
+        </div>
+        <FeaturedInManager value={featuredIn} onChange={setFeaturedIn} />
+      </section>
+
+      {/* Internships description */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Internships description</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Optional sub-text shown next to the Internships section heading.
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="internships-desc">Description</Label>
+          <Textarea
+            id="internships-desc"
+            value={internshipsDescription}
+            onChange={(e) => setInternshipsDescription(e.target.value)}
+            rows={2}
+            placeholder="I completed these internships as part of…"
+          />
+        </div>
+      </section>
+
+      {/* Social links */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
         <div>
           <h2 className="text-xl font-bold">Social links</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add URLs and choose which icons appear on the homepage and footer.
+            Add URLs and choose which icons appear on the About page.
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="twitter-url">Twitter URL</Label>
+            <Label htmlFor="twitter-url">Twitter / X URL</Label>
             <Input
               id="twitter-url"
               value={twitterUrl}
-              onChange={(event) => setTwitterUrl(event.target.value)}
+              onChange={(e) => setTwitterUrl(e.target.value)}
+              placeholder="https://twitter.com/you"
             />
           </div>
           <div className="space-y-2">
@@ -502,7 +384,8 @@ export function AboutForm({ about, settings }: AboutFormProps) {
             <Input
               id="linkedin-url"
               value={linkedinUrl}
-              onChange={(event) => setLinkedinUrl(event.target.value)}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              placeholder="https://linkedin.com/in/you"
             />
           </div>
           <div className="space-y-2">
@@ -510,7 +393,8 @@ export function AboutForm({ about, settings }: AboutFormProps) {
             <Input
               id="github-url"
               value={githubUrl}
-              onChange={(event) => setGithubUrl(event.target.value)}
+              onChange={(e) => setGithubUrl(e.target.value)}
+              placeholder="https://github.com/you"
             />
           </div>
           <div className="space-y-2">
@@ -519,7 +403,8 @@ export function AboutForm({ about, settings }: AboutFormProps) {
               id="email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="hello@example.com"
             />
           </div>
         </div>
@@ -538,14 +423,81 @@ export function AboutForm({ about, settings }: AboutFormProps) {
         </div>
       </section>
 
-      <div className="space-y-2">
-        <Label htmlFor="footer-tagline">Footer tagline</Label>
-        <Input
-          id="footer-tagline"
-          value={footerTagline}
-          onChange={(event) => setFooterTagline(event.target.value)}
-        />
-      </div>
+      {/* Homepage rotating lines */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Homepage rotating lines</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Short phrases that rotate in the homepage hero subtitle.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="greeting-text">Greeting text</Label>
+          <Input
+            id="greeting-text"
+            value={greetingText}
+            onChange={(e) => setGreetingText(e.target.value)}
+            placeholder="Nice to meet you!"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">Rotating lines</p>
+              <p className="text-xs text-muted-foreground">
+                Keep each under {MAX_HERO_LINE_LENGTH} characters for mobile.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setFunFacts((c) => [...c, ""])}
+            >
+              Add line
+            </Button>
+          </div>
+
+          {funFacts.map((fact, index) => (
+            <div key={index} className="space-y-1">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Input
+                  value={fact}
+                  onChange={(e) => updateFunFact(index, e.target.value)}
+                  placeholder="I value empathy & user-centered design"
+                  className="flex-1"
+                  maxLength={MAX_HERO_LINE_LENGTH}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="shrink-0"
+                  onClick={() =>
+                    setFunFacts((c) =>
+                      c.length === 1
+                        ? [""]
+                        : c.filter((_, i) => i !== index)
+                    )
+                  }
+                >
+                  Remove
+                </Button>
+              </div>
+              <p
+                className={cn(
+                  "text-xs text-muted-foreground",
+                  fact.length >= MAX_HERO_LINE_LENGTH - 8 &&
+                    "text-amber-600 dark:text-amber-400"
+                )}
+              >
+                {fact.length}/{MAX_HERO_LINE_LENGTH} characters
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {error ? (
         <p className="text-sm text-destructive" role="alert">
@@ -554,7 +506,7 @@ export function AboutForm({ about, settings }: AboutFormProps) {
       ) : null}
 
       <Button type="submit" disabled={saving}>
-        {saving ? "Saving..." : "Save changes"}
+        {saving ? "Saving..." : "Save About page"}
       </Button>
     </form>
   );
