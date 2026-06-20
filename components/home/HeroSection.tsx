@@ -14,6 +14,7 @@ import type { AboutContent } from "@/lib/types";
 interface HeroSectionProps {
   name?: string | null;
   heroHeading?: string | null;
+  profileImageUrl?: string | null;
   about?: AboutContent | null;
   funFacts: string[];
 }
@@ -70,9 +71,10 @@ function getHeroHeading(name?: string | null, heroHeading?: string | null) {
   return `Hello, I'm ${firstName}`;
 }
 
-export function HeroSection({ name, heroHeading, about, funFacts }: HeroSectionProps) {
+export function HeroSection({ name, heroHeading, profileImageUrl, about, funFacts }: HeroSectionProps) {
   const displayName = name ?? "Mirza Md Shakil";
   const heading = getHeroHeading(name, heroHeading);
+  const heroImage = profileImageUrl ?? about?.profile_image_url ?? null;
   const showCurrently = about?.show_currently !== false;
   const showPreviously = about?.show_previously !== false;
 
@@ -113,10 +115,10 @@ export function HeroSection({ name, heroHeading, about, funFacts }: HeroSectionP
         </div>
 
         <div className="min-w-0 lg:w-[34%] lg:max-w-md lg:shrink-0 xl:max-w-lg">
-          {about?.profile_image_url ? (
+          {heroImage ? (
             <div className="relative mx-auto size-32 overflow-hidden rounded-full border border-border sm:size-40 lg:mx-0 lg:size-48">
               <Image
-                src={about.profile_image_url}
+                src={heroImage}
                 alt={displayName}
                 fill
                 className="object-cover"

@@ -260,4 +260,27 @@
       transform: none;
     }
   }
+
+  @keyframes gallery-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-gallery-scroll {
+    animation: gallery-scroll 30s linear infinite;
+  }
+
+  .animate-gallery-scroll:hover {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-gallery-scroll {
+      animation: none;
+    }
+  }
 }

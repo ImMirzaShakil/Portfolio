@@ -122,4 +122,5 @@ export interface SiteSettings {
   hero_heading: string | null;
   nav_items: NavItem[] | null;
   footer_tagline: string | null;
+  profile_image_url: string | null;
 }

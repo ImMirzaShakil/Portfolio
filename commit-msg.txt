@@ -1,0 +1,9 @@
+feat: separate home/about profile photos + auto-scroll gallery
+
+- Add profile_image_url to site_settings for homepage hero photo
+- Homepage profile photo now managed from Site Settings admin page
+- About page profile photo remains in Edit About (about_content)
+- HeroSection falls back to about profile image if settings image not set
+- Replace static gallery mosaic with infinite horizontal auto-scroll marquee
+- Gallery pauses on hover, respects prefers-reduced-motion
+- New DB migration: 20260621_settings_profile_image.sql
