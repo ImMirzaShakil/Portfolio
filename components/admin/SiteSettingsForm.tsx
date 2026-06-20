@@ -29,6 +29,9 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
   const [siteTitle, setSiteTitle] = useState(
     settings?.site_title ?? "Mirza Md Shakil"
   );
+  const [homeProfileImageUrl, setHomeProfileImageUrl] = useState<string | null>(
+    settings?.profile_image_url ?? null
+  );
   const [logoUrl, setLogoUrl] = useState<string | null>(
     settings?.logo_url ?? null
   );
@@ -67,6 +70,7 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
     const result = await saveSiteSettingsAction({
       settings_id: settings?.id,
       site_title: siteTitle,
+      profile_image_url: homeProfileImageUrl,
       logo_url: logoUrl,
       logo_url_dark: logoUrlDark,
       hero_heading: heroHeading,
@@ -113,6 +117,17 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
             placeholder="Mirza Md Shakil"
           />
         </div>
+
+        <ImageUpload
+          label="Homepage profile photo"
+          value={homeProfileImageUrl}
+          onChange={setHomeProfileImageUrl}
+          previewClassName="size-40 rounded-full"
+        />
+        <p className="text-sm text-muted-foreground">
+          The circular profile photo shown in the homepage hero. Separate from
+          the About page photo.
+        </p>
 
         <ImageUpload
           label="Logo (light mode)"

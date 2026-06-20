@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 export interface SiteSettingsPayload {
   settings_id?: string;
   site_title: string;
+  profile_image_url: string | null;
   logo_url: string | null;
   logo_url_dark: string | null;
   hero_heading: string;
@@ -34,6 +35,7 @@ export async function saveSiteSettingsAction(
       .from("site_settings")
       .update({
         site_title: payload.site_title.trim() || "Mirza Md Shakil",
+        profile_image_url: payload.profile_image_url,
         logo_url: payload.logo_url,
         logo_url_dark: payload.logo_url_dark,
         hero_heading: payload.hero_heading.trim() || null,

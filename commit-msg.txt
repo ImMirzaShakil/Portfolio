@@ -1,23 +1,9 @@
-feat: redesign /about page to match reference layout + split admin
+feat: separate home/about profile photos + auto-scroll gallery
 
-About page:
-- Hero with large portrait photo, cursive Hello heading, pronunciation guide,
-  Day job + Out of office two-column layout, and social icon row
-- Superpowers section as 2x2 grid with title + description per item (up to 4)
-- Horizontal photo gallery mosaic strip
-- Featured In timeline (year, title, publication, type)
-- Experience / Internships / Writing / Education in 2-col timeline layout
-
-Admin:
-- Split Edit About to about-page content only (profile, gallery, intro,
-  day job, out of office, superpowers x4 with desc, featured in, social)
-- New /admin/settings page for site identity, hero heading, nav, footer
-- GalleryUpload component: multi-photo upload with reorder and remove
-- FeaturedInManager: add/edit/remove featured articles, talks, podcasts
-- AdminSidebar: added Site Settings link
-
-DB:
-- Migration adds pronunciation, day_job_description, out_of_office_text,
-  superpower descs x4, gallery_images, internships_description to about_content
-- Adds description field to writings table
-- Creates featured_in table with RLS policies
+- Add profile_image_url to site_settings for homepage hero photo
+- Homepage profile photo now managed from Site Settings admin page
+- About page profile photo remains in Edit About (about_content)
+- HeroSection falls back to about profile image if settings image not set
+- Replace static gallery mosaic with infinite horizontal auto-scroll marquee
+- Gallery pauses on hover, respects prefers-reduced-motion
+- New DB migration: 20260621_settings_profile_image.sql

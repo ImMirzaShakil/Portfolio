@@ -57,6 +57,7 @@ export default async function HomePage() {
       <HeroSection
         name={settings?.site_title}
         heroHeading={settings?.hero_heading}
+        profileImageUrl={settings?.profile_image_url}
         about={about}
         funFacts={getFunFacts(about)}
       />
