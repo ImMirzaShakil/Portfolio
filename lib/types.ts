@@ -44,17 +44,27 @@ export interface AboutContent {
   intro_text: string | null;
   greeting_text: string | null;
   fun_facts: string[] | null;
+  pronunciation: string | null;
   currently_role: string | null;
   currently_company: string | null;
   previously_companies: string | null;
+  day_job_description: string | null;
+  out_of_office_text: string | null;
   show_currently: boolean;
   show_previously: boolean;
   currently_label: string | null;
   previously_label: string | null;
   visible_social_links: string[] | null;
   superpower_1: string | null;
+  superpower_1_desc: string | null;
   superpower_2: string | null;
+  superpower_2_desc: string | null;
   superpower_3: string | null;
+  superpower_3_desc: string | null;
+  superpower_4: string | null;
+  superpower_4_desc: string | null;
+  gallery_images: string[] | null;
+  internships_description: string | null;
   profile_image_url: string | null;
   twitter_url: string | null;
   linkedin_url: string | null;
@@ -79,6 +89,17 @@ export interface Writing {
   url: string;
   publication: string | null;
   year: string | null;
+  description: string | null;
+  order_index: number;
+}
+
+export interface FeaturedIn {
+  id: string;
+  year: string;
+  title: string;
+  url: string | null;
+  publication: string | null;
+  content_type: string | null;
   order_index: number;
 }
 
