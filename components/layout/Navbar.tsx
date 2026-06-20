@@ -63,14 +63,14 @@ export function Navbar({
 
   const linkClass = (href: string) =>
     cn(
-      "min-h-11 rounded-full px-4 py-2.5 text-base font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+      "min-h-11 rounded-full px-4 py-2.5 text-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
       isNavLinkActive(pathname, href)
         ? "bg-nav-active text-nav-active-foreground"
         : "text-nav-inactive hover:text-foreground"
     );
 
   const inactiveLinkClass =
-    "min-h-11 rounded-full px-4 py-2.5 text-base font-semibold text-nav-inactive transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+    "min-h-11 rounded-full px-4 py-2.5 text-lg font-semibold text-nav-inactive transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
   const navLinks = (
     <>

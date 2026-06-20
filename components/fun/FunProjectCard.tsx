@@ -23,9 +23,9 @@ export function FunProjectCard({ project }: FunProjectCardProps) {
       )}
 
       <div className="space-y-3 p-6">
-        <h3 className="text-xl font-bold leading-tight">{project.title}</h3>
+        <h3 className="text-2xl font-bold leading-tight">{project.title}</h3>
         {project.description ? (
-          <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+          <p className="line-clamp-3 text-base leading-relaxed text-muted-foreground">
             {project.description}
           </p>
         ) : null}

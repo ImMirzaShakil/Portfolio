@@ -117,12 +117,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       ) : null}
 
       <header className="space-y-4">
-        <h1 className="text-4xl font-bold md:text-5xl">{project.title}</h1>
+        <h1 className="text-5xl font-bold md:text-6xl">{project.title}</h1>
         {project.subtitle ? (
-          <p className="text-lg text-muted-foreground">{project.subtitle}</p>
+          <p className="text-xl text-muted-foreground">{project.subtitle}</p>
         ) : null}
         {project.summary ? (
-          <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
+          <p className="max-w-3xl text-lg leading-relaxed text-muted-foreground">
             {project.summary}
           </p>
         ) : null}
@@ -130,16 +130,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
       {quickFacts.length > 0 ? (
         <section className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="mb-6 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h2 className="mb-6 text-base font-semibold uppercase tracking-wide text-muted-foreground">
             Quick Facts
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
             {quickFacts.map((fact) => (
               <div key={fact.id} className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-base font-medium text-muted-foreground">
                   {fact.title}
                 </p>
-                <p className="text-base">{fact.content}</p>
+                <p className="text-lg">{fact.content}</p>
               </div>
             ))}
           </div>
