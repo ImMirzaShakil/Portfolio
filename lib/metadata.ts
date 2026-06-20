@@ -9,6 +9,13 @@ export function getSiteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 }
 
+function getIconVersion(logoUrl?: string | null) {
+  if (!logoUrl) return "";
+
+  const filename = logoUrl.split("/").pop() ?? logoUrl;
+  return `?v=${encodeURIComponent(filename)}`;
+}
+
 export async function getSiteContext() {
   const supabase = createStaticClient();
 
@@ -65,11 +72,13 @@ export function buildTwitter({
 }
 
 export async function getDefaultMetadata(): Promise<Metadata> {
-  const { siteName, description, about } = await getSiteContext();
+  const { siteName, description, about, settings } = await getSiteContext();
   const siteUrl = getSiteUrl();
   const images = about?.profile_image_url
     ? [about.profile_image_url]
     : undefined;
+  const iconVersion = getIconVersion(settings?.logo_url);
+  const iconPath = `/icon${iconVersion}`;
 
   return {
     metadataBase: new URL(siteUrl),
@@ -78,6 +87,11 @@ export async function getDefaultMetadata(): Promise<Metadata> {
       template: `%s | ${siteName}`,
     },
     description,
+    icons: {
+      icon: [{ url: iconPath, type: "image/png", sizes: "32x32" }],
+      shortcut: [{ url: iconPath, type: "image/png" }],
+      apple: [{ url: `/apple-icon${iconVersion}`, type: "image/png", sizes: "180x180" }],
+    },
     openGraph: buildOpenGraph({
       title: siteName,
       description,

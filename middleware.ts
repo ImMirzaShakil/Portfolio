@@ -4,6 +4,10 @@ import { updateSession } from "@/lib/supabase/middleware";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  if (pathname === "/favicon.ico") {
+    return NextResponse.rewrite(new URL("/icon", request.url));
+  }
+
   if (pathname.startsWith("/admin/login")) {
     return NextResponse.next();
   }
@@ -24,5 +28,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/((?!login).*)"],
+  matcher: ["/favicon.ico", "/admin", "/admin/((?!login).*)"],
 };
