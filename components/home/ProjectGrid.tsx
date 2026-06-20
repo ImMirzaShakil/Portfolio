@@ -15,7 +15,7 @@ export function ProjectGrid({
   if (projects.length === 0) {
     return (
       <section className="space-y-6">
-        <h2 className="text-3xl font-bold">{title}</h2>
+        <h2 className="text-2xl font-bold">{title}</h2>
         <p className="text-muted-foreground">{emptyMessage}</p>
       </section>
     );
@@ -23,7 +23,7 @@ export function ProjectGrid({
 
   return (
     <section className="space-y-8">
-      <h2 className="text-3xl font-bold">{title}</h2>
+      <h2 className="text-2xl font-bold">{title}</h2>
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
           <ProjectCard key={project.id} project={project} />

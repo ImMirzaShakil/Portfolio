@@ -92,18 +92,18 @@ export function HeroSection({ name, heroHeading, about, funFacts }: HeroSectionP
             <div className="mt-8 grid gap-6 sm:mt-10 sm:grid-cols-2 sm:gap-8">
               {showCurrently ? (
                 <div>
-                  <p className="text-base font-bold sm:text-lg">
+                  <p className="text-sm font-bold sm:text-base">
                     {about?.currently_label ?? "Currently"}
                   </p>
-                  <p className="mt-1 text-base text-foreground sm:text-lg">{currently}</p>
+                  <p className="mt-1 text-sm text-foreground sm:text-base">{currently}</p>
                 </div>
               ) : null}
               {showPreviously ? (
                 <div>
-                  <p className="text-base font-bold sm:text-lg">
+                  <p className="text-sm font-bold sm:text-base">
                     {about?.previously_label ?? "Previously at"}
                   </p>
-                  <p className="mt-1 text-base text-foreground sm:text-lg">
+                  <p className="mt-1 text-sm text-foreground sm:text-base">
                     {about?.previously_companies ?? "—"}
                   </p>
                 </div>
@@ -127,11 +127,11 @@ export function HeroSection({ name, heroHeading, about, funFacts }: HeroSectionP
           ) : null}
 
           <div className="mt-5 space-y-3 text-center sm:mt-6 sm:space-y-4 lg:text-left">
-            <h2 className="text-2xl font-bold sm:text-3xl">
+            <h2 className="text-xl font-bold sm:text-2xl">
               {about?.greeting_text ?? "Nice to meet you!"}
             </h2>
             {about?.intro_text ? (
-              <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+              <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
                 {about.intro_text}
               </p>
             ) : null}

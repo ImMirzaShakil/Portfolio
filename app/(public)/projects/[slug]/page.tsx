@@ -117,12 +117,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       ) : null}
 
       <header className="space-y-4">
-        <h1 className="text-5xl font-bold md:text-6xl">{project.title}</h1>
+        <h1 className="text-4xl font-bold md:text-5xl">{project.title}</h1>
         {project.subtitle ? (
-          <p className="text-xl text-muted-foreground">{project.subtitle}</p>
+          <p className="text-lg text-muted-foreground">{project.subtitle}</p>
         ) : null}
         {project.summary ? (
-          <p className="max-w-3xl text-lg leading-relaxed text-muted-foreground">
+          <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
             {project.summary}
           </p>
         ) : null}

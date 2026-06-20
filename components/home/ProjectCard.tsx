@@ -37,7 +37,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
       <div className="space-y-3 p-6">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-2xl font-bold leading-tight text-foreground">
+          <h3 className="text-xl font-bold leading-tight text-foreground">
             {project.title}
           </h3>
           {project.status ? (
@@ -48,13 +48,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         {project.summary ? (
-          <p className="line-clamp-3 text-base leading-relaxed text-description">
+          <p className="line-clamp-3 text-sm leading-relaxed text-description">
             {project.summary}
           </p>
         ) : null}
 
         {metadata ? (
-          <p className="text-base text-meta">{metadata}</p>
+          <p className="text-sm text-meta">{metadata}</p>
         ) : null}
       </div>
     </Link>

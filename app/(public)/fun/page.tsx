@@ -18,8 +18,8 @@ export default async function FunPage() {
   return (
     <div className="space-y-8">
       <header className="space-y-3">
-        <h1 className="text-5xl font-bold md:text-6xl">Fun</h1>
-        <p className="max-w-2xl text-lg text-muted-foreground">
+        <h1 className="text-4xl font-bold md:text-5xl">Fun</h1>
+        <p className="max-w-2xl text-base text-muted-foreground">
           Experimental work, side projects, and playful ideas outside the day job.
         </p>
       </header>
