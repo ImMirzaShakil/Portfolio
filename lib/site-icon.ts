@@ -22,6 +22,8 @@ export async function fetchSiteIconResponse() {
         headers: {
           "Content-Type": contentType,
           "Cache-Control": "public, max-age=0, must-revalidate",
+          "CDN-Cache-Control": "public, max-age=0, must-revalidate",
+          "Vercel-CDN-Cache-Control": "public, max-age=0, must-revalidate",
         },
       });
     }
