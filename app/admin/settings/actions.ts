@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 
 export interface SiteSettingsPayload {
   settings_id?: string;
+  about_id?: string;
   site_title: string;
   profile_image_url: string | null;
   logo_url: string | null;
@@ -14,6 +15,8 @@ export interface SiteSettingsPayload {
   hero_heading: string;
   nav_items: NavItem[];
   footer_tagline: string;
+  greeting_text: string;
+  fun_facts: string[];
 }
 
 export async function saveSiteSettingsAction(
@@ -47,9 +50,26 @@ export async function saveSiteSettingsAction(
       })
       .eq("id", payload.settings_id);
 
-    if (error) {
-      return { error: error.message };
-    }
+    if (error) return { error: error.message };
+  }
+
+  // Save greeting_text and fun_facts back to about_content
+  const aboutUpdate = {
+    greeting_text: payload.greeting_text.trim() || null,
+    fun_facts: payload.fun_facts.map((f) => f.trim()).filter(Boolean),
+    updated_at: new Date().toISOString(),
+  };
+
+  if (payload.about_id) {
+    const { error } = await admin
+      .from("about_content")
+      .update(aboutUpdate)
+      .eq("id", payload.about_id);
+    if (error) return { error: error.message };
+  } else {
+    // No about row yet — upsert a new one
+    const { error } = await admin.from("about_content").upsert(aboutUpdate);
+    if (error) return { error: error.message };
   }
 
   revalidatePath("/", "layout");

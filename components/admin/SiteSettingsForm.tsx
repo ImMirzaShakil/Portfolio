@@ -8,11 +8,14 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getFunFacts, MAX_HERO_LINE_LENGTH } from "@/lib/homepage";
 import { DEFAULT_NAV_ITEMS } from "@/lib/navigation";
-import type { NavItem, SiteSettings } from "@/lib/types";
+import type { AboutContent, NavItem, SiteSettings } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface SiteSettingsFormProps {
   settings?: SiteSettings | null;
+  about?: Pick<AboutContent, "id" | "greeting_text" | "fun_facts"> | null;
 }
 
 function createNavItem(label = "", href = "/"): NavItem {
@@ -25,7 +28,7 @@ function createNavItem(label = "", href = "/"): NavItem {
   };
 }
 
-export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
+export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
   const [siteTitle, setSiteTitle] = useState(
     settings?.site_title ?? "Mirza Md Shakil"
   );
@@ -38,15 +41,21 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
   const [logoUrlDark, setLogoUrlDark] = useState<string | null>(
     settings?.logo_url_dark ?? null
   );
-  const [heroHeading, setHeroHeading] = useState(
-    settings?.hero_heading ?? ""
-  );
+  const [heroHeading, setHeroHeading] = useState(settings?.hero_heading ?? "");
   const [navItems, setNavItems] = useState<NavItem[]>(
     settings?.nav_items?.length ? settings.nav_items : DEFAULT_NAV_ITEMS
   );
   const [footerTagline, setFooterTagline] = useState(
     settings?.footer_tagline ?? ""
   );
+  const [greetingText, setGreetingText] = useState(
+    about?.greeting_text ?? "Nice to meet you!"
+  );
+  const [funFacts, setFunFacts] = useState<string[]>(() => {
+    if (about?.fun_facts && about.fun_facts.length > 0) return about.fun_facts;
+    const displayed = getFunFacts(about as AboutContent | null);
+    return displayed.length > 0 ? displayed : [""];
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,9 +65,14 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
     value: string | boolean
   ) => {
     setNavItems((current) =>
-      current.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, [field]: value } : item
-      )
+      current.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const updateFunFact = (index: number, value: string) => {
+    const trimmed = value.slice(0, MAX_HERO_LINE_LENGTH);
+    setFunFacts((current) =>
+      current.map((fact, i) => (i === index ? trimmed : fact))
     );
   };
 
@@ -69,15 +83,16 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
 
     const result = await saveSiteSettingsAction({
       settings_id: settings?.id,
+      about_id: about?.id,
       site_title: siteTitle,
       profile_image_url: homeProfileImageUrl,
       logo_url: logoUrl,
       logo_url_dark: logoUrlDark,
       hero_heading: heroHeading,
-      nav_items: navItems.filter(
-        (item) => item.label.trim() && item.href.trim()
-      ),
+      nav_items: navItems.filter((item) => item.label.trim() && item.href.trim()),
       footer_tagline: footerTagline,
+      greeting_text: greetingText,
+      fun_facts: funFacts,
     });
 
     setSaving(false);
@@ -95,7 +110,8 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
       <div>
         <h1 className="text-3xl font-bold">Site Settings</h1>
         <p className="mt-2 text-muted-foreground">
-          Control your site identity, navigation, homepage hero, and footer.
+          Control your site identity, navigation, homepage hero, rotating lines,
+          and footer.
         </p>
       </div>
 
@@ -125,8 +141,8 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
           previewClassName="size-40 rounded-full"
         />
         <p className="text-sm text-muted-foreground">
-          The circular profile photo shown in the homepage hero. Separate from
-          the About page photo.
+          Circular photo shown in the homepage hero. Separate from the About
+          page portrait (managed in Edit About).
         </p>
 
         <ImageUpload
@@ -152,12 +168,12 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
         </p>
       </section>
 
-      {/* Homepage hero */}
+      {/* Homepage hero heading */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
         <div>
           <h2 className="text-xl font-bold">Homepage hero heading</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            The large greeting on the homepage hero.
+            The large cursive greeting displayed at the top of your homepage.
           </p>
         </div>
 
@@ -175,6 +191,89 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
         </div>
       </section>
 
+      {/* Rotating hero lines */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Homepage rotating lines</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Short phrases that rotate in the subtitle below the hero heading.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="greeting-text">Greeting text</Label>
+          <Input
+            id="greeting-text"
+            value={greetingText}
+            onChange={(e) => setGreetingText(e.target.value)}
+            placeholder="Nice to meet you!"
+          />
+          <p className="text-xs text-muted-foreground">
+            Shown in the sidebar / intro on the homepage.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">Rotating lines</p>
+              <p className="text-xs text-muted-foreground">
+                Keep each under {MAX_HERO_LINE_LENGTH} characters for mobile.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setFunFacts((c) => [...c, ""])}
+            >
+              Add line
+            </Button>
+          </div>
+
+          {funFacts.map((fact, index) => (
+            <div key={index} className="space-y-1">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Input
+                  value={fact}
+                  onChange={(e) => updateFunFact(index, e.target.value)}
+                  placeholder="I value empathy &amp; user-centered design"
+                  className="flex-1"
+                  maxLength={MAX_HERO_LINE_LENGTH}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="shrink-0"
+                  onClick={() =>
+                    setFunFacts((c) =>
+                      c.length === 1 ? [""] : c.filter((_, i) => i !== index)
+                    )
+                  }
+                >
+                  Remove
+                </Button>
+              </div>
+              <p
+                className={cn(
+                  "text-xs text-muted-foreground",
+                  fact.length >= MAX_HERO_LINE_LENGTH - 8 &&
+                    "text-amber-600 dark:text-amber-400"
+                )}
+              >
+                {fact.length}/{MAX_HERO_LINE_LENGTH} characters
+              </p>
+            </div>
+          ))}
+
+          {funFacts.every((f) => !f.trim()) ? (
+            <p className="text-sm text-muted-foreground">
+              No rotating lines set. A default will show until you add one.
+            </p>
+          ) : null}
+        </div>
+      </section>
+
       {/* Navigation */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
         <div className="flex items-center justify-between gap-4">
@@ -188,9 +287,7 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
             type="button"
             variant="outline"
             size="sm"
-            onClick={() =>
-              setNavItems((current) => [...current, createNavItem()])
-            }
+            onClick={() => setNavItems((c) => [...c, createNavItem()])}
           >
             Add item
           </Button>
@@ -207,9 +304,7 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
                 <Input
                   id={`nav-label-${item.id}`}
                   value={item.label}
-                  onChange={(e) =>
-                    updateNavItem(index, "label", e.target.value)
-                  }
+                  onChange={(e) => updateNavItem(index, "label", e.target.value)}
                   placeholder="Work"
                 />
               </div>
@@ -218,9 +313,7 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
                 <Input
                   id={`nav-href-${item.id}`}
                   value={item.href}
-                  onChange={(e) =>
-                    updateNavItem(index, "href", e.target.value)
-                  }
+                  onChange={(e) => updateNavItem(index, "href", e.target.value)}
                   placeholder="/work"
                 />
               </div>
@@ -237,9 +330,7 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
                 type="button"
                 variant="outline"
                 onClick={() =>
-                  setNavItems((current) =>
-                    current.filter((_, i) => i !== index)
-                  )
+                  setNavItems((c) => c.filter((_, i) => i !== index))
                 }
                 disabled={navItems.length === 1}
               >
@@ -273,7 +364,7 @@ export function SiteSettingsForm({ settings }: SiteSettingsFormProps) {
       ) : null}
 
       <Button type="submit" disabled={saving}>
-        {saving ? "Saving..." : "Save settings"}
+        {saving ? "Saving…" : "Save settings"}
       </Button>
     </form>
   );

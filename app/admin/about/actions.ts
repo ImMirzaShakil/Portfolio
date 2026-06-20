@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { FeaturedIn } from "@/lib/types";
+import type { Experience, FeaturedIn, Writing } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
 export interface AboutFormPayload {
@@ -11,8 +11,6 @@ export interface AboutFormPayload {
   gallery_images: string[];
   pronunciation: string;
   intro_text: string;
-  greeting_text: string;
-  fun_facts: string[];
   day_job_description: string;
   currently_role: string;
   currently_company: string;
@@ -37,7 +35,11 @@ export interface AboutFormPayload {
   github_url: string;
   email: string;
   featured_in: FeaturedIn[];
+  experiences: Experience[];
+  writings: Writing[];
 }
+
+const DUMMY_UUID = "00000000-0000-0000-0000-000000000000";
 
 export async function saveAboutAction(
   payload: AboutFormPayload
@@ -53,14 +55,13 @@ export async function saveAboutAction(
 
   const admin = createAdminClient();
 
-  const aboutPayload = {
+  // ── about_content ────────────────────────────────────────────────
+  const { error: aboutError } = await admin.from("about_content").upsert({
     ...(payload.id ? { id: payload.id } : {}),
     profile_image_url: payload.profile_image_url,
     gallery_images: payload.gallery_images,
     pronunciation: payload.pronunciation.trim() || null,
     intro_text: payload.intro_text.trim() || null,
-    greeting_text: payload.greeting_text.trim() || null,
-    fun_facts: payload.fun_facts.map((f) => f.trim()).filter(Boolean),
     day_job_description: payload.day_job_description.trim() || null,
     currently_role: payload.currently_role.trim() || null,
     currently_company: payload.currently_company.trim() || null,
@@ -69,8 +70,8 @@ export async function saveAboutAction(
     internships_description: payload.internships_description.trim() || null,
     show_currently: payload.show_currently,
     show_previously: payload.show_previously,
-    currently_label: payload.currently_label.trim() || "Currently",
-    previously_label: payload.previously_label.trim() || "Previously at",
+    currently_label: payload.currently_label || "Currently",
+    previously_label: payload.previously_label || "Previously at",
     visible_social_links: payload.visible_social_links,
     superpower_1: payload.superpower_1.trim() || null,
     superpower_1_desc: payload.superpower_1_desc.trim() || null,
@@ -85,48 +86,76 @@ export async function saveAboutAction(
     github_url: payload.github_url.trim() || null,
     email: payload.email.trim() || null,
     updated_at: new Date().toISOString(),
-  };
+  });
+  if (aboutError) return { error: aboutError.message };
 
-  const { error: aboutError } = await admin
-    .from("about_content")
-    .upsert(aboutPayload);
-
-  if (aboutError) {
-    return { error: aboutError.message };
-  }
-
-  // Sync featured_in: delete all then re-insert in order
-  const { error: deleteError } = await admin
+  // ── featured_in ──────────────────────────────────────────────────
+  const { error: fDelErr } = await admin
     .from("featured_in")
     .delete()
-    .neq("id", "00000000-0000-0000-0000-000000000000"); // delete all rows
+    .neq("id", DUMMY_UUID);
+  if (fDelErr) return { error: fDelErr.message };
 
-  if (deleteError) {
-    return { error: deleteError.message };
+  const featuredRows = payload.featured_in
+    .filter((i) => i.title.trim() && i.year.trim())
+    .map((i, idx) => ({
+      id: i.id,
+      year: i.year.trim(),
+      title: i.title.trim(),
+      url: i.url?.trim() || null,
+      publication: i.publication?.trim() || null,
+      content_type: i.content_type?.trim() || null,
+      order_index: idx,
+    }));
+  if (featuredRows.length > 0) {
+    const { error } = await admin.from("featured_in").insert(featuredRows);
+    if (error) return { error: error.message };
   }
 
-  if (payload.featured_in.length > 0) {
-    const rows = payload.featured_in
-      .filter((item) => item.title.trim() && item.year.trim())
-      .map((item, index) => ({
-        id: item.id,
-        year: item.year.trim(),
-        title: item.title.trim(),
-        url: item.url?.trim() || null,
-        publication: item.publication?.trim() || null,
-        content_type: item.content_type?.trim() || null,
-        order_index: index,
-      }));
+  // ── experiences ──────────────────────────────────────────────────
+  const { error: expDelErr } = await admin
+    .from("experiences")
+    .delete()
+    .neq("id", DUMMY_UUID);
+  if (expDelErr) return { error: expDelErr.message };
 
-    if (rows.length > 0) {
-      const { error: insertError } = await admin
-        .from("featured_in")
-        .insert(rows);
+  const expRows = payload.experiences
+    .filter((e) => e.organization.trim() && e.role.trim())
+    .map((e, idx) => ({
+      id: e.id,
+      year_range: e.year_range.trim(),
+      organization: e.organization.trim(),
+      role: e.role.trim(),
+      description: e.description?.trim() || null,
+      type: e.type,
+      order_index: idx,
+    }));
+  if (expRows.length > 0) {
+    const { error } = await admin.from("experiences").insert(expRows);
+    if (error) return { error: error.message };
+  }
 
-      if (insertError) {
-        return { error: insertError.message };
-      }
-    }
+  // ── writings ─────────────────────────────────────────────────────
+  const { error: wrDelErr } = await admin
+    .from("writings")
+    .delete()
+    .neq("id", DUMMY_UUID);
+  if (wrDelErr) return { error: wrDelErr.message };
+
+  const wrRows = payload.writings
+    .filter((w) => w.title.trim())
+    .map((w, idx) => ({
+      id: w.id,
+      title: w.title.trim(),
+      url: w.url?.trim() || "",
+      publication: w.publication?.trim() || null,
+      year: w.year?.trim() || null,
+      description: w.description?.trim() || null,
+      order_index: idx,
+    }));
+  if (wrRows.length > 0) {
+    const { error } = await admin.from("writings").insert(wrRows);
+    if (error) return { error: error.message };
   }
 
   revalidatePath("/", "layout");

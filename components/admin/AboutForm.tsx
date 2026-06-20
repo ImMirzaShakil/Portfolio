@@ -4,28 +4,35 @@ import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { saveAboutAction } from "@/app/admin/about/actions";
 import { AdminToggle } from "@/components/admin/AdminToggle";
+import { ExperiencesManager } from "@/components/admin/ExperiencesManager";
 import { FeaturedInManager } from "@/components/admin/FeaturedInManager";
 import { GalleryUpload } from "@/components/admin/GalleryUpload";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { WritingsManager } from "@/components/admin/WritingsManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { getFunFacts, MAX_HERO_LINE_LENGTH } from "@/lib/homepage";
 import {
   DEFAULT_VISIBLE_SOCIAL_LINKS,
   SOCIAL_LINK_CONFIG,
   type SocialLinkKey,
 } from "@/lib/social-links";
-import type { AboutContent, FeaturedIn } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import type { AboutContent, Experience, FeaturedIn, Writing } from "@/lib/types";
 
 interface AboutFormProps {
   about?: AboutContent | null;
   featuredIn?: FeaturedIn[];
+  experiences?: Experience[];
+  writings?: Writing[];
 }
 
-export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFormProps) {
+export function AboutForm({
+  about,
+  featuredIn: initialFeaturedIn = [],
+  experiences: initialExperiences = [],
+  writings: initialWritings = [],
+}: AboutFormProps) {
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
     about?.profile_image_url ?? null
   );
@@ -75,35 +82,18 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
     (about?.visible_social_links as SocialLinkKey[] | null) ??
       DEFAULT_VISIBLE_SOCIAL_LINKS
   );
-  const [greetingText, setGreetingText] = useState(
-    about?.greeting_text ?? "Nice to meet you!"
+  const [experiences, setExperiences] = useState<Experience[]>(
+    initialExperiences
   );
-  const [funFacts, setFunFacts] = useState<string[]>(() => {
-    if (about?.fun_facts && about.fun_facts.length > 0) {
-      return about.fun_facts;
-    }
-    const displayed = getFunFacts(about);
-    return displayed.length > 0 ? displayed : [""];
-  });
-  const [featuredIn, setFeaturedIn] = useState<FeaturedIn[]>(
-    initialFeaturedIn
-  );
+  const [writings, setWritings] = useState<Writing[]>(initialWritings);
+  const [featuredIn, setFeaturedIn] = useState<FeaturedIn[]>(initialFeaturedIn);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const updateFunFact = (index: number, value: string) => {
-    const trimmed = value.slice(0, MAX_HERO_LINE_LENGTH);
-    setFunFacts((current) =>
-      current.map((fact, i) => (i === index ? trimmed : fact))
-    );
-  };
 
   const toggleSocialLink = (key: SocialLinkKey, checked: boolean) => {
     setVisibleSocialLinks((current) =>
       checked
-        ? current.includes(key)
-          ? current
-          : [...current, key]
+        ? current.includes(key) ? current : [...current, key]
         : current.filter((item) => item !== key)
     );
   };
@@ -119,8 +109,6 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
       gallery_images: galleryImages,
       pronunciation,
       intro_text: introText,
-      greeting_text: greetingText,
-      fun_facts: funFacts,
       day_job_description: dayJobDescription,
       currently_role: currentlyRole,
       currently_company: currentlyCompany,
@@ -145,6 +133,8 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
       email,
       visible_social_links: visibleSocialLinks,
       featured_in: featuredIn,
+      experiences,
+      writings,
     });
 
     setSaving(false);
@@ -162,20 +152,22 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
       <div>
         <h1 className="text-3xl font-bold">Edit About</h1>
         <p className="mt-2 text-muted-foreground">
-          Manage your About page content — profile, intro, superpowers, gallery, and more.
+          Manage your About page — profile, intro, superpowers, gallery,
+          experience, writings, and more.
         </p>
       </div>
 
-      {/* Profile image */}
+      {/* Profile photo */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
         <div>
           <h2 className="text-xl font-bold">Profile photo</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Large portrait photo shown at the top of your About page.
+            Large portrait photo shown at the top of your About page. Separate
+            from the homepage profile photo (managed in Site Settings).
           </p>
         </div>
         <ImageUpload
-          label="Profile photo"
+          label="About page profile photo"
           value={profileImageUrl}
           onChange={setProfileImageUrl}
           previewClassName="w-48 aspect-[3/4]"
@@ -187,7 +179,7 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
         <div>
           <h2 className="text-xl font-bold">Intro</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            The hero text shown beside your photo.
+            Shown beside your photo at the top of the About page.
           </p>
         </div>
 
@@ -211,7 +203,7 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
             value={introText}
             onChange={(e) => setIntroText(e.target.value)}
             rows={4}
-            placeholder="I'm a software engineer who…"
+            placeholder="I&apos;m a software engineer who…"
           />
         </div>
       </section>
@@ -219,14 +211,14 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
       {/* Day job & out of office */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
         <div>
-          <h2 className="text-xl font-bold">Day job & out of office</h2>
+          <h2 className="text-xl font-bold">Day job &amp; out of office</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Shown in two columns beside your intro on the About page.
+            Shown in two columns beside your intro.
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="day-job-description">Day job description</Label>
+          <Label htmlFor="day-job-description">Day job paragraph</Label>
           <Textarea
             id="day-job-description"
             value={dayJobDescription}
@@ -267,7 +259,7 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
             value={outOfOfficeText}
             onChange={(e) => setOutOfOfficeText(e.target.value)}
             rows={3}
-            placeholder="When I'm not building things, I love…"
+            placeholder="When I&apos;m not building things, I love…"
           />
         </div>
       </section>
@@ -319,7 +311,7 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
         <div>
           <h2 className="text-xl font-bold">Photo gallery</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            A horizontal photo strip shown after your superpowers.
+            Auto-scrolling horizontal photo strip shown after your superpowers.
           </p>
         </div>
         <GalleryUpload
@@ -329,27 +321,27 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
         />
       </section>
 
-      {/* Featured In */}
+      {/* Experience, Internships, Education */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
         <div>
-          <h2 className="text-xl font-bold">Featured in</h2>
+          <h2 className="text-xl font-bold">Experience, Internships &amp; Education</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Articles, talks, and podcasts you&apos;ve been featured in.
+            Manage all timeline entries shown on your About page.
           </p>
         </div>
-        <FeaturedInManager value={featuredIn} onChange={setFeaturedIn} />
+        <ExperiencesManager value={experiences} onChange={setExperiences} />
       </section>
 
-      {/* Internships description */}
+      {/* Internships section description */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
         <div>
-          <h2 className="text-xl font-bold">Internships description</h2>
+          <h2 className="text-xl font-bold">Internships section note</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Optional sub-text shown next to the Internships section heading.
+            Optional sub-text shown next to the Internships heading.
           </p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="internships-desc">Description</Label>
+          <Label htmlFor="internships-desc">Note</Label>
           <Textarea
             id="internships-desc"
             value={internshipsDescription}
@@ -358,6 +350,28 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
             placeholder="I completed these internships as part of…"
           />
         </div>
+      </section>
+
+      {/* Writings */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Writing</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Articles, blog posts, and other writing you&apos;ve published.
+          </p>
+        </div>
+        <WritingsManager value={writings} onChange={setWritings} />
+      </section>
+
+      {/* Featured In */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Featured in</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Talks, podcasts, and articles that have featured you.
+          </p>
+        </div>
+        <FeaturedInManager value={featuredIn} onChange={setFeaturedIn} />
       </section>
 
       {/* Social links */}
@@ -423,82 +437,6 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
         </div>
       </section>
 
-      {/* Homepage rotating lines */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Homepage rotating lines</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Short phrases that rotate in the homepage hero subtitle.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="greeting-text">Greeting text</Label>
-          <Input
-            id="greeting-text"
-            value={greetingText}
-            onChange={(e) => setGreetingText(e.target.value)}
-            placeholder="Nice to meet you!"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">Rotating lines</p>
-              <p className="text-xs text-muted-foreground">
-                Keep each under {MAX_HERO_LINE_LENGTH} characters for mobile.
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setFunFacts((c) => [...c, ""])}
-            >
-              Add line
-            </Button>
-          </div>
-
-          {funFacts.map((fact, index) => (
-            <div key={index} className="space-y-1">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Input
-                  value={fact}
-                  onChange={(e) => updateFunFact(index, e.target.value)}
-                  placeholder="I value empathy & user-centered design"
-                  className="flex-1"
-                  maxLength={MAX_HERO_LINE_LENGTH}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="shrink-0"
-                  onClick={() =>
-                    setFunFacts((c) =>
-                      c.length === 1
-                        ? [""]
-                        : c.filter((_, i) => i !== index)
-                    )
-                  }
-                >
-                  Remove
-                </Button>
-              </div>
-              <p
-                className={cn(
-                  "text-xs text-muted-foreground",
-                  fact.length >= MAX_HERO_LINE_LENGTH - 8 &&
-                    "text-amber-600 dark:text-amber-400"
-                )}
-              >
-                {fact.length}/{MAX_HERO_LINE_LENGTH} characters
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {error ? (
         <p className="text-sm text-destructive" role="alert">
           {error}
@@ -506,7 +444,7 @@ export function AboutForm({ about, featuredIn: initialFeaturedIn = [] }: AboutFo
       ) : null}
 
       <Button type="submit" disabled={saving}>
-        {saving ? "Saving..." : "Save About page"}
+        {saving ? "Saving…" : "Save About page"}
       </Button>
     </form>
   );
