@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { getFunFacts, MAX_HERO_LINE_LENGTH } from "@/lib/homepage";
 import {
   DEFAULT_GRAIN_OPACITY,
+  getGrainCssVars,
   MAX_GRAIN_OPACITY,
   MIN_GRAIN_OPACITY,
 } from "@/lib/grain-texture";
@@ -355,14 +356,14 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
         <div>
           <h2 className="text-xl font-bold">Grain texture</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Adjust the film-grain overlay across the whole site. Save, then refresh
-            the public site to preview.
+            Controls how visible the film-grain speckles are (not page brightness or
+            color). Save, then refresh the public site to preview.
           </p>
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-4">
-            <Label htmlFor="grain-opacity">Visibility</Label>
+            <Label htmlFor="grain-opacity">Grain intensity</Label>
             <span className="text-sm font-medium tabular-nums text-muted-foreground">
               {grainOpacity}%
             </span>
@@ -391,12 +392,7 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
           <div
             className="site-texture !absolute !inset-0 !h-full !w-full"
             aria-hidden="true"
-            style={
-              {
-                "--grain-opacity": grainOpacity / 100,
-                "--grain-opacity-dark": (grainOpacity / 100) * 0.8,
-              } as React.CSSProperties
-            }
+            style={getGrainCssVars(null, grainOpacity) as React.CSSProperties}
           />
           <p className="relative text-sm text-muted-foreground">
             Preview at {grainOpacity}% — matches the live site after you save.
