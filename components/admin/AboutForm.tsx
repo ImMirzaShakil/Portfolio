@@ -55,6 +55,21 @@ export function AboutForm({
   const [outOfOfficeText, setOutOfOfficeText] = useState(
     about?.out_of_office_text ?? about?.previously_companies ?? ""
   );
+  const [previouslyCompanies, setPreviouslyCompanies] = useState(
+    about?.previously_companies ?? ""
+  );
+  const [showCurrently, setShowCurrently] = useState(
+    about?.show_currently !== false
+  );
+  const [showPreviously, setShowPreviously] = useState(
+    about?.show_previously !== false
+  );
+  const [currentlyLabel, setCurrentlyLabel] = useState(
+    about?.currently_label ?? "Currently"
+  );
+  const [previouslyLabel, setPreviouslyLabel] = useState(
+    about?.previously_label ?? "Previously at"
+  );
   const [internshipsDescription, setInternshipsDescription] = useState(
     about?.internships_description ?? ""
   );
@@ -113,12 +128,12 @@ export function AboutForm({
       currently_role: currentlyRole,
       currently_company: currentlyCompany,
       out_of_office_text: outOfOfficeText,
-      previously_companies: outOfOfficeText,
+      previously_companies: previouslyCompanies,
       internships_description: internshipsDescription,
-      show_currently: true,
-      show_previously: true,
-      currently_label: "Currently",
-      previously_label: "Previously at",
+      show_currently: showCurrently,
+      show_previously: showPreviously,
+      currently_label: currentlyLabel,
+      previously_label: previouslyLabel,
       superpower_1: superpower1,
       superpower_1_desc: superpower1Desc,
       superpower_2: superpower2,
@@ -227,29 +242,10 @@ export function AboutForm({
             placeholder="Currently, I am a Software Engineer at XYZ. Before that…"
           />
           <p className="text-xs text-muted-foreground">
-            Full paragraph. Falls back to role + company below if left blank.
+            Full paragraph shown under &quot;Day job&quot; on the About page. If left
+            blank, falls back to the role + company from the &quot;Currently &amp;
+            Previously&quot; section above.
           </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="currently-role">Current role (fallback)</Label>
-            <Input
-              id="currently-role"
-              value={currentlyRole}
-              onChange={(e) => setCurrentlyRole(e.target.value)}
-              placeholder="Software Engineer"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="currently-company">Current company (fallback)</Label>
-            <Input
-              id="currently-company"
-              value={currentlyCompany}
-              onChange={(e) => setCurrentlyCompany(e.target.value)}
-              placeholder="Tech Company"
-            />
-          </div>
         </div>
 
         <div className="space-y-2">
@@ -259,7 +255,89 @@ export function AboutForm({
             value={outOfOfficeText}
             onChange={(e) => setOutOfOfficeText(e.target.value)}
             rows={3}
-            placeholder="When I&apos;m not building things, I love…"
+            placeholder="When I'm not building things, I love…"
+          />
+          <p className="text-xs text-muted-foreground">
+            Shown under &quot;Out of office&quot; on the About page.
+          </p>
+        </div>
+      </section>
+
+      {/* Currently & Previously — homepage */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Currently &amp; Previously</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Shown in the homepage hero below your heading. Also used as a
+            fallback for the About page &quot;Day job&quot; section.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="hp-currently-role">Current role</Label>
+            <Input
+              id="hp-currently-role"
+              value={currentlyRole}
+              onChange={(e) => setCurrentlyRole(e.target.value)}
+              placeholder="Software Engineer"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="hp-currently-company">Current company</Label>
+            <Input
+              id="hp-currently-company"
+              value={currentlyCompany}
+              onChange={(e) => setCurrentlyCompany(e.target.value)}
+              placeholder="Tech Company"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="hp-previously">Previously at</Label>
+          <Input
+            id="hp-previously"
+            value={previouslyCompanies}
+            onChange={(e) => setPreviouslyCompanies(e.target.value)}
+            placeholder="Startup Inc, Design Agency, Freelance"
+          />
+          <p className="text-xs text-muted-foreground">
+            Comma-separated list of past companies or a short phrase.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="hp-currently-label">Currently label</Label>
+            <Input
+              id="hp-currently-label"
+              value={currentlyLabel}
+              onChange={(e) => setCurrentlyLabel(e.target.value)}
+              placeholder="Currently"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="hp-previously-label">Previously label</Label>
+            <Input
+              id="hp-previously-label"
+              value={previouslyLabel}
+              onChange={(e) => setPreviouslyLabel(e.target.value)}
+              placeholder="Previously at"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <AdminToggle
+            checked={showCurrently}
+            onCheckedChange={setShowCurrently}
+            label="Show Currently section"
+          />
+          <AdminToggle
+            checked={showPreviously}
+            onCheckedChange={setShowPreviously}
+            label="Show Previously section"
           />
         </div>
       </section>
