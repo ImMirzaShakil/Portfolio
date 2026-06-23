@@ -1,4 +1,4 @@
-import { getGrainOpacityDecimal } from "@/lib/grain-texture";
+import { getGrainCssVars } from "@/lib/grain-texture";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function SiteTexture() {
@@ -9,18 +9,11 @@ export async function SiteTexture() {
     .limit(1)
     .maybeSingle();
 
-  const opacity = getGrainOpacityDecimal(settings);
-
   return (
     <div
       className="site-texture"
       aria-hidden="true"
-      style={
-        {
-          "--grain-opacity": opacity,
-          "--grain-opacity-dark": opacity * 0.8,
-        } as React.CSSProperties
-      }
+      style={getGrainCssVars(settings) as React.CSSProperties}
     />
   );
 }
