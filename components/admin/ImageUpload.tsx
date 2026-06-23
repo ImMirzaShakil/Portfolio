@@ -79,13 +79,22 @@ export function ImageUpload({
             previewClassName
           )}
         >
-          <Image
-            src={value}
-            alt="Uploaded preview"
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 400px"
-          />
+          {value.split("?")[0].toLowerCase().endsWith(".gif") ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={value}
+              alt="Uploaded preview"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <Image
+              src={value}
+              alt="Uploaded preview"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 400px"
+            />
+          )}
         </div>
       ) : null}
 
