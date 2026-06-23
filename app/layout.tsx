@@ -1,4 +1,5 @@
 import { Manrope } from "next/font/google";
+import { SiteTexture } from "@/components/layout/SiteTexture";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { getDefaultMetadata } from "@/lib/metadata";
@@ -22,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${manrope.variable} font-sans`}>
-        <div className="site-texture" aria-hidden="true" />
+        <SiteTexture />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

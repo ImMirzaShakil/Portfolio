@@ -15,6 +15,7 @@ export interface SiteSettingsPayload {
   hero_heading: string;
   nav_items: NavItem[];
   footer_tagline: string;
+  grain_opacity: number;
   greeting_text: string;
   fun_facts: string[];
 }
@@ -43,6 +44,10 @@ export async function saveSiteSettingsAction(
         logo_url_dark: payload.logo_url_dark,
         hero_heading: payload.hero_heading.trim() || null,
         footer_tagline: payload.footer_tagline.trim() || null,
+        grain_opacity: Math.min(
+          100,
+          Math.max(0, Math.round(payload.grain_opacity))
+        ),
         nav_items: payload.nav_items.map((item, index) => ({
           ...item,
           order_index: index,
