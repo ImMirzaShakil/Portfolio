@@ -135,9 +135,12 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    opacity: var(--grain-opacity, 0.2);
-    mix-blend-mode: overlay;
-    filter: contrast(var(--grain-contrast, 1.8));
+    /*
+     * multiply: grain PNG (gray) × light background = darker speckles.
+     * This is the only blend mode that reliably shows grain on light/cream backgrounds.
+     */
+    opacity: var(--grain-opacity, 0.55);
+    mix-blend-mode: multiply;
     background-image: url("/textures/grain.png");
     background-repeat: no-repeat;
     background-size: cover;
@@ -145,9 +148,11 @@
   }
 
   .dark .site-texture {
-    opacity: var(--grain-opacity-dark, calc(var(--grain-opacity, 0.2) * 0.88));
-    mix-blend-mode: overlay;
-    filter: contrast(var(--grain-contrast, 1.8));
+    /*
+     * screen: inverts the multiply math — grain shows as lighter speckles on dark backgrounds.
+     */
+    opacity: var(--grain-opacity, 0.55);
+    mix-blend-mode: screen;
   }
 
   .hero-heading-blur {
