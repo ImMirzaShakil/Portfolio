@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { getFunFacts, MAX_HERO_LINE_LENGTH } from "@/lib/homepage";
 import {
   DEFAULT_GRAIN_OPACITY,
-  getGrainCssVars,
   MAX_GRAIN_OPACITY,
   MIN_GRAIN_OPACITY,
 } from "@/lib/grain-texture";
@@ -389,11 +388,30 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
           className="relative overflow-hidden rounded-xl border border-border p-6"
           style={{ background: "var(--background)" }}
         >
-          <div
-            className="site-texture !absolute !inset-0 !h-full !w-full"
-            aria-hidden="true"
-            style={getGrainCssVars(null, grainOpacity) as React.CSSProperties}
-          />
+          {grainOpacity > 0 && (
+            <svg
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                pointerEvents: "none",
+                opacity: grainOpacity / 100,
+              }}
+            >
+              <filter id="grain-preview">
+                <feTurbulence
+                  type="fractalNoise"
+                  baseFrequency="0.65"
+                  numOctaves="3"
+                  stitchTiles="stitch"
+                />
+                <feColorMatrix type="saturate" values="0" />
+              </filter>
+              <rect width="100%" height="100%" filter="url(#grain-preview)" />
+            </svg>
+          )}
           <p className="relative text-sm text-muted-foreground">
             Preview at {grainOpacity}% — matches the live site after you save.
           </p>
