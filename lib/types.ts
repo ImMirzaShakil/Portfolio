@@ -123,4 +123,5 @@ export interface SiteSettings {
   nav_items: NavItem[] | null;
   footer_tagline: string | null;
   profile_image_url: string | null;
+  grain_opacity: number | null;
 }
