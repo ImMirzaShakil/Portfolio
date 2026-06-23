@@ -172,7 +172,7 @@ export function ProjectForm({
           >
             {statusOptions.map((option) => (
               <option key={option || "none"} value={option}>
-                {option || "No status"}
+                {option || "None (hide badge)"}
               </option>
             ))}
           </select>
