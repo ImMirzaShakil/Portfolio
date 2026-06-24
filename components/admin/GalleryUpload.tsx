@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
+import { prepareImageForUpload } from "@/lib/prepare-image-upload";
 import { cn } from "@/lib/utils";
 
 interface GalleryUploadProps {
@@ -35,8 +36,21 @@ export function GalleryUpload({
       const uploaded: string[] = [];
 
       for (const file of files) {
+        let uploadFile: File;
+
+        try {
+          uploadFile = await prepareImageForUpload(file);
+        } catch (conversionError) {
+          const message =
+            conversionError instanceof Error
+              ? conversionError.message
+              : "Could not process image.";
+          setError(message);
+          continue;
+        }
+
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", uploadFile);
         formData.append("bucket", bucket);
 
         const response = await fetch("/api/admin/upload", {
@@ -86,7 +100,8 @@ export function GalleryUpload({
       <p className="text-sm font-medium">{label}</p>
       <p className="text-xs text-muted-foreground">
         Upload photos for the gallery strip on the About page. Drag to reorder.
-        Recommended: 7 photos for the best mosaic layout.
+        Supports JPG, PNG, WebP, GIF, and iPhone HEIC (auto-converted to JPG).
+        Max 20 MB per image.
       </p>
 
       {value.length > 0 ? (
@@ -148,7 +163,7 @@ export function GalleryUpload({
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,.heic,.heif"
           multiple
           onChange={handleFileChange}
           className="sr-only"

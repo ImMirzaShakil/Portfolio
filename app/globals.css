@@ -253,10 +253,6 @@
     animation: gallery-scroll 30s linear infinite;
   }
 
-  .animate-gallery-scroll:hover {
-    animation-play-state: paused;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .animate-gallery-scroll {
       animation: none;

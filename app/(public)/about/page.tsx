@@ -129,57 +129,59 @@ export default async function AboutPage() {
   return (
     <div className="py-8 md:py-12">
       {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="flex flex-col gap-8 md:flex-row md:items-start md:gap-12 pb-12 md:pb-16">
+      <section className="flex flex-col gap-8 md:flex-row md:items-start md:gap-14 pb-12 md:pb-16">
         {about?.profile_image_url ? (
-          <div className="relative mx-auto shrink-0 overflow-hidden md:mx-0"
-            style={{ width: 260, height: 360 }}>
+          <div
+            className="relative mx-auto shrink-0 overflow-hidden md:mx-0"
+            style={{ width: 300, height: 416 }}
+          >
             <Image
               src={about.profile_image_url}
               alt={name ? `Photo of ${name}` : "Profile photo"}
               fill
               className="object-cover"
-              sizes="260px"
+              sizes="300px"
               priority
             />
           </div>
         ) : null}
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           <div>
-            <h1 className="font-hero text-5xl font-bold leading-tight md:text-6xl">
+            <h1 className="font-hero text-6xl font-bold leading-tight md:text-7xl">
               Hello,
             </h1>
-            <p className="font-sans text-5xl font-bold leading-tight text-muted-foreground md:text-6xl">
+            <p className="font-sans text-6xl font-bold leading-tight text-muted-foreground md:text-7xl">
               I&apos;m {name}
             </p>
           </div>
 
           {about?.pronunciation ? (
-            <p className="text-base text-muted-foreground">
+            <p className="text-lg text-muted-foreground">
               {about.pronunciation}
             </p>
           ) : null}
 
           {about?.intro_text ? (
-            <p className="max-w-xl text-base leading-relaxed">
+            <p className="max-w-xl text-lg leading-relaxed">
               {about.intro_text}
             </p>
           ) : null}
 
           {(dayJobText || outOfOfficeText) ? (
-            <div className="grid grid-cols-1 gap-6 border-t border-border pt-5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 border-t border-border pt-6 sm:grid-cols-2">
               {dayJobText ? (
                 <div>
-                  <p className="mb-2 text-sm font-semibold">Day job</p>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+                  <p className="mb-2 text-base font-semibold">Day job</p>
+                  <p className="text-base leading-relaxed text-muted-foreground">
                     {dayJobText}
                   </p>
                 </div>
               ) : null}
               {outOfOfficeText ? (
                 <div>
-                  <p className="mb-2 text-sm font-semibold">Out of office</p>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+                  <p className="mb-2 text-base font-semibold">Out of office</p>
+                  <p className="text-base leading-relaxed text-muted-foreground">
                     {outOfOfficeText}
                   </p>
                 </div>
@@ -197,7 +199,7 @@ export default async function AboutPage() {
                 aria-label="Twitter"
                 className="text-foreground/60 transition-colors hover:text-foreground"
               >
-                <XIcon className="size-5" />
+                <XIcon className="size-6" />
               </a>
             ) : null}
             {about?.linkedin_url && visibleLinks.includes("linkedin") ? (
@@ -208,7 +210,7 @@ export default async function AboutPage() {
                 aria-label="LinkedIn"
                 className="text-foreground/60 transition-colors hover:text-foreground"
               >
-                <LinkedInIcon className="size-5" />
+                <LinkedInIcon className="size-6" />
               </a>
             ) : null}
             {about?.github_url && visibleLinks.includes("github") ? (
@@ -219,7 +221,7 @@ export default async function AboutPage() {
                 aria-label="GitHub"
                 className="text-foreground/60 transition-colors hover:text-foreground"
               >
-                <GitHubIcon className="size-5" />
+                <GitHubIcon className="size-6" />
               </a>
             ) : null}
             {about?.email && visibleLinks.includes("email") ? (
@@ -228,7 +230,7 @@ export default async function AboutPage() {
                 aria-label="Email"
                 className="text-foreground/60 transition-colors hover:text-foreground"
               >
-                <Mail className="size-5" />
+                <Mail className="size-6" />
               </a>
             ) : null}
           </div>
