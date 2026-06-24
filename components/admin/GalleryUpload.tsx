@@ -5,6 +5,10 @@ import { useRef, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { prepareImageForUpload } from "@/lib/prepare-image-upload";
 import { cn } from "@/lib/utils";
+import {
+  UploadRequirementsHint,
+  UploadRequirementsText,
+} from "@/components/admin/UploadRequirementsHint";
 
 interface GalleryUploadProps {
   value: string[];
@@ -97,12 +101,16 @@ export function GalleryUpload({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium">{label}</p>
-      <p className="text-xs text-muted-foreground">
-        Upload photos for the gallery strip on the About page. Drag to reorder.
-        Supports JPG, PNG, WebP, GIF, and iPhone HEIC (auto-converted to JPG).
-        Max 20 MB per image.
-      </p>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium">{label}</p>
+          <UploadRequirementsHint kind="gallery" />
+        </div>
+        <UploadRequirementsText kind="gallery" />
+        <p className="text-xs text-muted-foreground">
+          Drag to reorder photos in the gallery strip on your About page.
+        </p>
+      </div>
 
       {value.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -189,6 +197,12 @@ export function GalleryUpload({
           </button>
         ) : null}
       </div>
+
+      {uploading ? (
+        <p className="text-xs text-muted-foreground">
+          Keep this tab open while your files upload.
+        </p>
+      ) : null}
 
       {error ? (
         <p className="text-sm text-destructive">{error}</p>

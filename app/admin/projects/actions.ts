@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { hashProjectPassword } from "@/lib/project-password";
 import type { ProjectStatus } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
@@ -24,6 +25,8 @@ export interface ProjectFormPayload {
   summary: string;
   cover_image_url: string | null;
   is_published: boolean;
+  is_password_protected: boolean;
+  password: string;
   order_index: number;
   sections: SectionFormPayload[];
 }
@@ -51,6 +54,31 @@ export async function saveProjectAction(
   }
 
   const admin = createAdminClient();
+
+  let passwordHash: string | null = null;
+
+  if (payload.is_password_protected) {
+    const password = payload.password.trim();
+
+    if (password) {
+      passwordHash = await hashProjectPassword(password);
+    } else if (payload.id) {
+      const { data: existing } = await admin
+        .from("projects")
+        .select("password_hash")
+        .eq("id", payload.id)
+        .maybeSingle();
+
+      passwordHash = existing?.password_hash ?? null;
+
+      if (!passwordHash) {
+        return { error: "Set a password when enabling protection." };
+      }
+    } else {
+      return { error: "Set a password when enabling protection." };
+    }
+  }
+
   const projectPayload = {
     ...(payload.id ? { id: payload.id } : {}),
     title: payload.title.trim(),
@@ -63,6 +91,8 @@ export async function saveProjectAction(
     summary: payload.summary.trim() || null,
     cover_image_url: payload.cover_image_url,
     is_published: payload.is_published,
+    is_password_protected: payload.is_password_protected,
+    password_hash: passwordHash,
     order_index: payload.order_index,
     updated_at: new Date().toISOString(),
   };

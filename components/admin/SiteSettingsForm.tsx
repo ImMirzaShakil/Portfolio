@@ -159,6 +159,7 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
           value={logoUrl}
           onChange={setLogoUrl}
           previewClassName="size-20 rounded-full"
+          requirementsKind="logo"
         />
         <p className="text-sm text-muted-foreground">
           Shown in the navbar on light backgrounds. Use a transparent PNG. Falls
@@ -170,6 +171,7 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
           value={logoUrlDark}
           onChange={setLogoUrlDark}
           previewClassName="size-20 rounded-full bg-[#1a1a1a]"
+          requirementsKind="logo"
         />
         <p className="text-sm text-muted-foreground">
           Optional white/light logo for dark mode. Falls back to the light logo

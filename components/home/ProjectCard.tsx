@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Lock } from "lucide-react";
 import type { Project } from "@/lib/types";
 
 interface ProjectCardProps {
@@ -51,9 +51,20 @@ export function ProjectCard({ project }: ProjectCardProps) {
       {/* Card body — no border, no box */}
       <div className="space-y-2 px-1 pt-4 pb-2">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-xl font-bold leading-tight text-foreground">
-            {project.title}
-          </h3>
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 className="text-xl font-bold leading-tight text-foreground">
+              {project.title}
+            </h3>
+            {project.is_password_protected ? (
+              <span
+                className="inline-flex shrink-0 items-center justify-center rounded-full border border-border p-1.5 text-muted-foreground"
+                aria-label="Password protected"
+                title="Password protected"
+              >
+                <Lock className="h-3 w-3" />
+              </span>
+            ) : null}
+          </div>
           {project.status ? (
             <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold text-foreground">
               {project.status}
