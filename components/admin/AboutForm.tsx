@@ -1,8 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { saveAboutAction } from "@/app/admin/about/actions";
+import {
+  saveAboutAction,
+  saveAboutSectionAction,
+  type AboutSectionId,
+} from "@/app/admin/about/actions";
+import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
 import { AdminToggle } from "@/components/admin/AdminToggle";
 import { ExperiencesManager } from "@/components/admin/ExperiencesManager";
 import { FeaturedInManager } from "@/components/admin/FeaturedInManager";
@@ -19,6 +24,20 @@ import {
   type SocialLinkKey,
 } from "@/lib/social-links";
 import type { AboutContent, Experience, FeaturedIn, Writing } from "@/lib/types";
+
+const SECTION_LABELS: Record<AboutSectionId, string> = {
+  profile: "Profile photo",
+  intro: "Intro",
+  "day-job": "Day job & out of office",
+  "currently-previously": "Currently & Previously",
+  superpowers: "My super powers",
+  gallery: "Photo gallery",
+  experience: "Experience, Internships & Education",
+  "internships-note": "Internships section note",
+  writing: "Writing",
+  "featured-in": "Featured in",
+  social: "Social links",
+};
 
 interface AboutFormProps {
   about?: AboutContent | null;
@@ -111,24 +130,15 @@ export function AboutForm({
     internship: about?.show_internships !== false,
     education: about?.show_education !== false,
   });
-  const [saving, setSaving] = useState(false);
+  const [aboutId, setAboutId] = useState(about?.id);
+  const [savingSection, setSavingSection] = useState<AboutSectionId | "all" | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
 
-  const toggleSocialLink = (key: SocialLinkKey, checked: boolean) => {
-    setVisibleSocialLinks((current) =>
-      checked
-        ? current.includes(key) ? current : [...current, key]
-        : current.filter((item) => item !== key)
-    );
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSaving(true);
-    setError(null);
-
-    const result = await saveAboutAction({
-      id: about?.id,
+  const buildPayload = useCallback(
+    () => ({
+      id: aboutId,
       profile_image_url: profileImageUrl,
       gallery_images: galleryImages,
       pronunciation,
@@ -164,54 +174,123 @@ export function AboutForm({
       featured_in: featuredIn,
       experiences,
       writings,
-    });
+    }),
+    [
+      aboutId,
+      profileImageUrl,
+      galleryImages,
+      pronunciation,
+      introText,
+      dayJobDescription,
+      currentlyRole,
+      currentlyCompany,
+      outOfOfficeText,
+      previouslyCompanies,
+      internshipsDescription,
+      showCurrently,
+      showPreviously,
+      currentlyLabel,
+      previouslyLabel,
+      superpower1,
+      superpower1Desc,
+      superpower2,
+      superpower2Desc,
+      superpower3,
+      superpower3Desc,
+      superpower4,
+      superpower4Desc,
+      twitterUrl,
+      linkedinUrl,
+      githubUrl,
+      email,
+      visibleSocialLinks,
+      experienceSectionVisibility,
+      showWriting,
+      showFeaturedIn,
+      featuredIn,
+      experiences,
+      writings,
+    ]
+  );
 
-    setSaving(false);
+  const saveSection = async (section: AboutSectionId) => {
+    setSavingSection(section);
+    setError(null);
+
+    const result = await saveAboutSectionAction(section, buildPayload());
+
+    setSavingSection(null);
 
     if (result.error) {
       setError(result.error);
       return;
     }
 
+    if (result.aboutId) {
+      setAboutId(result.aboutId);
+    }
+
+    toast.success(`${SECTION_LABELS[section]} saved.`);
+  };
+
+  const handleSaveAll = async () => {
+    setSavingSection("all");
+    setError(null);
+
+    const result = await saveAboutAction(buildPayload());
+
+    setSavingSection(null);
+
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+
+    if (result.aboutId) {
+      setAboutId(result.aboutId);
+    }
+
     toast.success("About page saved.");
   };
 
+  const toggleSocialLink = (key: SocialLinkKey, checked: boolean) => {
+    setVisibleSocialLinks((current) =>
+      checked
+        ? current.includes(key) ? current : [...current, key]
+        : current.filter((item) => item !== key)
+    );
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl space-y-8">
-      <div>
+    <div className="max-w-3xl space-y-4">
+      <div className="pb-2">
         <h1 className="text-3xl font-bold">Edit About</h1>
         <p className="mt-2 text-muted-foreground">
-          Manage your About page — profile, intro, superpowers, gallery,
-          experience, writings, and more.
+          Manage your About page — expand a section to edit it.
         </p>
       </div>
 
-      {/* Profile photo */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Profile photo</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Large portrait photo shown at the top of your About page. Separate
-            from the homepage profile photo (managed in Site Settings).
-          </p>
-        </div>
+      <AdminCollapsibleSection
+        title="Profile photo"
+        description="Large portrait photo shown at the top of your About page. Separate from the homepage profile photo (managed in Site Settings)."
+        defaultOpen
+        onSave={() => saveSection("profile")}
+        saving={savingSection === "profile"}
+      >
         <ImageUpload
           label="About page profile photo"
           value={profileImageUrl}
           onChange={setProfileImageUrl}
           previewClassName="w-48 aspect-[3/4]"
         />
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Intro */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Intro</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Shown beside your photo at the top of the About page.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="Intro"
+        description="Shown beside your photo at the top of the About page."
+        onSave={() => saveSection("intro")}
+        saving={savingSection === "intro"}
+      >
         <div className="space-y-2">
           <Label htmlFor="pronunciation">Pronunciation guide</Label>
           <Input
@@ -235,17 +314,14 @@ export function AboutForm({
             placeholder="I&apos;m a software engineer who…"
           />
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Day job & out of office */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Day job &amp; out of office</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Shown in two columns beside your intro.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="Day job & out of office"
+        description="Shown in two columns beside your intro."
+        onSave={() => saveSection("day-job")}
+        saving={savingSection === "day-job"}
+      >
         <div className="space-y-2">
           <Label htmlFor="day-job-description">Day job paragraph</Label>
           <Textarea
@@ -258,7 +334,7 @@ export function AboutForm({
           <p className="text-xs text-muted-foreground">
             Full paragraph shown under &quot;Day job&quot; on the About page. If left
             blank, falls back to the role + company from the &quot;Currently &amp;
-            Previously&quot; section above.
+            Previously&quot; section.
           </p>
         </div>
 
@@ -275,18 +351,14 @@ export function AboutForm({
             Shown under &quot;Out of office&quot; on the About page.
           </p>
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Currently & Previously — homepage */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Currently &amp; Previously</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Shown in the homepage hero below your heading. Also used as a
-            fallback for the About page &quot;Day job&quot; section.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="Currently & Previously"
+        description="Shown in the homepage hero below your heading. Also used as a fallback for the About page Day job section."
+        onSave={() => saveSection("currently-previously")}
+        saving={savingSection === "currently-previously"}
+      >
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="hp-currently-role">Current role</Label>
@@ -354,24 +426,21 @@ export function AboutForm({
             label="Show Previously section"
           />
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Superpowers */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">My super powers</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Up to 4 skills shown in a 2×2 grid on the About page.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="My super powers"
+        description="Up to 4 skills shown in a 2×2 grid on the About page."
+        onSave={() => saveSection("superpowers")}
+        saving={savingSection === "superpowers"}
+      >
         {[
           { n: 1, title: superpower1, desc: superpower1Desc, setTitle: setSuperpower1, setDesc: setSuperpower1Desc },
           { n: 2, title: superpower2, desc: superpower2Desc, setTitle: setSuperpower2, setDesc: setSuperpower2Desc },
           { n: 3, title: superpower3, desc: superpower3Desc, setTitle: setSuperpower3, setDesc: setSuperpower3Desc },
           { n: 4, title: superpower4, desc: superpower4Desc, setTitle: setSuperpower4, setDesc: setSuperpower4Desc },
         ].map(({ n, title, desc, setTitle, setDesc }) => (
-          <div key={n} className="rounded-xl border border-border p-4 space-y-3">
+          <div key={n} className="space-y-3 rounded-xl border border-border p-4">
             <p className="text-sm font-semibold text-muted-foreground">
               Superpower {n}
             </p>
@@ -396,31 +465,27 @@ export function AboutForm({
             </div>
           </div>
         ))}
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Gallery */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Photo gallery</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Auto-scrolling horizontal photo strip shown after your superpowers.
-          </p>
-        </div>
+      <AdminCollapsibleSection
+        title="Photo gallery"
+        description="Auto-scrolling horizontal photo strip shown after your superpowers."
+        onSave={() => saveSection("gallery")}
+        saving={savingSection === "gallery"}
+      >
         <GalleryUpload
           value={galleryImages}
           onChange={setGalleryImages}
           label="Gallery photos"
         />
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Experience, Internships, Education */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Experience, Internships &amp; Education</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage all timeline entries shown on your About page.
-          </p>
-        </div>
+      <AdminCollapsibleSection
+        title="Experience, Internships & Education"
+        description="Manage all timeline entries shown on your About page."
+        onSave={() => saveSection("experience")}
+        saving={savingSection === "experience"}
+      >
         <ExperiencesManager
           value={experiences}
           onChange={setExperiences}
@@ -432,16 +497,14 @@ export function AboutForm({
             }));
           }}
         />
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Internships section description */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Internships section note</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Optional sub-text shown next to the Internships heading.
-          </p>
-        </div>
+      <AdminCollapsibleSection
+        title="Internships section note"
+        description="Optional sub-text shown next to the Internships heading."
+        onSave={() => saveSection("internships-note")}
+        saving={savingSection === "internships-note"}
+      >
         <div className="space-y-2">
           <Label htmlFor="internships-desc">Note</Label>
           <Textarea
@@ -452,49 +515,46 @@ export function AboutForm({
             placeholder="I completed these internships as part of…"
           />
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Writings */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-xl font-bold">Writing</h2>
+      <AdminCollapsibleSection
+        title="Writing"
+        description="Articles, blog posts, and other writing you've published."
+        onSave={() => saveSection("writing")}
+        saving={savingSection === "writing"}
+        headerExtra={
           <AdminToggle
             checked={showWriting}
             onCheckedChange={setShowWriting}
             label="Section"
           />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Articles, blog posts, and other writing you&apos;ve published.
-        </p>
+        }
+      >
         <WritingsManager value={writings} onChange={setWritings} />
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Featured In */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-xl font-bold">Featured in</h2>
+      <AdminCollapsibleSection
+        title="Featured in"
+        description="Talks, podcasts, and articles that have featured you."
+        onSave={() => saveSection("featured-in")}
+        saving={savingSection === "featured-in"}
+        headerExtra={
           <AdminToggle
             checked={showFeaturedIn}
             onCheckedChange={setShowFeaturedIn}
             label="Section"
           />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Talks, podcasts, and articles that have featured you.
-        </p>
+        }
+      >
         <FeaturedInManager value={featuredIn} onChange={setFeaturedIn} />
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Social links */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Social links</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Add URLs and choose which icons appear on the About page.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="Social links"
+        description="Add URLs and choose which icons appear on the About page."
+        onSave={() => saveSection("social")}
+        saving={savingSection === "social"}
+      >
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="twitter-url">Twitter / X URL</Label>
@@ -547,7 +607,7 @@ export function AboutForm({
             />
           ))}
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
       {error ? (
         <p className="text-sm text-destructive" role="alert">
@@ -555,9 +615,13 @@ export function AboutForm({
         </p>
       ) : null}
 
-      <Button type="submit" disabled={saving}>
-        {saving ? "Saving…" : "Save About page"}
+      <Button
+        type="button"
+        onClick={handleSaveAll}
+        disabled={savingSection !== null}
+      >
+        {savingSection === "all" ? "Saving…" : "Save entire About page"}
       </Button>
-    </form>
+    </div>
   );
 }
