@@ -3,7 +3,27 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Experience, FeaturedIn, Writing } from "@/lib/types";
-import { revalidatePath } from "next/cache";
+import {
+  ensureAboutId,
+  revalidateAboutPaths,
+  saveExperiences,
+  saveFeaturedIn,
+  saveWritings,
+  updateAboutContent,
+} from "@/lib/about-save-helpers";
+
+export type AboutSectionId =
+  | "profile"
+  | "intro"
+  | "day-job"
+  | "currently-previously"
+  | "superpowers"
+  | "gallery"
+  | "experience"
+  | "internships-note"
+  | "writing"
+  | "featured-in"
+  | "social";
 
 export interface AboutFormPayload {
   id?: string;
@@ -44,137 +64,187 @@ export interface AboutFormPayload {
   writings: Writing[];
 }
 
-const DUMMY_UUID = "00000000-0000-0000-0000-000000000000";
-
-export async function saveAboutAction(
-  payload: AboutFormPayload
-): Promise<{ error: string | null }> {
+async function requireAdminUser() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: "You must be logged in to save about content." };
+    throw new Error("You must be logged in to save about content.");
+  }
+}
+
+export async function saveAboutSectionAction(
+  section: AboutSectionId,
+  payload: AboutFormPayload
+): Promise<{ error: string | null; aboutId?: string }> {
+  try {
+    await requireAdminUser();
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Unauthorized",
+    };
   }
 
   const admin = createAdminClient();
 
-  // ── about_content ────────────────────────────────────────────────
-  const { error: aboutError } = await admin.from("about_content").upsert({
-    ...(payload.id ? { id: payload.id } : {}),
-    profile_image_url: payload.profile_image_url,
-    gallery_images: payload.gallery_images,
-    pronunciation: payload.pronunciation.trim() || null,
-    intro_text: payload.intro_text.trim() || null,
-    day_job_description: payload.day_job_description.trim() || null,
-    currently_role: payload.currently_role.trim() || null,
-    currently_company: payload.currently_company.trim() || null,
-    out_of_office_text: payload.out_of_office_text.trim() || null,
-    previously_companies: payload.previously_companies.trim() || null,
-    internships_description: payload.internships_description.trim() || null,
-    show_currently: payload.show_currently,
-    show_previously: payload.show_previously,
-    currently_label: payload.currently_label || "Currently",
-    previously_label: payload.previously_label || "Previously at",
-    visible_social_links: payload.visible_social_links,
-    superpower_1: payload.superpower_1.trim() || null,
-    superpower_1_desc: payload.superpower_1_desc.trim() || null,
-    superpower_2: payload.superpower_2.trim() || null,
-    superpower_2_desc: payload.superpower_2_desc.trim() || null,
-    superpower_3: payload.superpower_3.trim() || null,
-    superpower_3_desc: payload.superpower_3_desc.trim() || null,
-    superpower_4: payload.superpower_4.trim() || null,
-    superpower_4_desc: payload.superpower_4_desc.trim() || null,
-    twitter_url: payload.twitter_url.trim() || null,
-    linkedin_url: payload.linkedin_url.trim() || null,
-    github_url: payload.github_url.trim() || null,
-    email: payload.email.trim() || null,
-    show_experience: payload.show_experience,
-    show_internships: payload.show_internships,
-    show_education: payload.show_education,
-    show_writing: payload.show_writing,
-    show_featured_in: payload.show_featured_in,
-    updated_at: new Date().toISOString(),
-  });
-  if (aboutError) return { error: aboutError.message };
+  try {
+    const aboutId = await ensureAboutId(admin, payload.id);
 
-  // ── featured_in ──────────────────────────────────────────────────
-  const { error: fDelErr } = await admin
-    .from("featured_in")
-    .delete()
-    .neq("id", DUMMY_UUID);
-  if (fDelErr) return { error: fDelErr.message };
+    switch (section) {
+      case "profile":
+        await updateAboutContent(admin, aboutId, {
+          profile_image_url: payload.profile_image_url,
+        });
+        break;
+      case "intro":
+        await updateAboutContent(admin, aboutId, {
+          pronunciation: payload.pronunciation.trim() || null,
+          intro_text: payload.intro_text.trim() || null,
+        });
+        break;
+      case "day-job":
+        await updateAboutContent(admin, aboutId, {
+          day_job_description: payload.day_job_description.trim() || null,
+          out_of_office_text: payload.out_of_office_text.trim() || null,
+        });
+        break;
+      case "currently-previously":
+        await updateAboutContent(admin, aboutId, {
+          currently_role: payload.currently_role.trim() || null,
+          currently_company: payload.currently_company.trim() || null,
+          previously_companies: payload.previously_companies.trim() || null,
+          show_currently: payload.show_currently,
+          show_previously: payload.show_previously,
+          currently_label: payload.currently_label || "Currently",
+          previously_label: payload.previously_label || "Previously at",
+        });
+        break;
+      case "superpowers":
+        await updateAboutContent(admin, aboutId, {
+          superpower_1: payload.superpower_1.trim() || null,
+          superpower_1_desc: payload.superpower_1_desc.trim() || null,
+          superpower_2: payload.superpower_2.trim() || null,
+          superpower_2_desc: payload.superpower_2_desc.trim() || null,
+          superpower_3: payload.superpower_3.trim() || null,
+          superpower_3_desc: payload.superpower_3_desc.trim() || null,
+          superpower_4: payload.superpower_4.trim() || null,
+          superpower_4_desc: payload.superpower_4_desc.trim() || null,
+        });
+        break;
+      case "gallery":
+        await updateAboutContent(admin, aboutId, {
+          gallery_images: payload.gallery_images,
+        });
+        break;
+      case "experience":
+        await updateAboutContent(admin, aboutId, {
+          show_experience: payload.show_experience,
+          show_internships: payload.show_internships,
+          show_education: payload.show_education,
+        });
+        await saveExperiences(admin, payload.experiences);
+        break;
+      case "internships-note":
+        await updateAboutContent(admin, aboutId, {
+          internships_description: payload.internships_description.trim() || null,
+        });
+        break;
+      case "writing":
+        await updateAboutContent(admin, aboutId, {
+          show_writing: payload.show_writing,
+        });
+        await saveWritings(admin, payload.writings);
+        break;
+      case "featured-in":
+        await updateAboutContent(admin, aboutId, {
+          show_featured_in: payload.show_featured_in,
+        });
+        await saveFeaturedIn(admin, payload.featured_in);
+        break;
+      case "social":
+        await updateAboutContent(admin, aboutId, {
+          twitter_url: payload.twitter_url.trim() || null,
+          linkedin_url: payload.linkedin_url.trim() || null,
+          github_url: payload.github_url.trim() || null,
+          email: payload.email.trim() || null,
+          visible_social_links: payload.visible_social_links,
+        });
+        break;
+      default:
+        return { error: "Unknown section." };
+    }
 
-  const featuredRows = payload.featured_in
-    .filter((i) => i.title.trim() && i.year.trim())
-    .map((i, idx) => ({
-      id: i.id,
-      year: i.year.trim(),
-      title: i.title.trim(),
-      url: i.url?.trim() || null,
-      publication: i.publication?.trim() || null,
-      content_type: i.content_type?.trim() || null,
-      is_visible: i.is_visible !== false,
-      order_index: idx,
-    }));
-  if (featuredRows.length > 0) {
-    const { error } = await admin.from("featured_in").insert(featuredRows);
-    if (error) return { error: error.message };
+    revalidateAboutPaths();
+    return { error: null, aboutId };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to save section.",
+    };
+  }
+}
+
+export async function saveAboutAction(
+  payload: AboutFormPayload
+): Promise<{ error: string | null; aboutId?: string }> {
+  try {
+    await requireAdminUser();
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Unauthorized",
+    };
   }
 
-  // ── experiences ──────────────────────────────────────────────────
-  const { error: expDelErr } = await admin
-    .from("experiences")
-    .delete()
-    .neq("id", DUMMY_UUID);
-  if (expDelErr) return { error: expDelErr.message };
+  const admin = createAdminClient();
 
-  const expRows = payload.experiences
-    .filter((e) => e.organization.trim() && e.role.trim())
-    .map((e, idx) => ({
-      id: e.id,
-      year_range: e.year_range.trim(),
-      organization: e.organization.trim(),
-      role: e.role.trim(),
-      description: e.description?.trim() || null,
-      type: e.type,
-      is_visible: e.is_visible !== false,
-      order_index: idx,
-    }));
-  if (expRows.length > 0) {
-    const { error } = await admin.from("experiences").insert(expRows);
-    if (error) return { error: error.message };
+  try {
+    const aboutId = await ensureAboutId(admin, payload.id);
+
+    await updateAboutContent(admin, aboutId, {
+      profile_image_url: payload.profile_image_url,
+      gallery_images: payload.gallery_images,
+      pronunciation: payload.pronunciation.trim() || null,
+      intro_text: payload.intro_text.trim() || null,
+      day_job_description: payload.day_job_description.trim() || null,
+      currently_role: payload.currently_role.trim() || null,
+      currently_company: payload.currently_company.trim() || null,
+      out_of_office_text: payload.out_of_office_text.trim() || null,
+      previously_companies: payload.previously_companies.trim() || null,
+      internships_description: payload.internships_description.trim() || null,
+      show_currently: payload.show_currently,
+      show_previously: payload.show_previously,
+      currently_label: payload.currently_label || "Currently",
+      previously_label: payload.previously_label || "Previously at",
+      visible_social_links: payload.visible_social_links,
+      superpower_1: payload.superpower_1.trim() || null,
+      superpower_1_desc: payload.superpower_1_desc.trim() || null,
+      superpower_2: payload.superpower_2.trim() || null,
+      superpower_2_desc: payload.superpower_2_desc.trim() || null,
+      superpower_3: payload.superpower_3.trim() || null,
+      superpower_3_desc: payload.superpower_3_desc.trim() || null,
+      superpower_4: payload.superpower_4.trim() || null,
+      superpower_4_desc: payload.superpower_4_desc.trim() || null,
+      twitter_url: payload.twitter_url.trim() || null,
+      linkedin_url: payload.linkedin_url.trim() || null,
+      github_url: payload.github_url.trim() || null,
+      email: payload.email.trim() || null,
+      show_experience: payload.show_experience,
+      show_internships: payload.show_internships,
+      show_education: payload.show_education,
+      show_writing: payload.show_writing,
+      show_featured_in: payload.show_featured_in,
+    });
+
+    await saveFeaturedIn(admin, payload.featured_in);
+    await saveExperiences(admin, payload.experiences);
+    await saveWritings(admin, payload.writings);
+
+    revalidateAboutPaths();
+    return { error: null, aboutId };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to save about page.",
+    };
   }
-
-  // ── writings ─────────────────────────────────────────────────────
-  const { error: wrDelErr } = await admin
-    .from("writings")
-    .delete()
-    .neq("id", DUMMY_UUID);
-  if (wrDelErr) return { error: wrDelErr.message };
-
-  const wrRows = payload.writings
-    .filter((w) => w.title.trim())
-    .map((w, idx) => ({
-      id: w.id,
-      title: w.title.trim(),
-      url: w.url?.trim() || "",
-      publication: w.publication?.trim() || null,
-      year: w.year?.trim() || null,
-      description: w.description?.trim() || null,
-      is_visible: w.is_visible !== false,
-      order_index: idx,
-    }));
-  if (wrRows.length > 0) {
-    const { error } = await admin.from("writings").insert(wrRows);
-    if (error) return { error: error.message };
-  }
-
-  revalidatePath("/", "layout");
-  revalidatePath("/");
-  revalidatePath("/about");
-  revalidatePath("/admin/about");
-
-  return { error: null };
 }
