@@ -41,7 +41,8 @@ export interface AboutFormPayload {
   show_previously: boolean;
   currently_label: string;
   previously_label: string;
-  visible_social_links: string[];
+  visible_social_links_hero: string[];
+  visible_social_links_footer: string[];
   superpower_1: string;
   superpower_1_desc: string;
   superpower_2: string;
@@ -53,6 +54,8 @@ export interface AboutFormPayload {
   twitter_url: string;
   linkedin_url: string;
   github_url: string;
+  facebook_url: string;
+  instagram_url: string;
   email: string;
   show_experience: boolean;
   show_internships: boolean;
@@ -168,8 +171,11 @@ export async function saveAboutSectionAction(
           twitter_url: payload.twitter_url.trim() || null,
           linkedin_url: payload.linkedin_url.trim() || null,
           github_url: payload.github_url.trim() || null,
+          facebook_url: payload.facebook_url.trim() || null,
+          instagram_url: payload.instagram_url.trim() || null,
           email: payload.email.trim() || null,
-          visible_social_links: payload.visible_social_links,
+          visible_social_links_hero: payload.visible_social_links_hero,
+          visible_social_links_footer: payload.visible_social_links_footer,
         });
         break;
       default:
@@ -216,7 +222,6 @@ export async function saveAboutAction(
       show_previously: payload.show_previously,
       currently_label: payload.currently_label || "Currently",
       previously_label: payload.previously_label || "Previously at",
-      visible_social_links: payload.visible_social_links,
       superpower_1: payload.superpower_1.trim() || null,
       superpower_1_desc: payload.superpower_1_desc.trim() || null,
       superpower_2: payload.superpower_2.trim() || null,
@@ -228,7 +233,11 @@ export async function saveAboutAction(
       twitter_url: payload.twitter_url.trim() || null,
       linkedin_url: payload.linkedin_url.trim() || null,
       github_url: payload.github_url.trim() || null,
+      facebook_url: payload.facebook_url.trim() || null,
+      instagram_url: payload.instagram_url.trim() || null,
       email: payload.email.trim() || null,
+      visible_social_links_hero: payload.visible_social_links_hero,
+      visible_social_links_footer: payload.visible_social_links_footer,
       show_experience: payload.show_experience,
       show_internships: payload.show_internships,
       show_education: payload.show_education,

@@ -56,6 +56,8 @@ export interface AboutContent {
   currently_label: string | null;
   previously_label: string | null;
   visible_social_links: string[] | null;
+  visible_social_links_hero: string[] | null;
+  visible_social_links_footer: string[] | null;
   superpower_1: string | null;
   superpower_1_desc: string | null;
   superpower_2: string | null;
@@ -75,6 +77,8 @@ export interface AboutContent {
   twitter_url: string | null;
   linkedin_url: string | null;
   github_url: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
   email: string | null;
   updated_at: string;
 }
