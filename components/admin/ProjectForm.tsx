@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { PasswordField } from "@/components/admin/PasswordField";
 import {
   SectionBuilder,
   type SectionFormItem,
@@ -28,6 +29,7 @@ const statusOptions: Array<ProjectStatus | ""> = [
 interface ProjectFormProps {
   project?: Project | null;
   sections?: ProjectSection[];
+  initialPassword?: string;
 }
 
 function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
@@ -43,6 +45,7 @@ function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
 export function ProjectForm({
   project,
   sections = [],
+  initialPassword = "",
 }: ProjectFormProps) {
   const router = useRouter();
   const isEditing = Boolean(project?.id);
@@ -63,7 +66,7 @@ export function ProjectForm({
   const [isPasswordProtected, setIsPasswordProtected] = useState(
     project?.is_password_protected ?? false
   );
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(initialPassword);
   const [orderIndex, setOrderIndex] = useState(
     project?.order_index?.toString() ?? "0"
   );
@@ -88,7 +91,7 @@ export function ProjectForm({
 
     const parsedOrderIndex = Number.parseInt(orderIndex, 10);
 
-    if (isPasswordProtected && !password.trim() && !project?.is_password_protected) {
+    if (isPasswordProtected && !password.trim() && !initialPassword) {
       setSaving(false);
       setError("Set a password when enabling protection.");
       return;
@@ -276,18 +279,15 @@ export function ProjectForm({
           {isPasswordProtected ? (
             <div className="space-y-2">
               <Label htmlFor="project-password">Password</Label>
-              <Input
+              <PasswordField
                 id="project-password"
-                type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder={
-                  project?.is_password_protected
-                    ? "Leave blank to keep current password"
-                    : "Set a password"
-                }
-                autoComplete="new-password"
+                onChange={setPassword}
+                placeholder="Set a password"
               />
+              <p className="text-xs text-muted-foreground">
+                Use the eye icon to show or hide, and copy to share with clients.
+              </p>
             </div>
           ) : null}
         </div>

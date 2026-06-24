@@ -8,6 +8,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { getFunFacts, MAX_HERO_LINE_LENGTH } from "@/lib/homepage";
 import {
   DEFAULT_GRAIN_OPACITY,
@@ -15,7 +16,7 @@ import {
   MIN_GRAIN_OPACITY,
 } from "@/lib/grain-texture";
 import { DEFAULT_NAV_ITEMS } from "@/lib/navigation";
-import type { AboutContent, NavItem, SiteSettings } from "@/lib/types";
+import type { AboutContent, CustomScript, NavItem, SiteSettings } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface SiteSettingsFormProps {
@@ -55,6 +56,18 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
   );
   const [grainOpacity, setGrainOpacity] = useState(
     settings?.grain_opacity ?? DEFAULT_GRAIN_OPACITY
+  );
+  const [googleAnalyticsSnippet, setGoogleAnalyticsSnippet] = useState(
+    settings?.google_analytics_snippet ?? ""
+  );
+  const [metaPixelSnippet, setMetaPixelSnippet] = useState(
+    settings?.meta_pixel_snippet ?? ""
+  );
+  const [hotjarSnippet, setHotjarSnippet] = useState(
+    settings?.hotjar_snippet ?? ""
+  );
+  const [customScripts, setCustomScripts] = useState<CustomScript[]>(
+    settings?.custom_scripts ?? []
   );
   const [greetingText, setGreetingText] = useState(
     about?.greeting_text ?? "Nice to meet you!"
@@ -100,6 +113,10 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
       nav_items: navItems.filter((item) => item.label.trim() && item.href.trim()),
       footer_tagline: footerTagline,
       grain_opacity: grainOpacity,
+      google_analytics_snippet: googleAnalyticsSnippet,
+      meta_pixel_snippet: metaPixelSnippet,
+      hotjar_snippet: hotjarSnippet,
+      custom_scripts: customScripts,
       greeting_text: greetingText,
       fun_facts: funFacts,
     });
@@ -417,6 +434,132 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
           <p className="relative text-sm text-muted-foreground">
             Preview at {grainOpacity}% — matches the live site after you save.
           </p>
+        </div>
+      </section>
+
+      {/* Analytics & tracking */}
+      <section className="space-y-4 rounded-2xl border border-border p-6">
+        <div>
+          <h2 className="text-xl font-bold">Analytics &amp; tracking</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Paste tracking snippets from Google Analytics, Meta Pixel, Hotjar, or
+            other tools. These run on every public page to measure traffic and
+            behavior — they do not directly affect SEO, but help you understand
+            visitors.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="google-analytics-snippet">Google Analytics snippet</Label>
+          <Textarea
+            id="google-analytics-snippet"
+            value={googleAnalyticsSnippet}
+            onChange={(e) => setGoogleAnalyticsSnippet(e.target.value)}
+            rows={5}
+            placeholder="Paste your Google Analytics / gtag.js code here…"
+            className="font-mono text-xs"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="meta-pixel-snippet">Meta Pixel snippet</Label>
+          <Textarea
+            id="meta-pixel-snippet"
+            value={metaPixelSnippet}
+            onChange={(e) => setMetaPixelSnippet(e.target.value)}
+            rows={5}
+            placeholder="Paste your Meta (Facebook) Pixel code here…"
+            className="font-mono text-xs"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="hotjar-snippet">Hotjar snippet</Label>
+          <Textarea
+            id="hotjar-snippet"
+            value={hotjarSnippet}
+            onChange={(e) => setHotjarSnippet(e.target.value)}
+            rows={5}
+            placeholder="Paste your Hotjar tracking code here…"
+            className="font-mono text-xs"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <Label>Custom scripts</Label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setCustomScripts((current) => [
+                  ...current,
+                  {
+                    id: crypto.randomUUID(),
+                    label: `Snippet #${current.length + 1}`,
+                    code: "",
+                  },
+                ])
+              }
+            >
+              + Add snippet
+            </Button>
+          </div>
+
+          {customScripts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No custom scripts yet. Use the button above to add more tracking
+              or embed codes.
+            </p>
+          ) : (
+            customScripts.map((script, index) => (
+              <div
+                key={script.id}
+                className="space-y-2 rounded-xl border border-border p-4"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <Input
+                    value={script.label}
+                    onChange={(e) =>
+                      setCustomScripts((current) =>
+                        current.map((item, i) =>
+                          i === index ? { ...item, label: e.target.value } : item
+                        )
+                      )
+                    }
+                    placeholder={`Snippet #${index + 1}`}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() =>
+                      setCustomScripts((current) =>
+                        current.filter((_, i) => i !== index)
+                      )
+                    }
+                  >
+                    Remove
+                  </Button>
+                </div>
+                <Textarea
+                  value={script.code}
+                  onChange={(e) =>
+                    setCustomScripts((current) =>
+                      current.map((item, i) =>
+                        i === index ? { ...item, code: e.target.value } : item
+                      )
+                    )
+                  }
+                  rows={5}
+                  placeholder="Paste your code here…"
+                  className="font-mono text-xs"
+                />
+              </div>
+            ))
+          )}
         </div>
       </section>
 

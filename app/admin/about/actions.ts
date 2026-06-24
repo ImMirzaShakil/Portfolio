@@ -34,6 +34,11 @@ export interface AboutFormPayload {
   linkedin_url: string;
   github_url: string;
   email: string;
+  show_experience: boolean;
+  show_internships: boolean;
+  show_education: boolean;
+  show_writing: boolean;
+  show_featured_in: boolean;
   featured_in: FeaturedIn[];
   experiences: Experience[];
   writings: Writing[];
@@ -85,6 +90,11 @@ export async function saveAboutAction(
     linkedin_url: payload.linkedin_url.trim() || null,
     github_url: payload.github_url.trim() || null,
     email: payload.email.trim() || null,
+    show_experience: payload.show_experience,
+    show_internships: payload.show_internships,
+    show_education: payload.show_education,
+    show_writing: payload.show_writing,
+    show_featured_in: payload.show_featured_in,
     updated_at: new Date().toISOString(),
   });
   if (aboutError) return { error: aboutError.message };
@@ -105,6 +115,7 @@ export async function saveAboutAction(
       url: i.url?.trim() || null,
       publication: i.publication?.trim() || null,
       content_type: i.content_type?.trim() || null,
+      is_visible: i.is_visible !== false,
       order_index: idx,
     }));
   if (featuredRows.length > 0) {
@@ -128,6 +139,7 @@ export async function saveAboutAction(
       role: e.role.trim(),
       description: e.description?.trim() || null,
       type: e.type,
+      is_visible: e.is_visible !== false,
       order_index: idx,
     }));
   if (expRows.length > 0) {
@@ -151,6 +163,7 @@ export async function saveAboutAction(
       publication: w.publication?.trim() || null,
       year: w.year?.trim() || null,
       description: w.description?.trim() || null,
+      is_visible: w.is_visible !== false,
       order_index: idx,
     }));
   if (wrRows.length > 0) {

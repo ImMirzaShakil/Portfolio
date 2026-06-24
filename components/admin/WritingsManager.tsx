@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminToggle } from "@/components/admin/AdminToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,7 @@ function createWriting(): Writing {
     year: "",
     description: null,
     order_index: 0,
+    is_visible: true,
   };
 }
 
@@ -27,11 +29,19 @@ export function WritingsManager({ value, onChange }: WritingsManagerProps) {
   const updateItem = (
     id: string,
     field: keyof Omit<Writing, "id" | "order_index">,
-    val: string
+    val: string | boolean
   ) => {
     onChange(
       value.map((item) =>
-        item.id === id ? { ...item, [field]: val || null } : item
+        item.id === id
+          ? {
+              ...item,
+              [field]:
+                typeof val === "boolean"
+                  ? val
+                  : val || (field === "description" ? null : ""),
+            }
+          : item
       )
     );
   };
@@ -61,6 +71,15 @@ export function WritingsManager({ value, onChange }: WritingsManagerProps) {
             key={item.id}
             className="rounded-xl border border-border p-4 space-y-3"
           >
+            <AdminToggle
+              checked={item.is_visible !== false}
+              onCheckedChange={(checked) =>
+                updateItem(item.id, "is_visible", checked)
+              }
+              label="Show on site"
+              className="w-full sm:w-auto"
+            />
+
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor={`wr-year-${item.id}`}>Year</Label>

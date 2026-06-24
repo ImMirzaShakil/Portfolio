@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminToggle } from "@/components/admin/AdminToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,8 @@ import type { Experience, ExperienceType } from "@/lib/types";
 interface ExperiencesManagerProps {
   value: Experience[];
   onChange: (items: Experience[]) => void;
+  sectionVisibility: Record<ExperienceType, boolean>;
+  onSectionVisibilityChange: (type: ExperienceType, visible: boolean) => void;
 }
 
 const TYPE_LABELS: Record<ExperienceType, string> = {
@@ -32,18 +35,24 @@ function createEntry(type: ExperienceType): Experience {
     description: null,
     type,
     order_index: 0,
+    is_visible: true,
   };
 }
 
-export function ExperiencesManager({ value, onChange }: ExperiencesManagerProps) {
+export function ExperiencesManager({
+  value,
+  onChange,
+  sectionVisibility,
+  onSectionVisibilityChange,
+}: ExperiencesManagerProps) {
   const updateEntry = (
     id: string,
     field: keyof Omit<Experience, "id" | "type" | "order_index">,
-    val: string
+    val: string | boolean
   ) => {
     onChange(
       value.map((item) =>
-        item.id === id ? { ...item, [field]: val || null } : item
+        item.id === id ? { ...item, [field]: val } : item
       )
     );
   };
@@ -65,7 +74,6 @@ export function ExperiencesManager({ value, onChange }: ExperiencesManagerProps)
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
     const swapId = typeItems[swapIdx].id;
 
-    // Swap positions in the main array
     const result = [...value];
     const aIdx = result.findIndex((e) => e.id === id);
     const bIdx = result.findIndex((e) => e.id === swapId);
@@ -80,9 +88,15 @@ export function ExperiencesManager({ value, onChange }: ExperiencesManagerProps)
 
         return (
           <div key={type} className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="font-semibold">{label}</p>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <AdminToggle
+                  checked={sectionVisibility[type]}
+                  onCheckedChange={(checked) =>
+                    onSectionVisibilityChange(type, checked)
+                  }
+                  label={label}
+                />
                 <p className="text-xs text-muted-foreground">{description}</p>
               </div>
               <Button
@@ -105,6 +119,15 @@ export function ExperiencesManager({ value, onChange }: ExperiencesManagerProps)
                   key={entry.id}
                   className="rounded-xl border border-border p-4 space-y-3"
                 >
+                  <AdminToggle
+                    checked={entry.is_visible !== false}
+                    onCheckedChange={(checked) =>
+                      updateEntry(entry.id, "is_visible", checked)
+                    }
+                    label="Show on site"
+                    className="w-full sm:w-auto"
+                  />
+
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label htmlFor={`exp-yr-${entry.id}`}>Year range</Label>
