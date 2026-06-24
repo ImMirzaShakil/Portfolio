@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminToggle } from "@/components/admin/AdminToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ function createItem(): FeaturedIn {
     publication: "",
     content_type: "",
     order_index: 0,
+    is_visible: true,
   };
 }
 
@@ -26,7 +28,7 @@ export function FeaturedInManager({ value, onChange }: FeaturedInManagerProps) {
   const updateItem = (
     index: number,
     field: keyof FeaturedIn,
-    val: string
+    val: string | boolean
   ) => {
     onChange(
       value.map((item, i) =>
@@ -51,6 +53,13 @@ export function FeaturedInManager({ value, onChange }: FeaturedInManagerProps) {
             key={item.id}
             className="rounded-xl border border-border p-4 space-y-3"
           >
+            <AdminToggle
+              checked={item.is_visible !== false}
+              onCheckedChange={(checked) => updateItem(index, "is_visible", checked)}
+              label="Show on site"
+              className="w-full sm:w-auto"
+            />
+
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor={`fi-year-${item.id}`}>Year</Label>

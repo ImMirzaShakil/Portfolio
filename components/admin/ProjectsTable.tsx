@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -112,6 +113,7 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
             <thead className="border-b border-border bg-muted/50">
               <tr>
                 <th className="px-4 py-3 font-medium">Cover</th>
+                <th className="px-2 py-3 font-medium" aria-label="Protected" />
                 <th className="px-4 py-3 font-medium">Title</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Published</th>
@@ -135,6 +137,17 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
                         />
                       ) : null}
                     </div>
+                  </td>
+                  <td className="px-2 py-3">
+                    {project.is_password_protected ? (
+                      <span
+                        className="inline-flex size-8 items-center justify-center rounded-full border border-border text-muted-foreground"
+                        title="Password protected"
+                        aria-label="Password protected"
+                      >
+                        <Lock className="size-3.5" />
+                      </span>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3 font-medium">{project.title}</td>
                   <td className="px-4 py-3">

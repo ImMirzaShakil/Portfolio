@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { NavItem } from "@/lib/types";
+import type { NavItem, CustomScript } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
 export interface SiteSettingsPayload {
@@ -16,6 +16,10 @@ export interface SiteSettingsPayload {
   nav_items: NavItem[];
   footer_tagline: string;
   grain_opacity: number;
+  google_analytics_snippet: string;
+  meta_pixel_snippet: string;
+  hotjar_snippet: string;
+  custom_scripts: CustomScript[];
   greeting_text: string;
   fun_facts: string[];
 }
@@ -48,6 +52,17 @@ export async function saveSiteSettingsAction(
           100,
           Math.max(0, Math.round(payload.grain_opacity))
         ),
+        google_analytics_snippet:
+          payload.google_analytics_snippet.trim() || null,
+        meta_pixel_snippet: payload.meta_pixel_snippet.trim() || null,
+        hotjar_snippet: payload.hotjar_snippet.trim() || null,
+        custom_scripts: payload.custom_scripts
+          .filter((script) => script.code.trim())
+          .map((script) => ({
+            id: script.id,
+            label: script.label.trim() || "Custom script",
+            code: script.code.trim(),
+          })),
         nav_items: payload.nav_items.map((item, index) => ({
           ...item,
           order_index: index,

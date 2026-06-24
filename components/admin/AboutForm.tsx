@@ -102,6 +102,15 @@ export function AboutForm({
   );
   const [writings, setWritings] = useState<Writing[]>(initialWritings);
   const [featuredIn, setFeaturedIn] = useState<FeaturedIn[]>(initialFeaturedIn);
+  const [showWriting, setShowWriting] = useState(about?.show_writing !== false);
+  const [showFeaturedIn, setShowFeaturedIn] = useState(
+    about?.show_featured_in !== false
+  );
+  const [experienceSectionVisibility, setExperienceSectionVisibility] = useState({
+    job: about?.show_experience !== false,
+    internship: about?.show_internships !== false,
+    education: about?.show_education !== false,
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -147,6 +156,11 @@ export function AboutForm({
       github_url: githubUrl,
       email,
       visible_social_links: visibleSocialLinks,
+      show_experience: experienceSectionVisibility.job,
+      show_internships: experienceSectionVisibility.internship,
+      show_education: experienceSectionVisibility.education,
+      show_writing: showWriting,
+      show_featured_in: showFeaturedIn,
       featured_in: featuredIn,
       experiences,
       writings,
@@ -407,7 +421,17 @@ export function AboutForm({
             Manage all timeline entries shown on your About page.
           </p>
         </div>
-        <ExperiencesManager value={experiences} onChange={setExperiences} />
+        <ExperiencesManager
+          value={experiences}
+          onChange={setExperiences}
+          sectionVisibility={experienceSectionVisibility}
+          onSectionVisibilityChange={(type, visible) => {
+            setExperienceSectionVisibility((current) => ({
+              ...current,
+              [type]: visible,
+            }));
+          }}
+        />
       </section>
 
       {/* Internships section description */}
@@ -432,23 +456,33 @@ export function AboutForm({
 
       {/* Writings */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
+        <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-xl font-bold">Writing</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Articles, blog posts, and other writing you&apos;ve published.
-          </p>
+          <AdminToggle
+            checked={showWriting}
+            onCheckedChange={setShowWriting}
+            label="Section"
+          />
         </div>
+        <p className="text-sm text-muted-foreground">
+          Articles, blog posts, and other writing you&apos;ve published.
+        </p>
         <WritingsManager value={writings} onChange={setWritings} />
       </section>
 
       {/* Featured In */}
       <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
+        <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-xl font-bold">Featured in</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Talks, podcasts, and articles that have featured you.
-          </p>
+          <AdminToggle
+            checked={showFeaturedIn}
+            onCheckedChange={setShowFeaturedIn}
+            label="Section"
+          />
         </div>
+        <p className="text-sm text-muted-foreground">
+          Talks, podcasts, and articles that have featured you.
+        </p>
         <FeaturedInManager value={featuredIn} onChange={setFeaturedIn} />
       </section>
 

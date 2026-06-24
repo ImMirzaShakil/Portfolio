@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ProjectForm } from "@/components/admin/ProjectForm";
+import { decryptPassword } from "@/lib/password-encryption";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 interface EditProjectPageProps {
@@ -24,8 +25,16 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
     notFound();
   }
 
-  const { password_hash, ...safeProject } = project;
+  const initialPassword = decryptPassword(project.password_encrypted) ?? "";
+  const { password_hash, password_encrypted, ...safeProject } = project;
   void password_hash;
+  void password_encrypted;
 
-  return <ProjectForm project={safeProject} sections={sections ?? []} />;
+  return (
+    <ProjectForm
+      project={safeProject}
+      sections={sections ?? []}
+      initialPassword={initialPassword}
+    />
+  );
 }

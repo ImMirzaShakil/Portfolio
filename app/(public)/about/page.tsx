@@ -86,12 +86,20 @@ export default async function AboutPage() {
       .order("order_index", { ascending: true }),
   ]);
 
-  const jobs = (experiences ?? []).filter((item) => item.type === "job");
+  const jobs = (experiences ?? []).filter(
+    (item) => item.type === "job" && item.is_visible !== false
+  );
   const internships = (experiences ?? []).filter(
-    (item) => item.type === "internship"
+    (item) => item.type === "internship" && item.is_visible !== false
   );
   const education = (experiences ?? []).filter(
-    (item) => item.type === "education"
+    (item) => item.type === "education" && item.is_visible !== false
+  );
+  const visibleFeaturedIn = (featuredIn ?? []).filter(
+    (item) => item.is_visible !== false
+  );
+  const visibleWritings = (writings ?? []).filter(
+    (item) => item.is_visible !== false
   );
 
   const name = settings?.site_title ?? "Me";
@@ -264,17 +272,17 @@ export default async function AboutPage() {
       ) : null}
 
       {/* ── Featured in ──────────────────────────────────── */}
-      {(featuredIn ?? []).length > 0 ? (
+      {about?.show_featured_in !== false && visibleFeaturedIn.length > 0 ? (
         <section className="grid gap-8 border-t border-border py-12 md:grid-cols-[220px_1fr] md:py-16">
           <div>
             <h2 className="text-2xl font-bold">Featured in</h2>
           </div>
-          <FeaturedInList items={featuredIn ?? []} />
+          <FeaturedInList items={visibleFeaturedIn} />
         </section>
       ) : null}
 
       {/* ── Experience ───────────────────────────────────── */}
-      {jobs.length > 0 ? (
+      {about?.show_experience !== false && jobs.length > 0 ? (
         <section className="grid gap-8 border-t border-border py-12 md:grid-cols-[220px_1fr] md:py-16">
           <div>
             <h2 className="text-2xl font-bold">Experience</h2>
@@ -284,7 +292,7 @@ export default async function AboutPage() {
       ) : null}
 
       {/* ── Internships ──────────────────────────────────── */}
-      {internships.length > 0 ? (
+      {about?.show_internships !== false && internships.length > 0 ? (
         <section className="grid gap-8 border-t border-border py-12 md:grid-cols-[220px_1fr] md:py-16">
           <div>
             <h2 className="text-2xl font-bold">Internships</h2>
@@ -299,17 +307,17 @@ export default async function AboutPage() {
       ) : null}
 
       {/* ── Writing ──────────────────────────────────────── */}
-      {(writings ?? []).length > 0 ? (
+      {about?.show_writing !== false && visibleWritings.length > 0 ? (
         <section className="grid gap-8 border-t border-border py-12 md:grid-cols-[220px_1fr] md:py-16">
           <div>
             <h2 className="text-2xl font-bold">Writing</h2>
           </div>
-          <WritingList writings={writings ?? []} />
+          <WritingList writings={visibleWritings} />
         </section>
       ) : null}
 
       {/* ── Education ────────────────────────────────────── */}
-      {education.length > 0 ? (
+      {about?.show_education !== false && education.length > 0 ? (
         <section className="grid gap-8 border-t border-border py-12 md:grid-cols-[220px_1fr] md:py-16">
           <div>
             <h2 className="text-2xl font-bold">Education</h2>

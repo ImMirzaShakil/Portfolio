@@ -66,6 +66,11 @@ export interface AboutContent {
   superpower_4_desc: string | null;
   gallery_images: string[] | null;
   internships_description: string | null;
+  show_experience: boolean;
+  show_internships: boolean;
+  show_education: boolean;
+  show_writing: boolean;
+  show_featured_in: boolean;
   profile_image_url: string | null;
   twitter_url: string | null;
   linkedin_url: string | null;
@@ -82,6 +87,7 @@ export interface Experience {
   description: string | null;
   type: ExperienceType;
   order_index: number;
+  is_visible: boolean;
 }
 
 export interface Writing {
@@ -92,6 +98,7 @@ export interface Writing {
   year: string | null;
   description: string | null;
   order_index: number;
+  is_visible: boolean;
 }
 
 export interface FeaturedIn {
@@ -102,6 +109,13 @@ export interface FeaturedIn {
   publication: string | null;
   content_type: string | null;
   order_index: number;
+  is_visible: boolean;
+}
+
+export interface CustomScript {
+  id: string;
+  label: string;
+  code: string;
 }
 
 export interface FunProject {
@@ -125,4 +139,8 @@ export interface SiteSettings {
   footer_tagline: string | null;
   profile_image_url: string | null;
   grain_opacity: number | null;
+  google_analytics_snippet: string | null;
+  meta_pixel_snippet: string | null;
+  hotjar_snippet: string | null;
+  custom_scripts: CustomScript[] | null;
 }

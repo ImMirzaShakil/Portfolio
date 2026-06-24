@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { encryptPassword } from "@/lib/password-encryption";
 import { hashProjectPassword } from "@/lib/project-password";
 import type { ProjectStatus } from "@/lib/types";
 import { revalidatePath } from "next/cache";
@@ -56,20 +57,23 @@ export async function saveProjectAction(
   const admin = createAdminClient();
 
   let passwordHash: string | null = null;
+  let passwordEncrypted: string | null = null;
 
   if (payload.is_password_protected) {
     const password = payload.password.trim();
 
     if (password) {
       passwordHash = await hashProjectPassword(password);
+      passwordEncrypted = encryptPassword(password);
     } else if (payload.id) {
       const { data: existing } = await admin
         .from("projects")
-        .select("password_hash")
+        .select("password_hash, password_encrypted")
         .eq("id", payload.id)
         .maybeSingle();
 
       passwordHash = existing?.password_hash ?? null;
+      passwordEncrypted = existing?.password_encrypted ?? null;
 
       if (!passwordHash) {
         return { error: "Set a password when enabling protection." };
@@ -93,6 +97,7 @@ export async function saveProjectAction(
     is_published: payload.is_published,
     is_password_protected: payload.is_password_protected,
     password_hash: passwordHash,
+    password_encrypted: passwordEncrypted,
     order_index: payload.order_index,
     updated_at: new Date().toISOString(),
   };
