@@ -1,11 +1,16 @@
-import Image from "next/image";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { CaseStudySection } from "@/components/project/CaseStudySection";
+import { ProjectCaseStudy } from "@/components/project/ProjectCaseStudy";
+import { ProjectPasswordGate } from "@/components/project/ProjectPasswordGate";
 import {
   buildOpenGraph,
   buildTwitter,
   getSiteUrl,
 } from "@/lib/metadata";
+import {
+  getProjectUnlockCookieName,
+  hasProjectUnlockAccess,
+} from "@/lib/project-password";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createStaticClient } from "@/lib/supabase/static";
 import type { Metadata } from "next";
@@ -15,6 +20,8 @@ interface ProjectPageProps {
     slug: string;
   };
 }
+
+export const dynamic = "force-dynamic";
 
 async function getProject(slug: string) {
   const supabase = createAdminClient();
@@ -36,6 +43,12 @@ async function getProject(slug: string) {
     .order("order_index", { ascending: true });
 
   return { project, sections: sections ?? [] };
+}
+
+function hasUnlockAccess(slug: string) {
+  const cookieStore = cookies();
+  const token = cookieStore.get(getProjectUnlockCookieName(slug))?.value;
+  return hasProjectUnlockAccess(slug, token);
 }
 
 export async function generateStaticParams() {
@@ -63,6 +76,18 @@ export async function generateMetadata({
   }
 
   const { project } = data;
+
+  if (project.is_password_protected && !hasUnlockAccess(project.slug)) {
+    return {
+      title: "Password protected",
+      description: "This project requires a password to view.",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
   const description =
     project.subtitle ?? project.summary ?? `Case study: ${project.title}`;
   const images = project.cover_image_url
@@ -94,69 +119,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   }
 
   const { project, sections } = data;
-  const quickFacts = sections.filter(
-    (section) => section.section_type === "quickfact"
-  );
-  const contentSections = sections.filter(
-    (section) => section.section_type !== "quickfact"
-  );
 
-  return (
-    <article className="space-y-12">
-      {project.cover_image_url ? (
-        <div className="relative left-1/2 aspect-[21/9] w-screen max-w-none -translate-x-1/2 overflow-hidden">
-          <Image
-            src={project.cover_image_url}
-            alt={project.title}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
-        </div>
-      ) : null}
+  if (project.is_password_protected && !hasUnlockAccess(project.slug)) {
+    return <ProjectPasswordGate slug={project.slug} />;
+  }
 
-      <header className="space-y-4">
-        <h1 className="text-4xl font-bold md:text-5xl">{project.title}</h1>
-        {project.subtitle ? (
-          <p className="text-lg text-muted-foreground">{project.subtitle}</p>
-        ) : null}
-        {project.summary ? (
-          <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
-            {project.summary}
-          </p>
-        ) : null}
-      </header>
-
-      {quickFacts.length > 0 ? (
-        <section className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="mb-6 text-base font-semibold uppercase tracking-wide text-muted-foreground">
-            Quick Facts
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-            {quickFacts.map((fact) => (
-              <div key={fact.id} className="space-y-2">
-                <p className="text-base font-medium text-muted-foreground">
-                  {fact.title}
-                </p>
-                <p className="text-lg">{fact.content}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <div className="space-y-16">
-        {contentSections.map((section) => (
-          <CaseStudySection
-            key={section.id}
-            title={section.title}
-            content={section.content}
-            image_url={section.image_url}
-            section_type={section.section_type}
-          />
-        ))}
-      </div>
-    </article>
-  );
+  return <ProjectCaseStudy project={project} sections={sections} />;
 }

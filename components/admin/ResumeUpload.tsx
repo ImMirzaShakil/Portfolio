@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  UploadRequirementsHint,
+  UploadRequirementsText,
+} from "@/components/admin/UploadRequirementsHint";
 import { Button } from "@/components/ui/button";
+import { MAX_RESUME_UPLOAD_BYTES } from "@/lib/upload-requirements";
 
 interface ResumeUploadProps {
   initialResumeUrl?: string | null;
@@ -28,6 +33,11 @@ export function ResumeUpload({ initialResumeUrl }: ResumeUploadProps) {
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_RESUME_UPLOAD_BYTES) {
+      setError("PDF must be 10 MB or smaller.");
+      return;
+    }
 
     setError(null);
     setUploading(true);
@@ -108,6 +118,14 @@ export function ResumeUpload({ initialResumeUrl }: ResumeUploadProps) {
       </div>
 
       <div className="space-y-3">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium">Upload resume</p>
+            <UploadRequirementsHint kind="resume" />
+          </div>
+          <UploadRequirementsText kind="resume" />
+        </div>
+
         <input
           ref={inputRef}
           type="file"
@@ -124,6 +142,11 @@ export function ResumeUpload({ initialResumeUrl }: ResumeUploadProps) {
         >
           {uploading ? "Uploading..." : "Upload new PDF"}
         </Button>
+        {uploading ? (
+          <p className="text-xs text-muted-foreground">
+            Keep this tab open while your PDF uploads.
+          </p>
+        ) : null}
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { MAX_RESUME_UPLOAD_BYTES } from "@/lib/upload-requirements";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getPublicImageUrl } from "@/lib/utils";
@@ -21,6 +22,10 @@ export async function POST(request: Request) {
 
   if (file.type !== "application/pdf") {
     return Response.json({ error: "Only PDF files are allowed" }, { status: 400 });
+  }
+
+  if (file.size > MAX_RESUME_UPLOAD_BYTES) {
+    return Response.json({ error: "PDF must be 10 MB or smaller." }, { status: 400 });
   }
 
   const admin = createAdminClient();

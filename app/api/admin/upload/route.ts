@@ -1,7 +1,5 @@
-import {
-  isHeicFile,
-  MAX_IMAGE_UPLOAD_BYTES,
-} from "@/lib/prepare-image-upload";
+import { isHeicFile } from "@/lib/prepare-image-upload";
+import { MAX_IMAGE_UPLOAD_BYTES } from "@/lib/upload-requirements";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getPublicImageUrl } from "@/lib/utils";

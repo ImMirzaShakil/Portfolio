@@ -15,6 +15,7 @@ export interface Project {
   cover_image_url: string | null;
   is_published: boolean;
   is_featured: boolean;
+  is_password_protected: boolean;
   order_index: number;
   created_at: string;
   updated_at: string;

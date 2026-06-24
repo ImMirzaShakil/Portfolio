@@ -4,7 +4,12 @@ import Image from "next/image";
 import { useId, useRef, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { prepareImageForUpload } from "@/lib/prepare-image-upload";
+import type { UploadKind } from "@/lib/upload-requirements";
 import { cn } from "@/lib/utils";
+import {
+  UploadRequirementsHint,
+  UploadRequirementsText,
+} from "@/components/admin/UploadRequirementsHint";
 
 interface ImageUploadProps {
   value?: string | null;
@@ -12,6 +17,7 @@ interface ImageUploadProps {
   bucket?: string;
   label?: string;
   previewClassName?: string;
+  requirementsKind?: UploadKind;
 }
 
 export function ImageUpload({
@@ -20,6 +26,7 @@ export function ImageUpload({
   bucket = "project-images",
   label = "Image",
   previewClassName = "aspect-[16/9] max-w-md",
+  requirementsKind = "image",
 }: ImageUploadProps) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -77,7 +84,13 @@ export function ImageUpload({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium">{label}</p>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium">{label}</p>
+          <UploadRequirementsHint kind={requirementsKind} />
+        </div>
+        <UploadRequirementsText kind={requirementsKind} />
+      </div>
 
       {value ? (
         <div
@@ -134,6 +147,12 @@ export function ImageUpload({
           </button>
         ) : null}
       </div>
+
+      {uploading ? (
+        <p className="text-xs text-muted-foreground">
+          Keep this tab open while your file uploads.
+        </p>
+      ) : null}
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </div>

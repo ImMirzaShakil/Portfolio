@@ -24,5 +24,8 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
     notFound();
   }
 
-  return <ProjectForm project={project} sections={sections ?? []} />;
+  const { password_hash, ...safeProject } = project;
+  void password_hash;
+
+  return <ProjectForm project={safeProject} sections={sections ?? []} />;
 }

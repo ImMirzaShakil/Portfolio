@@ -1,3 +1,5 @@
+import { MAX_IMAGE_UPLOAD_BYTES } from "@/lib/upload-requirements";
+
 const HEIC_EXTENSIONS = new Set(["heic", "heif"]);
 const HEIC_MIME_TYPES = new Set([
   "image/heic",
@@ -5,8 +7,6 @@ const HEIC_MIME_TYPES = new Set([
   "image/heic-sequence",
   "image/heif-sequence",
 ]);
-
-export const MAX_IMAGE_UPLOAD_BYTES = 20 * 1024 * 1024;
 
 export function isHeicFile(file: File) {
   const extension = file.name.split(".").pop()?.toLowerCase() ?? "";

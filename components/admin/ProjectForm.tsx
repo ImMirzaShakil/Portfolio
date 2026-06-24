@@ -60,6 +60,10 @@ export function ProjectForm({
     project?.cover_image_url ?? null
   );
   const [isPublished, setIsPublished] = useState(project?.is_published ?? false);
+  const [isPasswordProtected, setIsPasswordProtected] = useState(
+    project?.is_password_protected ?? false
+  );
+  const [password, setPassword] = useState("");
   const [orderIndex, setOrderIndex] = useState(
     project?.order_index?.toString() ?? "0"
   );
@@ -83,6 +87,13 @@ export function ProjectForm({
     setError(null);
 
     const parsedOrderIndex = Number.parseInt(orderIndex, 10);
+
+    if (isPasswordProtected && !password.trim() && !project?.is_password_protected) {
+      setSaving(false);
+      setError("Set a password when enabling protection.");
+      return;
+    }
+
     const result = await saveProjectAction({
       id: project?.id,
       title,
@@ -95,6 +106,8 @@ export function ProjectForm({
       summary,
       cover_image_url: coverImageUrl,
       is_published: isPublished,
+      is_password_protected: isPasswordProtected,
+      password,
       order_index: Number.isNaN(parsedOrderIndex) ? 0 : parsedOrderIndex,
       sections: sectionItems,
     });
@@ -221,6 +234,7 @@ export function ProjectForm({
             label="Cover image"
             value={coverImageUrl}
             onChange={setCoverImageUrl}
+            requirementsKind="project-cover"
           />
         </div>
 
@@ -241,6 +255,41 @@ export function ProjectForm({
             aria-label="Published"
           />
           <Label>Published</Label>
+        </div>
+
+        <div className="space-y-4 rounded-2xl border border-border p-5 md:col-span-2">
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={isPasswordProtected}
+              onCheckedChange={setIsPasswordProtected}
+              aria-label="Password protected"
+            />
+            <div>
+              <Label>Password protected</Label>
+              <p className="text-sm text-muted-foreground">
+                Visitors must enter a password to view this case study, even
+                with a direct link.
+              </p>
+            </div>
+          </div>
+
+          {isPasswordProtected ? (
+            <div className="space-y-2">
+              <Label htmlFor="project-password">Password</Label>
+              <Input
+                id="project-password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={
+                  project?.is_password_protected
+                    ? "Leave blank to keep current password"
+                    : "Set a password"
+                }
+                autoComplete="new-password"
+              />
+            </div>
+          ) : null}
         </div>
       </div>
 
