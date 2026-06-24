@@ -19,10 +19,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  DEFAULT_VISIBLE_SOCIAL_LINKS,
-  SOCIAL_LINK_CONFIG,
+  resolveInitialSocialVisibility,
   type SocialLinkKey,
+  type SocialLinkPlacement,
 } from "@/lib/social-links";
+import { SocialLinksSection } from "@/components/admin/SocialLinksSection";
 import type { AboutContent, Experience, FeaturedIn, Writing } from "@/lib/types";
 
 const SECTION_LABELS: Record<AboutSectionId, string> = {
@@ -108,13 +109,25 @@ export function AboutForm({
   const [superpower4Desc, setSuperpower4Desc] = useState(
     about?.superpower_4_desc ?? ""
   );
-  const [twitterUrl, setTwitterUrl] = useState(about?.twitter_url ?? "");
-  const [linkedinUrl, setLinkedinUrl] = useState(about?.linkedin_url ?? "");
-  const [githubUrl, setGithubUrl] = useState(about?.github_url ?? "");
-  const [email, setEmail] = useState(about?.email ?? "");
-  const [visibleSocialLinks, setVisibleSocialLinks] = useState<SocialLinkKey[]>(
-    (about?.visible_social_links as SocialLinkKey[] | null) ??
-      DEFAULT_VISIBLE_SOCIAL_LINKS
+  const [socialUrls, setSocialUrls] = useState({
+    twitter_url: about?.twitter_url ?? "",
+    linkedin_url: about?.linkedin_url ?? "",
+    github_url: about?.github_url ?? "",
+    facebook_url: about?.facebook_url ?? "",
+    instagram_url: about?.instagram_url ?? "",
+    email: about?.email ?? "",
+  });
+  const [visibleSocialLinksHero, setVisibleSocialLinksHero] = useState<SocialLinkKey[]>(
+    resolveInitialSocialVisibility(
+      about?.visible_social_links_hero,
+      about?.visible_social_links
+    )
+  );
+  const [visibleSocialLinksFooter, setVisibleSocialLinksFooter] = useState<SocialLinkKey[]>(
+    resolveInitialSocialVisibility(
+      about?.visible_social_links_footer,
+      about?.visible_social_links
+    )
   );
   const [experiences, setExperiences] = useState<Experience[]>(
     initialExperiences
@@ -161,11 +174,14 @@ export function AboutForm({
       superpower_3_desc: superpower3Desc,
       superpower_4: superpower4,
       superpower_4_desc: superpower4Desc,
-      twitter_url: twitterUrl,
-      linkedin_url: linkedinUrl,
-      github_url: githubUrl,
-      email,
-      visible_social_links: visibleSocialLinks,
+      twitter_url: socialUrls.twitter_url,
+      linkedin_url: socialUrls.linkedin_url,
+      github_url: socialUrls.github_url,
+      facebook_url: socialUrls.facebook_url,
+      instagram_url: socialUrls.instagram_url,
+      email: socialUrls.email,
+      visible_social_links_hero: visibleSocialLinksHero,
+      visible_social_links_footer: visibleSocialLinksFooter,
       show_experience: experienceSectionVisibility.job,
       show_internships: experienceSectionVisibility.internship,
       show_education: experienceSectionVisibility.education,
@@ -199,11 +215,9 @@ export function AboutForm({
       superpower3Desc,
       superpower4,
       superpower4Desc,
-      twitterUrl,
-      linkedinUrl,
-      githubUrl,
-      email,
-      visibleSocialLinks,
+      socialUrls,
+      visibleSocialLinksHero,
+      visibleSocialLinksFooter,
       experienceSectionVisibility,
       showWriting,
       showFeaturedIn,
@@ -253,10 +267,19 @@ export function AboutForm({
     toast.success("About page saved.");
   };
 
-  const toggleSocialLink = (key: SocialLinkKey, checked: boolean) => {
-    setVisibleSocialLinks((current) =>
+  const toggleSocialPlacement = (
+    placement: SocialLinkPlacement,
+    key: SocialLinkKey,
+    checked: boolean
+  ) => {
+    const setter =
+      placement === "hero" ? setVisibleSocialLinksHero : setVisibleSocialLinksFooter;
+
+    setter((current) =>
       checked
-        ? current.includes(key) ? current : [...current, key]
+        ? current.includes(key)
+          ? current
+          : [...current, key]
         : current.filter((item) => item !== key)
     );
   };
@@ -551,62 +574,19 @@ export function AboutForm({
 
       <AdminCollapsibleSection
         title="Social links"
-        description="Add URLs and choose which icons appear on the About page."
+        description="Add URLs and choose where each icon appears on the homepage hero and site footer."
         onSave={() => saveSection("social")}
         saving={savingSection === "social"}
       >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="twitter-url">Twitter / X URL</Label>
-            <Input
-              id="twitter-url"
-              value={twitterUrl}
-              onChange={(e) => setTwitterUrl(e.target.value)}
-              placeholder="https://twitter.com/you"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="linkedin-url">LinkedIn URL</Label>
-            <Input
-              id="linkedin-url"
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              placeholder="https://linkedin.com/in/you"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="github-url">GitHub URL</Label>
-            <Input
-              id="github-url"
-              value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
-              placeholder="https://github.com/you"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="hello@example.com"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          {SOCIAL_LINK_CONFIG.map(({ key, label }) => (
-            <AdminToggle
-              key={key}
-              checked={visibleSocialLinks.includes(key)}
-              onCheckedChange={(checked) => toggleSocialLink(key, checked)}
-              label={label}
-              activeLabel="Shown"
-              inactiveLabel="Hidden"
-            />
-          ))}
-        </div>
+        <SocialLinksSection
+          urls={socialUrls}
+          onUrlChange={(field, value) =>
+            setSocialUrls((current) => ({ ...current, [field]: value }))
+          }
+          heroVisibility={visibleSocialLinksHero}
+          footerVisibility={visibleSocialLinksFooter}
+          onToggle={toggleSocialPlacement}
+        />
       </AdminCollapsibleSection>
 
       {error ? (
