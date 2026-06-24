@@ -1,8 +1,16 @@
+import {
+  isHeicFile,
+  MAX_IMAGE_UPLOAD_BYTES,
+} from "@/lib/prepare-image-upload";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getPublicImageUrl } from "@/lib/utils";
 
 const ALLOWED_BUCKETS = ["project-images", "resume"] as const;
+
+function isImageFile(file: File) {
+  return file.type.startsWith("image/") || isHeicFile(file);
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -26,13 +34,25 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid storage bucket" }, { status: 400 });
   }
 
-  const extension = file.name.split(".").pop() ?? "jpg";
+  if (bucket === "project-images" && !isImageFile(file)) {
+    return Response.json({ error: "Only image files are supported." }, { status: 400 });
+  }
+
+  if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+    return Response.json(
+      { error: "File must be 20 MB or smaller." },
+      { status: 400 }
+    );
+  }
+
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
   const admin = createAdminClient();
 
   const { error } = await admin.storage.from(bucket).upload(path, file, {
     cacheControl: "3600",
     upsert: bucket === "resume",
+    contentType: file.type || undefined,
   });
 
   if (error) {

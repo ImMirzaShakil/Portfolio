@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useId, useRef, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
+import { prepareImageForUpload } from "@/lib/prepare-image-upload";
 import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
@@ -36,8 +37,10 @@ export function ImageUpload({
     setProgress(40);
 
     try {
+      const uploadFile = await prepareImageForUpload(file);
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", uploadFile);
       formData.append("bucket", bucket);
 
       const response = await fetch("/api/admin/upload", {
@@ -57,8 +60,12 @@ export function ImageUpload({
 
       setProgress(100);
       onChange(result.url);
-    } catch {
-      setError("Upload failed. Please try again.");
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Upload failed. Please try again."
+      );
     } finally {
       setUploading(false);
       setProgress(0);
@@ -103,7 +110,7 @@ export function ImageUpload({
           ref={inputRef}
           id={inputId}
           type="file"
-          accept="image/*"
+          accept="image/*,.heic,.heif"
           onChange={handleFileChange}
           className="sr-only"
           disabled={uploading}
