@@ -7,6 +7,7 @@ import {
   getSiteContext,
   getSiteUrl,
 } from "@/lib/metadata";
+import { PROJECT_WITH_STATUS_SELECT } from "@/lib/project-queries";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Metadata } from "next";
 
@@ -46,7 +47,7 @@ export default async function HomePage() {
       supabase.from("site_settings").select("*").limit(1).maybeSingle(),
       supabase
         .from("projects")
-        .select("*")
+        .select(PROJECT_WITH_STATUS_SELECT)
         .eq("is_published", true)
         .eq("is_featured", true)
         .order("order_index", { ascending: true }),

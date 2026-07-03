@@ -4,7 +4,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { encryptPassword } from "@/lib/password-encryption";
 import { hashProjectPassword } from "@/lib/project-password";
-import type { ProjectStatus } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
 export interface SectionFormPayload {
@@ -19,7 +18,7 @@ export interface ProjectFormPayload {
   title: string;
   slug: string;
   subtitle: string;
-  status: ProjectStatus | "";
+  status_id: string;
   company: string;
   type: string;
   year: string;
@@ -88,7 +87,7 @@ export async function saveProjectAction(
     title: payload.title.trim(),
     slug: payload.slug.trim(),
     subtitle: payload.subtitle.trim() || null,
-    status: payload.status || null,
+    status_id: payload.status_id || null,
     company: payload.company.trim() || null,
     type: payload.type.trim() || null,
     year: payload.year.trim() || null,

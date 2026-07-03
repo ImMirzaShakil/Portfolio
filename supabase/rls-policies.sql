@@ -7,7 +7,7 @@ alter table public.about_content enable row level security;
 alter table public.experiences enable row level security;
 alter table public.writings enable row level security;
 alter table public.fun_projects enable row level security;
-alter table public.site_settings enable row level security;
+alter table public.project_statuses enable row level security;
 
 create policy "Public read published projects"
   on public.projects for select
@@ -41,6 +41,10 @@ create policy "Public read published fun projects"
 
 create policy "Public read site settings"
   on public.site_settings for select
+  using (true);
+
+create policy "Public read project statuses"
+  on public.project_statuses for select
   using (true);
 
 -- Authenticated admin access (logged-in Supabase users)
@@ -82,6 +86,12 @@ create policy "Authenticated manage fun projects"
 
 create policy "Authenticated manage site settings"
   on public.site_settings for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create policy "Authenticated manage project statuses"
+  on public.project_statuses for all
   to authenticated
   using (true)
   with check (true);

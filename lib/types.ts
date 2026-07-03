@@ -1,4 +1,8 @@
-export type ProjectStatus = "SHIPPED" | "ACQUIRED" | "WIP" | "CONCEPT";
+export interface ProjectStatusOption {
+  id: string;
+  label: string;
+  order_index: number;
+}
 
 export type ExperienceType = "job" | "internship" | "education";
 
@@ -7,7 +11,8 @@ export interface Project {
   slug: string;
   title: string;
   subtitle: string | null;
-  status: ProjectStatus | null;
+  status_id: string | null;
+  project_status?: Pick<ProjectStatusOption, "label"> | null;
   summary: string | null;
   company: string | null;
   type: string | null;
