@@ -15,21 +15,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { saveProjectAction } from "@/app/admin/projects/actions";
-import type { Project, ProjectSection, ProjectStatus } from "@/lib/types";
+import type { Project, ProjectSection, ProjectStatusOption } from "@/lib/types";
 import { generateSlug } from "@/lib/utils";
-
-const statusOptions: Array<ProjectStatus | ""> = [
-  "",
-  "SHIPPED",
-  "ACQUIRED",
-  "WIP",
-  "CONCEPT",
-];
 
 interface ProjectFormProps {
   project?: Project | null;
   sections?: ProjectSection[];
   initialPassword?: string;
+  statusOptions?: ProjectStatusOption[];
 }
 
 function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
@@ -46,6 +39,7 @@ export function ProjectForm({
   project,
   sections = [],
   initialPassword = "",
+  statusOptions = [],
 }: ProjectFormProps) {
   const router = useRouter();
   const isEditing = Boolean(project?.id);
@@ -54,7 +48,7 @@ export function ProjectForm({
   const [slug, setSlug] = useState(project?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(project?.slug));
   const [subtitle, setSubtitle] = useState(project?.subtitle ?? "");
-  const [status, setStatus] = useState<ProjectStatus | "">(project?.status ?? "");
+  const [statusId, setStatusId] = useState(project?.status_id ?? "");
   const [company, setCompany] = useState(project?.company ?? "");
   const [type, setType] = useState(project?.type ?? "");
   const [year, setYear] = useState(project?.year ?? "");
@@ -102,7 +96,7 @@ export function ProjectForm({
       title,
       slug,
       subtitle,
-      status,
+      status_id: statusId,
       company,
       type,
       year,
@@ -180,18 +174,26 @@ export function ProjectForm({
           <Label htmlFor="status">Status</Label>
           <select
             id="status"
-            value={status}
-            onChange={(event) =>
-              setStatus(event.target.value as ProjectStatus | "")
-            }
+            value={statusId}
+            onChange={(event) => setStatusId(event.target.value)}
             className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           >
+            <option value="">None (hide badge)</option>
             {statusOptions.map((option) => (
-              <option key={option || "none"} value={option}>
-                {option || "None (hide badge)"}
+              <option key={option.id} value={option.id}>
+                {option.label}
               </option>
             ))}
           </select>
+          {statusOptions.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No statuses yet.{" "}
+              <a href="/admin/projects/statuses" className="underline">
+                Add statuses
+              </a>{" "}
+              to show options here.
+            </p>
+          ) : null}
         </div>
 
         <div className="space-y-2">

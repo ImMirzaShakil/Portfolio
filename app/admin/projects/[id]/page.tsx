@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { ProjectForm } from "@/components/admin/ProjectForm";
+import { fetchProjectStatuses } from "@/app/admin/projects/statuses/actions";
 import { decryptPassword } from "@/lib/password-encryption";
+import { PROJECT_WITH_STATUS_SELECT } from "@/lib/project-queries";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 interface EditProjectPageProps {
@@ -12,13 +14,14 @@ interface EditProjectPageProps {
 export default async function EditProjectPage({ params }: EditProjectPageProps) {
   const supabase = createAdminClient();
 
-  const [{ data: project }, { data: sections }] = await Promise.all([
-    supabase.from("projects").select("*").eq("id", params.id).maybeSingle(),
+  const [{ data: project }, { data: sections }, statusOptions] = await Promise.all([
+    supabase.from("projects").select(PROJECT_WITH_STATUS_SELECT).eq("id", params.id).maybeSingle(),
     supabase
       .from("project_sections")
       .select("*")
       .eq("project_id", params.id)
       .order("order_index", { ascending: true }),
+    fetchProjectStatuses(),
   ]);
 
   if (!project) {
@@ -35,6 +38,7 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
       project={safeProject}
       sections={sections ?? []}
       initialPassword={initialPassword}
+      statusOptions={statusOptions}
     />
   );
 }

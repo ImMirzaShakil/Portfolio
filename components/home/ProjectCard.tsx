@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Lock } from "lucide-react";
+import { getProjectStatusLabel } from "@/lib/project-queries";
 import type { Project } from "@/lib/types";
 
 interface ProjectCardProps {
@@ -17,6 +18,7 @@ function isGifUrl(url: string) {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const metadata = formatMetadata(project);
+  const statusLabel = getProjectStatusLabel(project);
 
   return (
     <Link
@@ -65,9 +67,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
               </span>
             ) : null}
           </div>
-          {project.status ? (
+          {statusLabel ? (
             <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold text-foreground">
-              {project.status}
+              {statusLabel}
               <ArrowUpRight className="h-3 w-3" />
             </span>
           ) : null}

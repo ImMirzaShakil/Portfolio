@@ -21,6 +21,7 @@ import {
   toggleProjectFeaturedAction,
   toggleProjectPublishedAction,
 } from "@/app/admin/projects/actions";
+import { getProjectStatusLabel } from "@/lib/project-queries";
 import type { Project } from "@/lib/types";
 
 interface ProjectsTableProps {
@@ -151,8 +152,10 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
                   </td>
                   <td className="px-4 py-3 font-medium">{project.title}</td>
                   <td className="px-4 py-3">
-                    {project.status ? (
-                      <Badge variant="outline">{project.status}</Badge>
+                    {getProjectStatusLabel(project) ? (
+                      <Badge variant="outline">
+                        {getProjectStatusLabel(project)}
+                      </Badge>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
