@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { encryptPassword } from "@/lib/password-encryption";
 import { hashProjectPassword } from "@/lib/project-password";
 import { revalidatePath } from "next/cache";
+import { sanitizeAdminHtml } from "@/lib/project-sections";
 
 export interface SectionFormPayload {
   section_type: string;
@@ -134,7 +135,10 @@ export async function saveProjectAction(
       project_id: savedProject.id,
       section_type: section.section_type,
       title: section.title.trim() || null,
-      content: section.content.trim() || null,
+      content:
+        section.section_type === "html"
+          ? sanitizeAdminHtml(section.content).trim() || null
+          : section.content.trim() || null,
       image_url: section.image_url,
       video_url: section.video_url?.trim() || null,
       layout: section.layout?.trim() || null,

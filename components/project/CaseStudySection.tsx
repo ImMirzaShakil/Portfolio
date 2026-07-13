@@ -2,6 +2,7 @@ import Image from "next/image";
 import {
   normalizeMediaUrls,
   normalizeSectionItems,
+  sanitizeAdminHtml,
   type FeatureLayout,
 } from "@/lib/project-sections";
 import type { ProjectSection } from "@/lib/types";
@@ -345,6 +346,25 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
             </div>
           ) : null}
         </div>
+      </section>
+    );
+  }
+
+  if (section_type === "html") {
+    const html = sanitizeAdminHtml(content ?? "");
+    if (!title && !html.trim()) {
+      return null;
+    }
+
+    return (
+      <section className="space-y-6" data-section-type={section_type}>
+        {title ? <h2 className="text-2xl font-bold">{title}</h2> : null}
+        {html.trim() ? (
+          <div
+            className="case-study-html"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        ) : null}
       </section>
     );
   }

@@ -128,6 +128,70 @@
     }
   }
 
+  .case-study-html {
+    @apply max-w-none text-base leading-relaxed text-muted-foreground;
+  }
+
+  .case-study-html :where(h1, h2, h3, h4) {
+    @apply mb-3 mt-6 font-bold text-foreground first:mt-0;
+  }
+
+  .case-study-html :where(h1) {
+    @apply text-3xl;
+  }
+
+  .case-study-html :where(h2) {
+    @apply text-2xl;
+  }
+
+  .case-study-html :where(h3) {
+    @apply text-xl;
+  }
+
+  .case-study-html :where(p, ul, ol, blockquote, pre, table) {
+    @apply mb-4 last:mb-0;
+  }
+
+  .case-study-html :where(ul) {
+    @apply list-disc space-y-1 pl-5;
+  }
+
+  .case-study-html :where(ol) {
+    @apply list-decimal space-y-1 pl-5;
+  }
+
+  .case-study-html :where(a) {
+    @apply text-foreground underline underline-offset-4;
+  }
+
+  .case-study-html :where(img, video) {
+    @apply my-4 h-auto max-w-full rounded-2xl;
+  }
+
+  .case-study-html :where(iframe) {
+    @apply my-4 aspect-video w-full max-w-full rounded-2xl border border-border;
+  }
+
+  .case-study-html :where(blockquote) {
+    @apply border-l-2 border-border pl-4 italic;
+  }
+
+  .case-study-html :where(code) {
+    @apply rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground;
+  }
+
+  .case-study-html :where(pre) {
+    @apply overflow-x-auto rounded-xl border border-border bg-muted p-4 font-mono text-sm text-foreground;
+  }
+
+  .case-study-html :where(table) {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .case-study-html :where(th, td) {
+    @apply border border-border px-3 py-2 text-left;
+  }
+
 
   .hero-heading-blur {
     position: absolute;
