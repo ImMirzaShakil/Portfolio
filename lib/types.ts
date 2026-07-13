@@ -34,6 +34,13 @@ export interface NavItem {
   order_index: number;
 }
 
+export interface ProjectSectionItem {
+  id: string;
+  label: string;
+  title: string;
+  description: string;
+}
+
 export interface ProjectSection {
   id: string;
   project_id: string;
@@ -41,6 +48,10 @@ export interface ProjectSection {
   title: string | null;
   content: string | null;
   image_url: string | null;
+  video_url: string | null;
+  layout: string | null;
+  media_urls: string[] | null;
+  items: ProjectSectionItem[] | null;
   order_index: number;
   created_at: string;
 }

@@ -60,15 +60,9 @@ export function ProjectCaseStudy({ project, sections }: ProjectCaseStudyProps) {
         </section>
       ) : null}
 
-      <div className="space-y-16">
+      <div className="space-y-16 md:space-y-20">
         {contentSections.map((section) => (
-          <CaseStudySection
-            key={section.id}
-            title={section.title}
-            content={section.content}
-            image_url={section.image_url}
-            section_type={section.section_type}
-          />
+          <CaseStudySection key={section.id} section={section} />
         ))}
       </div>
     </article>
