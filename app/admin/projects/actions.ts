@@ -11,6 +11,15 @@ export interface SectionFormPayload {
   title: string;
   content: string;
   image_url: string | null;
+  video_url: string | null;
+  layout: string | null;
+  media_urls: string[];
+  items: Array<{
+    id: string;
+    label: string;
+    title: string;
+    description: string;
+  }>;
 }
 
 export interface ProjectFormPayload {
@@ -127,6 +136,22 @@ export async function saveProjectAction(
       title: section.title.trim() || null,
       content: section.content.trim() || null,
       image_url: section.image_url,
+      video_url: section.video_url?.trim() || null,
+      layout: section.layout?.trim() || null,
+      media_urls: section.media_urls.filter((url) => url.trim().length > 0),
+      items: section.items
+        .filter(
+          (item) =>
+            item.label.trim() ||
+            item.title.trim() ||
+            item.description.trim()
+        )
+        .map((item) => ({
+          id: item.id,
+          label: item.label.trim(),
+          title: item.title.trim(),
+          description: item.description.trim(),
+        })),
       order_index: index,
     }));
 

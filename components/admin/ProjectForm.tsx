@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { PasswordField } from "@/components/admin/PasswordField";
@@ -15,6 +15,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { saveProjectAction } from "@/app/admin/projects/actions";
+import {
+  normalizeMediaUrls,
+  normalizeSectionItems,
+} from "@/lib/project-sections";
 import type { Project, ProjectSection, ProjectStatusOption } from "@/lib/types";
 import { generateSlug } from "@/lib/utils";
 
@@ -25,6 +29,10 @@ interface ProjectFormProps {
   statusOptions?: ProjectStatusOption[];
 }
 
+function FieldHint({ children }: { children: ReactNode }) {
+  return <p className="text-xs text-muted-foreground">{children}</p>;
+}
+
 function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
   return sections.map((section) => ({
     clientId: section.id,
@@ -32,6 +40,10 @@ function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
     title: section.title ?? "",
     content: section.content ?? "",
     image_url: section.image_url,
+    video_url: section.video_url,
+    layout: section.layout || "grid-2",
+    media_urls: normalizeMediaUrls(section.media_urls),
+    items: normalizeSectionItems(section.items),
   }));
 }
 
@@ -106,7 +118,16 @@ export function ProjectForm({
       is_password_protected: isPasswordProtected,
       password,
       order_index: Number.isNaN(parsedOrderIndex) ? 0 : parsedOrderIndex,
-      sections: sectionItems,
+      sections: sectionItems.map((section) => ({
+        section_type: section.section_type,
+        title: section.title,
+        content: section.content,
+        image_url: section.image_url,
+        video_url: section.video_url,
+        layout: section.layout || null,
+        media_urls: section.media_urls.filter((url) => url.trim().length > 0),
+        items: section.items,
+      })),
     });
 
     if (result.error) {
@@ -129,8 +150,8 @@ export function ProjectForm({
         </h1>
         <p className="text-muted-foreground">
           {isEditing
-            ? "Update case study details and content sections."
-            : "Create a new portfolio case study."}
+            ? "Update case study details and rich content sections."
+            : "Create a portfolio case study with flexible Menti-style sections."}
         </p>
       </div>
 
@@ -142,7 +163,11 @@ export function ProjectForm({
             value={title}
             onChange={(event) => handleTitleChange(event.target.value)}
             required
+            placeholder="Menti"
           />
+          <FieldHint>
+            Project name shown on cards and as the case study H1.
+          </FieldHint>
         </div>
 
         <div className="space-y-2">
@@ -156,9 +181,9 @@ export function ProjectForm({
             }}
             required
           />
-          <p className="text-sm text-muted-foreground">
-            Preview: /projects/{slug || "your-project-slug"}
-          </p>
+          <FieldHint>
+            URL path segment. Preview: /projects/{slug || "your-project-slug"}
+          </FieldHint>
         </div>
 
         <div className="space-y-2 md:col-span-2">
@@ -167,7 +192,11 @@ export function ProjectForm({
             id="subtitle"
             value={subtitle}
             onChange={(event) => setSubtitle(event.target.value)}
+            placeholder="Class project — a platform for designers to practice interviews…"
           />
+          <FieldHint>
+            One-line pitch under the title on the case study page.
+          </FieldHint>
         </div>
 
         <div className="space-y-2">
@@ -185,15 +214,10 @@ export function ProjectForm({
               </option>
             ))}
           </select>
-          {statusOptions.length === 0 ? (
-            <p className="text-xs text-muted-foreground">
-              No statuses yet.{" "}
-              <a href="/admin/projects/statuses" className="underline">
-                Add statuses
-              </a>{" "}
-              to show options here.
-            </p>
-          ) : null}
+          <FieldHint>
+            Optional badge on project cards (Shipped, WIP…). Manage the list
+            under Projects → Manage statuses. Default is hidden.
+          </FieldHint>
         </div>
 
         <div className="space-y-2">
@@ -202,16 +226,22 @@ export function ProjectForm({
             id="year"
             value={year}
             onChange={(event) => setYear(event.target.value)}
+            placeholder="2022"
           />
+          <FieldHint>Shown in project card metadata.</FieldHint>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="company">Company</Label>
+          <Label htmlFor="company">Company / context</Label>
           <Input
             id="company"
             value={company}
             onChange={(event) => setCompany(event.target.value)}
+            placeholder="Side project"
           />
+          <FieldHint>
+            Organization or context (Meta, Side project, Class…).
+          </FieldHint>
         </div>
 
         <div className="space-y-2">
@@ -222,16 +252,24 @@ export function ProjectForm({
             onChange={(event) => setType(event.target.value)}
             placeholder="Case study"
           />
+          <FieldHint>
+            Work type label — Case study, Product, Exploration, etc.
+          </FieldHint>
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="summary">Summary</Label>
+          <Label htmlFor="summary">Summary / intro blurb</Label>
           <Textarea
             id="summary"
             value={summary}
             onChange={(event) => setSummary(event.target.value)}
             rows={4}
+            placeholder="For a class during grad school, we designed and coded…"
           />
+          <FieldHint>
+            Longer intro under the subtitle. Also used as the card excerpt and
+            SEO description fallback.
+          </FieldHint>
         </div>
 
         <div className="md:col-span-2">
@@ -241,6 +279,10 @@ export function ProjectForm({
             onChange={setCoverImageUrl}
             requirementsKind="project-cover"
           />
+          <FieldHint>
+            Hero / card thumbnail. Full-bleed on the case study top. GIF works
+            on cards.
+          </FieldHint>
         </div>
 
         <div className="space-y-2">
@@ -251,19 +293,28 @@ export function ProjectForm({
             value={orderIndex}
             onChange={(event) => setOrderIndex(event.target.value)}
           />
+          <FieldHint>
+            Lower numbers appear first on Home / Work. Use 0, 1, 2…
+          </FieldHint>
         </div>
 
-        <div className="flex items-center gap-3 pt-6">
+        <div className="flex items-start gap-3 pt-2">
           <Switch
             checked={isPublished}
             onCheckedChange={setIsPublished}
             aria-label="Published"
           />
-          <Label>Published</Label>
+          <div className="space-y-1">
+            <Label>Published</Label>
+            <FieldHint>
+              Off = draft (admin only). On = visible on the public site when not
+              password-locked.
+            </FieldHint>
+          </div>
         </div>
 
         <div className="space-y-4 rounded-2xl border border-border p-5 md:col-span-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-3">
             <Switch
               checked={isPasswordProtected}
               onCheckedChange={setIsPasswordProtected}
@@ -271,10 +322,10 @@ export function ProjectForm({
             />
             <div>
               <Label>Password protected</Label>
-              <p className="text-sm text-muted-foreground">
-                Visitors must enter a password to view this case study, even
-                with a direct link.
-              </p>
+              <FieldHint>
+                Visitors must enter a password to open this case study, including
+                direct links.
+              </FieldHint>
             </div>
           </div>
 
@@ -287,9 +338,9 @@ export function ProjectForm({
                 onChange={setPassword}
                 placeholder="Set a password"
               />
-              <p className="text-xs text-muted-foreground">
-                Use the eye icon to show or hide, and copy to share with clients.
-              </p>
+              <FieldHint>
+                Use the eye icon to show/hide, and copy to share with clients.
+              </FieldHint>
             </div>
           ) : null}
         </div>

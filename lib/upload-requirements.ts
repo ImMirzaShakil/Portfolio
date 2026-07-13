@@ -1,4 +1,5 @@
 export const MAX_IMAGE_UPLOAD_BYTES = 20 * 1024 * 1024;
+export const MAX_VIDEO_UPLOAD_BYTES = 80 * 1024 * 1024;
 export const MAX_RESUME_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 export const SUPPORTED_IMAGE_FORMATS =
@@ -9,7 +10,8 @@ export type UploadKind =
   | "project-cover"
   | "gallery"
   | "logo"
-  | "resume";
+  | "resume"
+  | "video";
 
 export interface UploadRequirements {
   formats: string;
@@ -23,6 +25,7 @@ function formatMegabytes(bytes: number) {
 
 export function getUploadRequirements(kind: UploadKind): UploadRequirements {
   const imageMax = formatMegabytes(MAX_IMAGE_UPLOAD_BYTES);
+  const videoMax = formatMegabytes(MAX_VIDEO_UPLOAD_BYTES);
   const resumeMax = formatMegabytes(MAX_RESUME_UPLOAD_BYTES);
 
   switch (kind) {
@@ -55,6 +58,15 @@ export function getUploadRequirements(kind: UploadKind): UploadRequirements {
         formats: "PDF",
         maxSizeLabel: resumeMax,
         notes: ["Replaces the current resume linked in the navbar."],
+      };
+    case "video":
+      return {
+        formats: "MP4, WebM, MOV",
+        maxSizeLabel: videoMax,
+        notes: [
+          "Prefer compressed MP4 for faster loading.",
+          "You can also paste an external video URL instead of uploading.",
+        ],
       };
     case "image":
     default:

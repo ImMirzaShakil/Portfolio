@@ -1,31 +1,33 @@
 "use client";
 
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+import { VideoUpload } from "@/components/admin/VideoUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ImageUpload } from "@/components/admin/ImageUpload";
+import {
+  createEmptySectionItem,
+  FEATURE_LAYOUT_OPTIONS,
+  getSectionTypeConfig,
+  SECTION_TYPE_CONFIG,
+  type FeatureLayout,
+  type ProjectSectionType,
+  type SectionListItem,
+} from "@/lib/project-sections";
 
 export interface SectionFormItem {
   clientId: string;
-  section_type: string;
+  section_type: ProjectSectionType | string;
   title: string;
   content: string;
   image_url: string | null;
+  video_url: string | null;
+  layout: string;
+  media_urls: string[];
+  items: SectionListItem[];
 }
-
-const sectionTypes = [
-  "overview",
-  "research",
-  "insights",
-  "problem",
-  "solution",
-  "testing",
-  "outcome",
-  "quickfact",
-  "custom",
-] as const;
 
 interface SectionBuilderProps {
   sections: SectionFormItem[];
@@ -39,7 +41,15 @@ function createEmptySection(): SectionFormItem {
     title: "",
     content: "",
     image_url: null,
+    video_url: null,
+    layout: "grid-2",
+    media_urls: [],
+    items: [],
   };
+}
+
+function FieldHint({ children }: { children: string }) {
+  return <p className="text-xs text-muted-foreground">{children}</p>;
 }
 
 export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
@@ -67,121 +77,488 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
     onChange(next);
   };
 
+  const handleTypeChange = (clientId: string, nextType: string) => {
+    const config = getSectionTypeConfig(nextType);
+    const section = sections.find((item) => item.clientId === clientId);
+    if (!section) return;
+
+    updateSection(clientId, {
+      section_type: nextType,
+      items:
+        config.supportsItems && section.items.length === 0
+          ? [createEmptySectionItem(config.itemKind)]
+          : section.items,
+      media_urls: config.supportsMediaGallery ? section.media_urls : [],
+      layout: config.supportsMediaGallery
+        ? section.layout || "grid-2"
+        : section.layout,
+      image_url: config.supportsImage ? section.image_url : null,
+      video_url: config.supportsVideo ? section.video_url : null,
+    });
+  };
+
+  const updateItem = (
+    sectionId: string,
+    itemId: string,
+    updates: Partial<SectionListItem>
+  ) => {
+    const section = sections.find((item) => item.clientId === sectionId);
+    if (!section) return;
+
+    updateSection(sectionId, {
+      items: section.items.map((item) =>
+        item.id === itemId ? { ...item, ...updates } : item
+      ),
+    });
+  };
+
+  const addItem = (sectionId: string, kind: "process" | "stats") => {
+    const section = sections.find((item) => item.clientId === sectionId);
+    if (!section) return;
+    updateSection(sectionId, {
+      items: [...section.items, createEmptySectionItem(kind)],
+    });
+  };
+
+  const removeItem = (sectionId: string, itemId: string) => {
+    const section = sections.find((item) => item.clientId === sectionId);
+    if (!section) return;
+    updateSection(sectionId, {
+      items: section.items.filter((item) => item.id !== itemId),
+    });
+  };
+
+  const updateMediaUrl = (
+    sectionId: string,
+    index: number,
+    url: string | null
+  ) => {
+    const section = sections.find((item) => item.clientId === sectionId);
+    if (!section) return;
+
+    const next = [...section.media_urls];
+    if (!url) {
+      next.splice(index, 1);
+    } else {
+      next[index] = url;
+    }
+    updateSection(sectionId, { media_urls: next });
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Case study sections</h2>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold">Case study sections</h2>
+          <FieldHint>
+            Build the page top-to-bottom. Order matters — drag with the arrows.
+            Mix quick facts, media hero, process, stats, and feature blocks to
+            match a Menti-style case study.
+          </FieldHint>
+        </div>
         <Button
           type="button"
           variant="outline"
           onClick={() => onChange([...sections, createEmptySection()])}
         >
-          Add Section
+          Add section
         </Button>
       </div>
 
       {sections.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-          No sections yet. Add overview, quick facts, and supporting content blocks.
+          No sections yet. Start with Quick facts (Role, Time, Team…), then a
+          Media hero, Process timeline, Research stats, and Feature showcase
+          blocks.
         </p>
       ) : null}
 
-      {sections.map((section, index) => (
-        <div
-          key={section.clientId}
-          className="space-y-4 rounded-2xl border border-border bg-card p-6"
-        >
-          <div className="flex items-center justify-between gap-4">
-            <p className="font-medium">Section {index + 1}</p>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon-sm"
-                onClick={() => moveSection(index, "up")}
-                disabled={index === 0}
-                aria-label="Move section up"
-              >
-                <ArrowUp className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon-sm"
-                onClick={() => moveSection(index, "down")}
-                disabled={index === sections.length - 1}
-                aria-label="Move section down"
-              >
-                <ArrowDown className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon-sm"
-                onClick={() => removeSection(section.clientId)}
-                aria-label="Delete section"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          </div>
+      {sections.map((section, index) => {
+        const config = getSectionTypeConfig(section.section_type);
 
-          <div className="grid gap-4 md:grid-cols-2">
+        return (
+          <div
+            key={section.clientId}
+            className="space-y-4 rounded-2xl border border-border bg-card p-6"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-medium">Section {index + 1}</p>
+                <FieldHint>{config.description}</FieldHint>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => moveSection(index, "up")}
+                  disabled={index === 0}
+                  aria-label="Move section up"
+                >
+                  <ArrowUp className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon-sm"
+                  onClick={() => moveSection(index, "down")}
+                  disabled={index === sections.length - 1}
+                  aria-label="Move section down"
+                >
+                  <ArrowDown className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon-sm"
+                  onClick={() => removeSection(section.clientId)}
+                  aria-label="Delete section"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor={`section-type-${section.clientId}`}>
+                  Section type
+                </Label>
+                <select
+                  id={`section-type-${section.clientId}`}
+                  value={section.section_type}
+                  onChange={(event) =>
+                    handleTypeChange(section.clientId, event.target.value)
+                  }
+                  className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {SECTION_TYPE_CONFIG.map((type) => (
+                    <option key={type.key} value={type.key}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`section-title-${section.clientId}`}>
+                  {section.section_type === "quickfact"
+                    ? "Fact label"
+                    : section.section_type === "feature"
+                      ? "Feature title / eyebrow"
+                      : "Title"}
+                </Label>
+                <Input
+                  id={`section-title-${section.clientId}`}
+                  value={section.title}
+                  onChange={(event) =>
+                    updateSection(section.clientId, {
+                      title: event.target.value,
+                    })
+                  }
+                  placeholder={
+                    section.section_type === "quickfact"
+                      ? "Role"
+                      : section.section_type === "feature"
+                        ? "Feature #1 — Mentorship"
+                        : "Section heading"
+                  }
+                />
+                <FieldHint>
+                  {section.section_type === "quickfact"
+                    ? "Short label shown above the value (Role, Time, Team, Problem…)."
+                    : section.section_type === "feature"
+                      ? "Shown as the feature heading. Use “Feature #1 Mentorship” style."
+                      : "Main heading for this block on the public page."}
+                </FieldHint>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor={`section-type-${section.clientId}`}>
-                Section type
+              <Label htmlFor={`section-content-${section.clientId}`}>
+                {section.section_type === "quickfact" ? "Fact value" : "Content"}
               </Label>
-              <select
-                id={`section-type-${section.clientId}`}
-                value={section.section_type}
+              <Textarea
+                id={`section-content-${section.clientId}`}
+                value={section.content}
                 onChange={(event) =>
                   updateSection(section.clientId, {
-                    section_type: event.target.value,
+                    content: event.target.value,
                   })
                 }
-                className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                {sectionTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor={`section-title-${section.clientId}`}>Title</Label>
-              <Input
-                id={`section-title-${section.clientId}`}
-                value={section.title}
-                onChange={(event) =>
-                  updateSection(section.clientId, { title: event.target.value })
+                rows={section.section_type === "quickfact" ? 2 : 5}
+                placeholder={
+                  section.section_type === "quickfact"
+                    ? "Product designer & developer"
+                    : "Write the body copy. Separate paragraphs with a blank line."
                 }
               />
+              <FieldHint>
+                {section.section_type === "quickfact"
+                  ? "The value under the label in the Quick Facts bar."
+                  : "Body text for this section. Blank lines split into paragraphs."}
+              </FieldHint>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`section-content-${section.clientId}`}>Content</Label>
-            <Textarea
-              id={`section-content-${section.clientId}`}
-              value={section.content}
-              onChange={(event) =>
-                updateSection(section.clientId, { content: event.target.value })
-              }
-              rows={6}
-            />
-          </div>
+            {config.supportsItems && config.itemKind === "process" ? (
+              <div className="space-y-3 rounded-xl border border-border p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">Timeline steps</p>
+                    <FieldHint>
+                      Numbered phases like Week 1 / Research & Design. Label =
+                      number or short tag, Title = step name, Description =
+                      details.
+                    </FieldHint>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addItem(section.clientId, "process")}
+                  >
+                    Add step
+                  </Button>
+                </div>
+                {section.items.map((item, itemIndex) => (
+                  <div
+                    key={item.id}
+                    className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[100px_1fr_auto]"
+                  >
+                    <div className="space-y-1.5">
+                      <Label>Label</Label>
+                      <Input
+                        value={item.label}
+                        onChange={(event) =>
+                          updateItem(section.clientId, item.id, {
+                            label: event.target.value,
+                          })
+                        }
+                        placeholder={String(itemIndex + 1).padStart(2, "0")}
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label>Step title</Label>
+                        <Input
+                          value={item.title}
+                          onChange={(event) =>
+                            updateItem(section.clientId, item.id, {
+                              title: event.target.value,
+                            })
+                          }
+                          placeholder="Week 1 — Research & Design"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Description</Label>
+                        <Textarea
+                          value={item.description}
+                          onChange={(event) =>
+                            updateItem(section.clientId, item.id, {
+                              description: event.target.value,
+                            })
+                          }
+                          rows={2}
+                          placeholder="What happened in this phase…"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => removeItem(section.clientId, item.id)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
 
-          <ImageUpload
-            label="Section image"
-            value={section.image_url}
-            onChange={(url) =>
-              updateSection(section.clientId, { image_url: url })
-            }
-          />
-        </div>
-      ))}
+            {config.supportsItems && config.itemKind === "stats" ? (
+              <div className="space-y-3 rounded-xl border border-border p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">Stat callouts</p>
+                    <FieldHint>
+                      Big number/value, short headline, and supporting sentence
+                      (e.g. 87% — of survey takers ask friends for help…).
+                    </FieldHint>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addItem(section.clientId, "stats")}
+                  >
+                    Add stat
+                  </Button>
+                </div>
+                {section.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[120px_1fr_auto]"
+                  >
+                    <div className="space-y-1.5">
+                      <Label>Value</Label>
+                      <Input
+                        value={item.label}
+                        onChange={(event) =>
+                          updateItem(section.clientId, item.id, {
+                            label: event.target.value,
+                          })
+                        }
+                        placeholder="87%"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <Label>Headline</Label>
+                        <Input
+                          value={item.title}
+                          onChange={(event) =>
+                            updateItem(section.clientId, item.id, {
+                              title: event.target.value,
+                            })
+                          }
+                          placeholder="of survey takers ask friends for help"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Details</Label>
+                        <Textarea
+                          value={item.description}
+                          onChange={(event) =>
+                            updateItem(section.clientId, item.id, {
+                              description: event.target.value,
+                            })
+                          }
+                          rows={2}
+                          placeholder="Extra context for this finding…"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => removeItem(section.clientId, item.id)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {config.supportsMediaGallery ? (
+              <div className="space-y-4 rounded-xl border border-border p-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`layout-${section.clientId}`}>
+                    Image layout
+                  </Label>
+                  <select
+                    id={`layout-${section.clientId}`}
+                    value={section.layout || "grid-2"}
+                    onChange={(event) =>
+                      updateSection(section.clientId, {
+                        layout: event.target.value as FeatureLayout,
+                      })
+                    }
+                    className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:max-w-xs"
+                  >
+                    {FEATURE_LAYOUT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <FieldHint>
+                    {FEATURE_LAYOUT_OPTIONS.find(
+                      (option) => option.value === (section.layout || "grid-2")
+                    )?.description ?? "Choose how feature images are arranged."}
+                  </FieldHint>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Feature images</p>
+                      <FieldHint>
+                        Upload 1–4 screenshots or mockups for this feature.
+                      </FieldHint>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        updateSection(section.clientId, {
+                          media_urls: [...section.media_urls, ""],
+                        })
+                      }
+                    >
+                      Add image slot
+                    </Button>
+                  </div>
+
+                  {section.media_urls.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No images yet. Add slots, then upload into each one.
+                    </p>
+                  ) : null}
+
+                  {section.media_urls.map((url, mediaIndex) => (
+                    <div
+                      key={`${section.clientId}-media-${mediaIndex}`}
+                      className="rounded-lg border border-border p-3"
+                    >
+                      <ImageUpload
+                        label={`Image ${mediaIndex + 1}`}
+                        value={url || null}
+                        onChange={(nextUrl) =>
+                          updateMediaUrl(
+                            section.clientId,
+                            mediaIndex,
+                            nextUrl
+                          )
+                        }
+                        requirementsKind="image"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {config.supportsImage ? (
+              <ImageUpload
+                label={
+                  section.section_type === "media-hero" ||
+                  section.section_type === "video"
+                    ? "Poster / background image"
+                    : "Section image"
+                }
+                value={section.image_url}
+                onChange={(url) =>
+                  updateSection(section.clientId, { image_url: url })
+                }
+                requirementsKind="image"
+              />
+            ) : null}
+
+            {config.supportsVideo ? (
+              <VideoUpload
+                label="Section video"
+                value={section.video_url}
+                onChange={(url) =>
+                  updateSection(section.clientId, { video_url: url })
+                }
+              />
+            ) : null}
+          </div>
+        );
+      })}
     </div>
   );
 }
