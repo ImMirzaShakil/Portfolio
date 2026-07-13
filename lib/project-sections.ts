@@ -12,6 +12,7 @@ export type ProjectSectionType =
   | "testing"
   | "outcome"
   | "video"
+  | "html"
   | "custom";
 
 export type FeatureLayout = "grid-2" | "grid-1-2" | "stack";
@@ -31,6 +32,7 @@ export interface SectionTypeConfig {
   supportsVideo: boolean;
   supportsMediaGallery: boolean;
   supportsItems: boolean;
+  supportsHtml?: boolean;
   itemKind?: "process" | "stats";
 }
 
@@ -190,6 +192,17 @@ export const SECTION_TYPE_CONFIG: SectionTypeConfig[] = [
     supportsItems: false,
   },
   {
+    key: "html",
+    label: "Custom HTML",
+    description:
+      "Paste your own HTML markup for fully custom layouts, embeds, or one-off blocks. Use carefully — content is rendered as HTML on the public page.",
+    supportsImage: false,
+    supportsVideo: false,
+    supportsMediaGallery: false,
+    supportsItems: false,
+    supportsHtml: true,
+  },
+  {
     key: "custom",
     label: "Custom",
     description:
@@ -243,4 +256,16 @@ export function normalizeSectionItems(value: unknown): SectionListItem[] {
 export function normalizeMediaUrls(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+}
+
+/** Strip obvious script injection while keeping admin-authored layout HTML. */
+export function sanitizeAdminHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<\/?\s*object\b[^>]*>/gi, "")
+    .replace(/<\/?\s*embed\b[^>]*>/gi, "")
+    .replace(/\son\w+\s*=\s*(["']).*?\1/gi, "")
+    .replace(/\son\w+\s*=\s*[^\s>]+/gi, "")
+    .replace(/javascript\s*:/gi, "")
+    .replace(/data\s*:\s*text\/html/gi, "");
 }

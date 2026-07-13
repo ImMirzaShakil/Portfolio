@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { VideoUpload } from "@/components/admin/VideoUpload";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   type ProjectSectionType,
   type SectionListItem,
 } from "@/lib/project-sections";
+import { cn } from "@/lib/utils";
 
 export interface SectionFormItem {
   clientId: string;
@@ -53,6 +55,9 @@ function FieldHint({ children }: { children: string }) {
 }
 
 export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
   const updateSection = (
     clientId: string,
     updates: Partial<SectionFormItem>
@@ -68,13 +73,25 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
     onChange(sections.filter((section) => section.clientId !== clientId));
   };
 
-  const moveSection = (index: number, direction: "up" | "down") => {
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= sections.length) return;
+  const moveSectionTo = (fromIndex: number, toIndex: number) => {
+    if (
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= sections.length ||
+      toIndex >= sections.length
+    ) {
+      return;
+    }
 
     const next = [...sections];
-    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
     onChange(next);
+  };
+
+  const moveSection = (index: number, direction: "up" | "down") => {
+    moveSectionTo(index, direction === "up" ? index - 1 : index + 1);
   };
 
   const handleTypeChange = (clientId: string, nextType: string) => {
@@ -151,9 +168,8 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         <div className="space-y-1">
           <h2 className="text-xl font-semibold">Case study sections</h2>
           <FieldHint>
-            Build the page top-to-bottom. Order matters — drag with the arrows.
-            Mix quick facts, media hero, process, stats, and feature blocks to
-            match a Menti-style case study.
+            Build the page top-to-bottom. Drag the handle, use Up/Down, or pick
+            a position to reorder. Include Custom HTML for one-off layouts.
           </FieldHint>
         </div>
         <Button
@@ -168,53 +184,128 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
       {sections.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
           No sections yet. Start with Quick facts (Role, Time, Team…), then a
-          Media hero, Process timeline, Research stats, and Feature showcase
-          blocks.
+          Media hero, Process timeline, Research stats, Feature showcase, or
+          Custom HTML blocks.
         </p>
       ) : null}
 
       {sections.map((section, index) => {
         const config = getSectionTypeConfig(section.section_type);
+        const isHtml = Boolean(config.supportsHtml);
+        const isDragging = draggingId === section.clientId;
+        const isDragOver =
+          dragOverId === section.clientId && draggingId !== section.clientId;
 
         return (
           <div
             key={section.clientId}
-            className="space-y-4 rounded-2xl border border-border bg-card p-6"
+            draggable={false}
+            onDragOver={(event) => {
+              event.preventDefault();
+              if (draggingId && draggingId !== section.clientId) {
+                setDragOverId(section.clientId);
+              }
+            }}
+            onDragLeave={() => {
+              if (dragOverId === section.clientId) {
+                setDragOverId(null);
+              }
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              if (!draggingId) return;
+              const fromIndex = sections.findIndex(
+                (item) => item.clientId === draggingId
+              );
+              moveSectionTo(fromIndex, index);
+              setDraggingId(null);
+              setDragOverId(null);
+            }}
+            className={cn(
+              "space-y-4 rounded-2xl border bg-card p-6 transition-colors",
+              isDragOver
+                ? "border-foreground border-dashed"
+                : "border-border",
+              isDragging && "opacity-60"
+            )}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-medium">Section {index + 1}</p>
-                <FieldHint>{config.description}</FieldHint>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex min-w-0 items-start gap-3">
+                <button
+                  type="button"
+                  draggable
+                  onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = "move";
+                    event.dataTransfer.setData("text/plain", section.clientId);
+                    setDraggingId(section.clientId);
+                  }}
+                  onDragEnd={() => {
+                    setDraggingId(null);
+                    setDragOverId(null);
+                  }}
+                  className="mt-0.5 inline-flex size-9 shrink-0 cursor-grab items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted active:cursor-grabbing"
+                  aria-label={`Drag to reorder section ${index + 1}`}
+                  title="Drag to reorder"
+                >
+                  <GripVertical className="size-4" />
+                </button>
+                <div className="min-w-0">
+                  <p className="font-medium">
+                    Section {index + 1}
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      · {config.label}
+                    </span>
+                  </p>
+                  <FieldHint>{config.description}</FieldHint>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
-                  size="icon-sm"
+                  size="sm"
                   onClick={() => moveSection(index, "up")}
                   disabled={index === 0}
-                  aria-label="Move section up"
                 >
                   <ArrowUp className="size-4" />
+                  Up
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  size="icon-sm"
+                  size="sm"
                   onClick={() => moveSection(index, "down")}
                   disabled={index === sections.length - 1}
-                  aria-label="Move section down"
                 >
                   <ArrowDown className="size-4" />
+                  Down
                 </Button>
+                <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="whitespace-nowrap">Move to</span>
+                  <select
+                    value={index}
+                    onChange={(event) =>
+                      moveSectionTo(index, Number(event.target.value))
+                    }
+                    className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                    aria-label={`Move section ${index + 1} to position`}
+                  >
+                    {sections.map((_, position) => (
+                      <option key={position} value={position}>
+                        #{position + 1}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <Button
                   type="button"
                   variant="destructive"
-                  size="icon-sm"
+                  size="sm"
                   onClick={() => removeSection(section.clientId)}
-                  aria-label="Delete section"
                 >
                   <Trash2 className="size-4" />
+                  Delete
                 </Button>
               </div>
             </div>
@@ -246,7 +337,9 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                     ? "Fact label"
                     : section.section_type === "feature"
                       ? "Feature title / eyebrow"
-                      : "Title"}
+                      : isHtml
+                        ? "Optional title"
+                        : "Title"}
                 </Label>
                 <Input
                   id={`section-title-${section.clientId}`}
@@ -261,7 +354,9 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                       ? "Role"
                       : section.section_type === "feature"
                         ? "Feature #1 — Mentorship"
-                        : "Section heading"
+                        : isHtml
+                          ? "Leave blank if the HTML includes its own heading"
+                          : "Section heading"
                   }
                 />
                 <FieldHint>
@@ -269,14 +364,20 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                     ? "Short label shown above the value (Role, Time, Team, Problem…)."
                     : section.section_type === "feature"
                       ? "Shown as the feature heading. Use “Feature #1 Mentorship” style."
-                      : "Main heading for this block on the public page."}
+                      : isHtml
+                        ? "Optional. If set, shown above your HTML as an H2."
+                        : "Main heading for this block on the public page."}
                 </FieldHint>
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor={`section-content-${section.clientId}`}>
-                {section.section_type === "quickfact" ? "Fact value" : "Content"}
+                {section.section_type === "quickfact"
+                  ? "Fact value"
+                  : isHtml
+                    ? "HTML content"
+                    : "Content"}
               </Label>
               <Textarea
                 id={`section-content-${section.clientId}`}
@@ -286,17 +387,22 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                     content: event.target.value,
                   })
                 }
-                rows={section.section_type === "quickfact" ? 2 : 5}
+                rows={isHtml ? 12 : section.section_type === "quickfact" ? 2 : 5}
+                className={cn(isHtml && "font-mono text-xs leading-relaxed")}
                 placeholder={
                   section.section_type === "quickfact"
                     ? "Product designer & developer"
-                    : "Write the body copy. Separate paragraphs with a blank line."
+                    : isHtml
+                      ? `<div class="my-block">\n  <p>Custom markup here…</p>\n</div>`
+                      : "Write the body copy. Separate paragraphs with a blank line."
                 }
               />
               <FieldHint>
                 {section.section_type === "quickfact"
                   ? "The value under the label in the Quick Facts bar."
-                  : "Body text for this section. Blank lines split into paragraphs."}
+                  : isHtml
+                    ? "Rendered as HTML on the live page. Scripts and inline event handlers are stripped for safety. You can use tags like div, p, img, a, ul, table, iframe."
+                    : "Body text for this section. Blank lines split into paragraphs."}
               </FieldHint>
             </div>
 
