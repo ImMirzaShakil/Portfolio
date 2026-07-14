@@ -7,7 +7,7 @@ import {
   getProjectUnlockCookieName,
   hasProjectUnlockAccess,
 } from "@/lib/project-password";
-import { buildPageMetadata, type PagePlatformSeo } from "@/lib/seo";
+import { buildPageMetadata, normalizeSharedSeo } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createStaticClient } from "@/lib/supabase/static";
 import type { Metadata } from "next";
@@ -89,7 +89,7 @@ export async function generateMetadata({
     project.subtitle ?? project.summary ?? `Case study: ${project.title}`;
   const { siteName } = await getSiteContext();
 
-  return buildPageMetadata(project.seo as PagePlatformSeo | null, {
+  return buildPageMetadata(normalizeSharedSeo(project.seo), {
     title: project.title,
     description,
     image: project.cover_image_url,

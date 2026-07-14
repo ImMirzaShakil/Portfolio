@@ -7,7 +7,7 @@ import { SocialLinks } from "@/components/social/SocialLinks";
 import { getSiteContext, getSiteUrl } from "@/lib/metadata";
 import {
   buildPageMetadata,
-  type PagePlatformSeo,
+  normalizeSharedSeo,
   type StaticSeoPageId,
 } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -21,8 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     `Learn more about ${siteName}.`;
 
   return buildPageMetadata(
-    (settings?.page_seo as Record<StaticSeoPageId, PagePlatformSeo> | null)
-      ?.about,
+    normalizeSharedSeo(settings?.page_seo?.["about" as StaticSeoPageId]),
     {
       title,
       description,

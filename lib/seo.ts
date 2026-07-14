@@ -5,52 +5,6 @@ import {
   getSiteUrl,
 } from "@/lib/metadata";
 
-/** Platforms shown in admin; some share Open Graph tags in HTML. */
-export const SEO_PLATFORMS = [
-  {
-    id: "google",
-    label: "Google Search",
-    hint: "Title and description in search results. Used as the default fallback for other platforms.",
-  },
-  {
-    id: "facebook",
-    label: "Facebook",
-    hint: "Open Graph preview when a link is shared on Facebook.",
-  },
-  {
-    id: "linkedin",
-    label: "LinkedIn",
-    hint: "Open Graph preview when a link is shared on LinkedIn.",
-  },
-  {
-    id: "twitter",
-    label: "Twitter / X",
-    hint: "Twitter Card preview (separate from Open Graph).",
-  },
-  {
-    id: "whatsapp",
-    label: "WhatsApp",
-    hint: "Uses Open Graph tags for link previews in chats.",
-  },
-  {
-    id: "instagram",
-    label: "Instagram",
-    hint: "Link previews in bio / DMs use Open Graph when available.",
-  },
-  {
-    id: "github",
-    label: "GitHub",
-    hint: "Open Graph preview when a link is pasted in issues, PRs, or READMEs.",
-  },
-  {
-    id: "google_scholar",
-    label: "Google Scholar",
-    hint: "Optional citation meta tags for scholarly / publication-style pages.",
-  },
-] as const;
-
-export type SeoPlatformId = (typeof SEO_PLATFORMS)[number]["id"];
-
 export const STATIC_SEO_PAGES = [
   {
     id: "home",
@@ -76,109 +30,184 @@ export const STATIC_SEO_PAGES = [
 
 export type StaticSeoPageId = (typeof STATIC_SEO_PAGES)[number]["id"];
 
-export interface PlatformSeoFields {
+/** One shared SEO block used for Google + all social platforms. */
+export interface SharedSeoFields {
   title?: string | null;
   description?: string | null;
   image_url?: string | null;
-  /** Google Scholar citation author */
-  scholar_author?: string | null;
+  /** Keywords / tags for search and social context. */
+  tags?: string[] | null;
 }
 
-export type PagePlatformSeo = Partial<
-  Record<SeoPlatformId, PlatformSeoFields>
->;
+export type SitePageSeo = Partial<Record<StaticSeoPageId, SharedSeoFields>>;
 
-export type SitePageSeo = Partial<Record<StaticSeoPageId, PagePlatformSeo>>;
-
-export function emptyPlatformSeo(): PlatformSeoFields {
-  return {
-    title: "",
-    description: "",
-    image_url: "",
-    scholar_author: "",
-  };
-}
-
-export function emptyPagePlatformSeo(): PagePlatformSeo {
-  return Object.fromEntries(
-    SEO_PLATFORMS.map((platform) => [platform.id, emptyPlatformSeo()])
-  ) as PagePlatformSeo;
-}
-
-export function normalizePlatformSeo(
-  value?: PlatformSeoFields | null
-): PlatformSeoFields {
-  return {
-    title: value?.title ?? "",
-    description: value?.description ?? "",
-    image_url: value?.image_url ?? "",
-    scholar_author: value?.scholar_author ?? "",
-  };
-}
-
-export function normalizePagePlatformSeo(
-  value?: PagePlatformSeo | null
-): PagePlatformSeo {
-  const result = emptyPagePlatformSeo();
-  for (const platform of SEO_PLATFORMS) {
-    result[platform.id] = normalizePlatformSeo(value?.[platform.id]);
-  }
-  return result;
-}
-
-export function normalizeSitePageSeo(value?: SitePageSeo | null): SitePageSeo {
-  const result: SitePageSeo = {};
-  for (const page of STATIC_SEO_PAGES) {
-    result[page.id] = normalizePagePlatformSeo(value?.[page.id]);
-  }
-  return result;
-}
+/** @deprecated Use SharedSeoFields — kept for reading old per-platform saves. */
+export type PagePlatformSeo = SharedSeoFields;
 
 function trimOrNull(value?: string | null) {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
 }
 
-/** Drop empty platform objects before saving. */
-export function compactPagePlatformSeo(
-  value?: PagePlatformSeo | null
-): PagePlatformSeo {
-  const result: PagePlatformSeo = {};
+export function normalizeTags(value?: string[] | string | null): string[] {
+  if (!value) return [];
 
-  for (const platform of SEO_PLATFORMS) {
-    const fields = value?.[platform.id];
-    if (!fields) continue;
+  if (Array.isArray(value)) {
+    return value.map((tag) => tag.trim()).filter(Boolean);
+  }
 
-    const compact: PlatformSeoFields = {};
-    const title = trimOrNull(fields.title);
-    const description = trimOrNull(fields.description);
-    const image_url = trimOrNull(fields.image_url);
-    const scholar_author = trimOrNull(fields.scholar_author);
+  return value
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
 
-    if (title) compact.title = title;
-    if (description) compact.description = description;
-    if (image_url) compact.image_url = image_url;
-    if (scholar_author) compact.scholar_author = scholar_author;
+export function tagsToInputValue(tags?: string[] | null) {
+  return (tags ?? []).join(", ");
+}
 
-    if (Object.keys(compact).length > 0) {
-      result[platform.id] = compact;
+/**
+ * Accept new flat SEO shape, or coalesce legacy per-platform saves
+ * ({ facebook: {...}, google: {...} }) into one shared block.
+ */
+export function normalizeSharedSeo(value?: unknown): SharedSeoFields {
+  if (!value || typeof value !== "object") {
+    return {
+      title: "",
+      description: "",
+      image_url: "",
+      tags: [],
+    };
+  }
+
+  const record = value as Record<string, unknown>;
+
+  // New flat shape
+  if (
+    "title" in record ||
+    "description" in record ||
+    "image_url" in record ||
+    "tags" in record
+  ) {
+    const hasNestedPlatform =
+      typeof record.facebook === "object" ||
+      typeof record.google === "object" ||
+      typeof record.twitter === "object";
+
+    if (!hasNestedPlatform) {
+      return {
+        title: typeof record.title === "string" ? record.title : "",
+        description:
+          typeof record.description === "string" ? record.description : "",
+        image_url:
+          typeof record.image_url === "string" ? record.image_url : "",
+        tags: normalizeTags(record.tags as string[] | string | null),
+      };
     }
   }
 
+  // Legacy per-platform shape — prefer first filled platform
+  const legacyOrder = [
+    "google",
+    "facebook",
+    "linkedin",
+    "twitter",
+    "whatsapp",
+    "instagram",
+    "github",
+    "google_scholar",
+  ] as const;
+
+  for (const platform of legacyOrder) {
+    const fields = record[platform];
+    if (!fields || typeof fields !== "object") continue;
+
+    const legacy = fields as Record<string, unknown>;
+    const title = typeof legacy.title === "string" ? legacy.title.trim() : "";
+    const description =
+      typeof legacy.description === "string" ? legacy.description.trim() : "";
+    const image_url =
+      typeof legacy.image_url === "string" ? legacy.image_url.trim() : "";
+
+    if (title || description || image_url) {
+      return {
+        title,
+        description,
+        image_url,
+        tags: [],
+      };
+    }
+  }
+
+  return {
+    title: "",
+    description: "",
+    image_url: "",
+    tags: [],
+  };
+}
+
+/** @deprecated Alias for normalizeSharedSeo */
+export function normalizePagePlatformSeo(value?: unknown): SharedSeoFields {
+  return normalizeSharedSeo(value);
+}
+
+export function normalizeSitePageSeo(value?: SitePageSeo | null): SitePageSeo {
+  const result: SitePageSeo = {};
+  const source = (value ?? {}) as Record<string, unknown>;
+
+  for (const page of STATIC_SEO_PAGES) {
+    result[page.id] = normalizeSharedSeo(source[page.id]);
+  }
+
   return result;
+}
+
+export function compactSharedSeo(value?: SharedSeoFields | null): SharedSeoFields {
+  const compact: SharedSeoFields = {};
+  const title = trimOrNull(value?.title);
+  const description = trimOrNull(value?.description);
+  const image_url = trimOrNull(value?.image_url);
+  const tags = normalizeTags(value?.tags);
+
+  if (title) compact.title = title;
+  if (description) compact.description = description;
+  if (image_url) compact.image_url = image_url;
+  if (tags.length > 0) compact.tags = tags;
+
+  return compact;
+}
+
+/** @deprecated Alias for compactSharedSeo */
+export function compactPagePlatformSeo(
+  value?: SharedSeoFields | null
+): SharedSeoFields {
+  return compactSharedSeo(value);
 }
 
 export function compactSitePageSeo(value?: SitePageSeo | null): SitePageSeo {
   const result: SitePageSeo = {};
 
   for (const page of STATIC_SEO_PAGES) {
-    const compacted = compactPagePlatformSeo(value?.[page.id]);
+    const compacted = compactSharedSeo(
+      normalizeSharedSeo(value?.[page.id] as unknown)
+    );
     if (Object.keys(compacted).length > 0) {
       result[page.id] = compacted;
     }
   }
 
   return result;
+}
+
+export function sharedSeoHasContent(value?: SharedSeoFields | null) {
+  const seo = normalizeSharedSeo(value);
+  return Boolean(
+    seo.title?.trim() ||
+      seo.description?.trim() ||
+      seo.image_url?.trim() ||
+      (seo.tags && seo.tags.length > 0)
+  );
 }
 
 export interface SeoFallbacks {
@@ -189,106 +218,38 @@ export interface SeoFallbacks {
   siteName?: string;
 }
 
-function pickFields(
-  seo: PagePlatformSeo | null | undefined,
-  platform: SeoPlatformId,
-  fallbacks: SeoFallbacks
-): { title: string; description: string; image?: string } {
-  const fields = seo?.[platform];
-  const title = trimOrNull(fields?.title) ?? fallbacks.title;
-  const description = trimOrNull(fields?.description) ?? fallbacks.description;
-  const image =
-    trimOrNull(fields?.image_url) ??
-    trimOrNull(fallbacks.image) ??
-    undefined;
-
-  return { title, description, image };
-}
-
-/** Open Graph platforms share one set of tags — pick first configured. */
-const OG_PLATFORM_PRIORITY: SeoPlatformId[] = [
-  "facebook",
-  "linkedin",
-  "whatsapp",
-  "instagram",
-  "github",
-];
-
-function resolveOpenGraphFields(
-  seo: PagePlatformSeo | null | undefined,
-  fallbacks: SeoFallbacks
-) {
-  for (const platform of OG_PLATFORM_PRIORITY) {
-    const fields = seo?.[platform];
-    if (
-      trimOrNull(fields?.title) ||
-      trimOrNull(fields?.description) ||
-      trimOrNull(fields?.image_url)
-    ) {
-      return pickFields(seo, platform, fallbacks);
-    }
-  }
-
-  return pickFields(seo, "google", fallbacks);
-}
-
-function buildScholarOther(seo: PagePlatformSeo | null | undefined) {
-  const scholar = seo?.google_scholar;
-  if (!scholar) return undefined;
-
-  const title = trimOrNull(scholar.title);
-  const author = trimOrNull(scholar.scholar_author);
-  const description = trimOrNull(scholar.description);
-
-  if (!title && !author && !description) return undefined;
-
-  const other: Record<string, string> = {};
-  if (title) other["citation_title"] = title;
-  if (author) other["citation_author"] = author;
-  if (description) other["citation_abstract"] = description;
-
-  return other;
-}
-
 /**
- * Build Next.js Metadata from per-platform SEO overrides + content fallbacks.
+ * Build Next.js Metadata from one shared SEO block + content fallbacks.
+ * Same title/description/image apply to Google, Open Graph, and Twitter.
  */
 export function buildPageMetadata(
-  seo: PagePlatformSeo | null | undefined,
+  seoInput: SharedSeoFields | null | undefined,
   fallbacks: SeoFallbacks
 ): Metadata {
-  const google = pickFields(seo, "google", fallbacks);
-  const og = resolveOpenGraphFields(seo, fallbacks);
-  const twitter = pickFields(
-    seo,
-    "twitter",
-    {
-      ...fallbacks,
-      title: og.title,
-      description: og.description,
-      image: og.image,
-    }
-  );
-  const images = og.image ? [og.image] : undefined;
-  const twitterImages = twitter.image ? [twitter.image] : images;
-  const scholarOther = buildScholarOther(seo);
+  const seo = normalizeSharedSeo(seoInput);
+  const title = trimOrNull(seo.title) ?? fallbacks.title;
+  const description = trimOrNull(seo.description) ?? fallbacks.description;
+  const image =
+    trimOrNull(seo.image_url) ?? trimOrNull(fallbacks.image) ?? undefined;
+  const images = image ? [image] : undefined;
+  const keywords = normalizeTags(seo.tags);
 
   return {
-    title: google.title,
-    description: google.description,
+    title,
+    description,
+    ...(keywords.length > 0 ? { keywords } : {}),
     openGraph: buildOpenGraph({
-      title: og.title,
-      description: og.description,
+      title,
+      description,
       images,
       url: fallbacks.url,
       siteName: fallbacks.siteName,
     }),
     twitter: buildTwitter({
-      title: twitter.title,
-      description: twitter.description,
-      images: twitterImages,
+      title,
+      description,
+      images,
     }),
-    ...(scholarOther ? { other: scholarOther } : {}),
   };
 }
 

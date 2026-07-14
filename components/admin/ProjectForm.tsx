@@ -9,7 +9,7 @@ import {
   SectionBuilder,
   type SectionFormItem,
 } from "@/components/admin/SectionBuilder";
-import { SeoPlatformFieldsEditor } from "@/components/admin/SeoPlatformFieldsEditor";
+import { SeoFieldsEditor } from "@/components/admin/SeoFieldsEditor";
 import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +22,9 @@ import {
   normalizeSectionItems,
 } from "@/lib/project-sections";
 import {
-  normalizePagePlatformSeo,
-  type PagePlatformSeo,
+  normalizeSharedSeo,
+  sharedSeoHasContent,
+  type SharedSeoFields,
 } from "@/lib/seo";
 import type { Project, ProjectSection, ProjectStatusOption } from "@/lib/types";
 import { generateSlug } from "@/lib/utils";
@@ -85,8 +86,8 @@ export function ProjectForm({
   const [sectionItems, setSectionItems] = useState<SectionFormItem[]>(
     mapSectionsToForm(sections)
   );
-  const [seo, setSeo] = useState<PagePlatformSeo>(() =>
-    normalizePagePlatformSeo(project?.seo)
+  const [seo, setSeo] = useState<SharedSeoFields>(() =>
+    normalizeSharedSeo(project?.seo)
   );
   const [showShareButton, setShowShareButton] = useState(
     project?.show_share_button !== false
@@ -363,19 +364,8 @@ export function ProjectForm({
 
       <AdminCollapsibleSection
         title="SEO & social metadata"
-        description="Customize how this project appears in Google and when shared on social platforms. Blank fields use the project title, summary/subtitle, and cover image."
-        defaultOpen={Boolean(
-          project?.seo &&
-            Object.keys(project.seo).some((key) => {
-              const fields = project.seo?.[key as keyof typeof project.seo];
-              return Boolean(
-                fields?.title?.trim() ||
-                  fields?.description?.trim() ||
-                  fields?.image_url?.trim() ||
-                  fields?.scholar_author?.trim()
-              );
-            })
-        )}
+        description="One title, description, image, and tags for Google and all social platforms. Blank fields use the project title, summary/subtitle, and cover image."
+        defaultOpen={sharedSeoHasContent(project?.seo)}
       >
         <div className="flex items-start gap-3 rounded-xl border border-border p-4">
           <Switch
@@ -392,7 +382,7 @@ export function ProjectForm({
           </div>
         </div>
 
-        <SeoPlatformFieldsEditor
+        <SeoFieldsEditor
           value={seo}
           onChange={setSeo}
           placeholders={{
