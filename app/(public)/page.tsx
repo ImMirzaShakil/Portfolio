@@ -5,7 +5,7 @@ import { getSiteContext, getSiteUrl } from "@/lib/metadata";
 import { PROJECT_WITH_STATUS_SELECT } from "@/lib/project-queries";
 import {
   buildPageMetadata,
-  type PagePlatformSeo,
+  normalizeSharedSeo,
   type StaticSeoPageId,
 } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -24,18 +24,17 @@ export async function generateMetadata(): Promise<Metadata> {
   const images = settings?.profile_image_url
     ? settings.profile_image_url
     : about?.profile_image_url;
+  const pageSeo = settings?.page_seo?.[
+    "home" as StaticSeoPageId
+  ];
 
-  return buildPageMetadata(
-    (settings?.page_seo as Record<StaticSeoPageId, PagePlatformSeo> | null)
-      ?.home,
-    {
-      title,
-      description,
-      image: images,
-      url: getSiteUrl(),
-      siteName,
-    }
-  );
+  return buildPageMetadata(normalizeSharedSeo(pageSeo), {
+    title,
+    description,
+    image: images,
+    url: getSiteUrl(),
+    siteName,
+  });
 }
 
 export default async function HomePage() {

@@ -3,7 +3,7 @@ import { getSiteContext, getSiteUrl } from "@/lib/metadata";
 import { PROJECT_WITH_STATUS_SELECT } from "@/lib/project-queries";
 import {
   buildPageMetadata,
-  type PagePlatformSeo,
+  normalizeSharedSeo,
   type StaticSeoPageId,
 } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -21,8 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     `${role}${company} — portfolio and selected work.`;
 
   return buildPageMetadata(
-    (settings?.page_seo as Record<StaticSeoPageId, PagePlatformSeo> | null)
-      ?.work,
+    normalizeSharedSeo(settings?.page_seo?.["work" as StaticSeoPageId]),
     {
       title,
       description,

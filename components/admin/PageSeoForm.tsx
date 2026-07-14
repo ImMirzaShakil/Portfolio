@@ -4,11 +4,13 @@ import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { savePageSeoAction } from "@/app/admin/seo/actions";
 import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
-import { SeoPlatformFieldsEditor } from "@/components/admin/SeoPlatformFieldsEditor";
+import { SeoFieldsEditor } from "@/components/admin/SeoFieldsEditor";
 import { Button } from "@/components/ui/button";
 import {
   STATIC_SEO_PAGES,
   normalizeSitePageSeo,
+  sharedSeoHasContent,
+  type SharedSeoFields,
   type SitePageSeo,
   type StaticSeoPageId,
 } from "@/lib/seo";
@@ -29,10 +31,7 @@ export function PageSeoForm({ settings, placeholders }: PageSeoFormProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updatePage = (
-    pageId: StaticSeoPageId,
-    value: NonNullable<SitePageSeo[StaticSeoPageId]>
-  ) => {
+  const updatePage = (pageId: StaticSeoPageId, value: SharedSeoFields) => {
     setPageSeo((current) => ({
       ...current,
       [pageId]: value,
@@ -53,6 +52,7 @@ export function PageSeoForm({ settings, placeholders }: PageSeoFormProps) {
 
     if (result.error) {
       setError(result.error);
+      toast.error(result.error);
       return;
     }
 
@@ -64,9 +64,9 @@ export function PageSeoForm({ settings, placeholders }: PageSeoFormProps) {
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">SEO &amp; social metadata</h1>
         <p className="max-w-2xl text-muted-foreground">
-          Customize how Home, Work, About, and Fun appear in Google and when
-          shared on social networks. Project metadata is edited on each
-          project&apos;s form. Blank fields fall back to page content.
+          Set one meta title, description, image, and tags per page. The same
+          values are used for Google and every social / chat link preview.
+          Project metadata is edited on each project&apos;s form.
         </p>
         <p className="text-sm text-muted-foreground">
           Public discoverability also uses{" "}
@@ -80,8 +80,8 @@ export function PageSeoForm({ settings, placeholders }: PageSeoFormProps) {
           , and{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
             /llms.txt
-          </code>{" "}
-          (auto-updated when you publish projects).
+          </code>
+          .
         </p>
       </div>
 
@@ -89,10 +89,14 @@ export function PageSeoForm({ settings, placeholders }: PageSeoFormProps) {
         <AdminCollapsibleSection
           key={page.id}
           title={page.label}
-          description={`Path: ${page.path}`}
-          defaultOpen={page.id === "home"}
+          description={`Path: ${page.path}${
+            sharedSeoHasContent(pageSeo[page.id]) ? " · Customized" : ""
+          }`}
+          defaultOpen={
+            page.id === "home" || sharedSeoHasContent(pageSeo[page.id])
+          }
         >
-          <SeoPlatformFieldsEditor
+          <SeoFieldsEditor
             value={pageSeo[page.id]}
             onChange={(value) => updatePage(page.id, value)}
             placeholders={placeholders[page.id]}

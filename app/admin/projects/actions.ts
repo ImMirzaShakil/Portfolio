@@ -6,7 +6,7 @@ import { encryptPassword } from "@/lib/password-encryption";
 import { hashProjectPassword } from "@/lib/project-password";
 import { revalidatePath } from "next/cache";
 import { sanitizeAdminHtml } from "@/lib/project-sections";
-import { compactPagePlatformSeo, type PagePlatformSeo } from "@/lib/seo";
+import { compactSharedSeo, type SharedSeoFields } from "@/lib/seo";
 
 export interface SectionFormPayload {
   section_type: string;
@@ -40,7 +40,7 @@ export interface ProjectFormPayload {
   password: string;
   order_index: number;
   sections: SectionFormPayload[];
-  seo: PagePlatformSeo;
+  seo: SharedSeoFields;
   show_share_button: boolean;
 }
 
@@ -111,7 +111,7 @@ export async function saveProjectAction(
     password_hash: passwordHash,
     password_encrypted: passwordEncrypted,
     order_index: payload.order_index,
-    seo: compactPagePlatformSeo(payload.seo),
+    seo: compactSharedSeo(payload.seo),
     show_share_button: payload.show_share_button,
     updated_at: new Date().toISOString(),
   };
