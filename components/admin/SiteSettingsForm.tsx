@@ -15,7 +15,7 @@ import {
   MAX_GRAIN_OPACITY,
   MIN_GRAIN_OPACITY,
 } from "@/lib/grain-texture";
-import { DEFAULT_NAV_ITEMS } from "@/lib/navigation";
+import { DEFAULT_NAV_ITEMS, ensureNavItems, isResumeNavItem } from "@/lib/navigation";
 import type { AboutContent, CustomScript, NavItem, SiteSettings } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -48,8 +48,10 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
     settings?.logo_url_dark ?? null
   );
   const [heroHeading, setHeroHeading] = useState(settings?.hero_heading ?? "");
-  const [navItems, setNavItems] = useState<NavItem[]>(
-    settings?.nav_items?.length ? settings.nav_items : DEFAULT_NAV_ITEMS
+  const [navItems, setNavItems] = useState<NavItem[]>(() =>
+    ensureNavItems(
+      settings?.nav_items?.length ? settings.nav_items : DEFAULT_NAV_ITEMS
+    )
   );
   const [footerTagline, setFooterTagline] = useState(
     settings?.footer_tagline ?? ""
@@ -110,7 +112,9 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
       logo_url: logoUrl,
       logo_url_dark: logoUrlDark,
       hero_heading: heroHeading,
-      nav_items: navItems.filter((item) => item.label.trim() && item.href.trim()),
+      nav_items: ensureNavItems(
+        navItems.filter((item) => item.label.trim() && item.href.trim())
+      ),
       footer_tagline: footerTagline,
       grain_opacity: grainOpacity,
       google_analytics_snippet: googleAnalyticsSnippet,
@@ -308,7 +312,8 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
           <div>
             <h2 className="text-xl font-bold">Navigation menu</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Rename, hide, or add pages. Resume stays separate when uploaded.
+              Rename, hide, or add pages. Resume uses the PDF from the Resume
+              admin page — toggle visibility here like Work and About.
             </p>
           </div>
           <Button
@@ -321,52 +326,67 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
           </Button>
         </div>
 
-        {navItems.map((item, index) => (
-          <div
-            key={item.id}
-            className="space-y-4 rounded-xl border border-border p-4"
-          >
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor={`nav-label-${item.id}`}>Label</Label>
-                <Input
-                  id={`nav-label-${item.id}`}
-                  value={item.label}
-                  onChange={(e) => updateNavItem(index, "label", e.target.value)}
-                  placeholder="Work"
-                />
+        {navItems.map((item, index) => {
+          const isResume = isResumeNavItem(item);
+
+          return (
+            <div
+              key={item.id}
+              className="space-y-4 rounded-xl border border-border p-4"
+            >
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor={`nav-label-${item.id}`}>Label</Label>
+                  <Input
+                    id={`nav-label-${item.id}`}
+                    value={item.label}
+                    onChange={(e) =>
+                      updateNavItem(index, "label", e.target.value)
+                    }
+                    placeholder="Work"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`nav-href-${item.id}`}>Page path</Label>
+                  <Input
+                    id={`nav-href-${item.id}`}
+                    value={isResume ? "Uploaded PDF (Resume)" : item.href}
+                    onChange={(e) =>
+                      updateNavItem(index, "href", e.target.value)
+                    }
+                    placeholder="/work"
+                    disabled={isResume}
+                  />
+                  {isResume ? (
+                    <p className="text-xs text-muted-foreground">
+                      Opens the PDF from Admin → Resume. Upload a file there
+                      first if the link is missing.
+                    </p>
+                  ) : null}
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor={`nav-href-${item.id}`}>Page path</Label>
-                <Input
-                  id={`nav-href-${item.id}`}
-                  value={item.href}
-                  onChange={(e) => updateNavItem(index, "href", e.target.value)}
-                  placeholder="/work"
+              <div className="flex flex-wrap items-center gap-3">
+                <AdminToggle
+                  checked={item.is_visible}
+                  onCheckedChange={(checked) =>
+                    updateNavItem(index, "is_visible", checked)
+                  }
+                  label="Visible in menu"
                 />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    setNavItems((c) => c.filter((_, i) => i !== index))
+                  }
+                  disabled={navItems.length === 1 || isResume}
+                >
+                  Remove
+                </Button>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <AdminToggle
-                checked={item.is_visible}
-                onCheckedChange={(checked) =>
-                  updateNavItem(index, "is_visible", checked)
-                }
-                label="Visible in menu"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  setNavItems((c) => c.filter((_, i) => i !== index))
-                }
-                disabled={navItems.length === 1}
-              >
-                Remove
-              </Button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       {/* Grain texture */}
