@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Lock } from "lucide-react";
 import { ProjectShareButton } from "@/components/project/ProjectShareButton";
-import { getSiteUrl } from "@/lib/metadata";
 import { getProjectStatusLabel } from "@/lib/project-queries";
 import type { Project } from "@/lib/types";
 
@@ -22,7 +21,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const metadata = formatMetadata(project);
   const statusLabel = getProjectStatusLabel(project);
   const showShare = project.show_share_button !== false;
-  const projectUrl = `${getSiteUrl()}/projects/${project.slug}`;
+  const projectPath = `/projects/${project.slug}`;
 
   return (
     <div className="group relative">
@@ -93,7 +92,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
       {showShare ? (
         <div className="absolute right-3 top-3 z-10">
           <ProjectShareButton
-            url={projectUrl}
+            url={projectPath}
             title={project.title}
             summary={project.summary ?? project.subtitle}
           />

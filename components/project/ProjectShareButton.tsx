@@ -6,10 +6,35 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface ProjectShareButtonProps {
+  /** Absolute URL, or a site path like `/projects/slug`. Paths resolve from the current origin. */
   url: string;
   title: string;
   summary?: string | null;
   className?: string;
+}
+
+function resolveShareUrl(urlOrPath: string) {
+  if (/^https?:\/\//i.test(urlOrPath)) {
+    try {
+      const parsed = new URL(urlOrPath);
+      // Replace localhost/build fallbacks with the live page origin.
+      if (
+        typeof window !== "undefined" &&
+        (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
+      ) {
+        return `${window.location.origin}${parsed.pathname}${parsed.search}${parsed.hash}`;
+      }
+    } catch {
+      // fall through
+    }
+    return urlOrPath;
+  }
+
+  const path = urlOrPath.startsWith("/") ? urlOrPath : `/${urlOrPath}`;
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}${path}`;
+  }
+  return path;
 }
 
 export function ProjectShareButton({
@@ -24,17 +49,22 @@ export function ProjectShareButton({
     event.preventDefault();
     event.stopPropagation();
 
+    const shareUrl = resolveShareUrl(url);
+
     try {
-      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      if (
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function"
+      ) {
         await navigator.share({
           title,
           text: summary?.trim() || title,
-          url,
+          url: shareUrl,
         });
         return;
       }
 
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       toast.success("Link copied");
       window.setTimeout(() => setCopied(false), 2000);
@@ -44,7 +74,7 @@ export function ProjectShareButton({
       }
 
       try {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(shareUrl);
         setCopied(true);
         toast.success("Link copied");
         window.setTimeout(() => setCopied(false), 2000);
