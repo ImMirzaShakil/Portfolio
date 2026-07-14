@@ -2,15 +2,12 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProjectCaseStudy } from "@/components/project/ProjectCaseStudy";
 import { ProjectPasswordGate } from "@/components/project/ProjectPasswordGate";
-import {
-  buildOpenGraph,
-  buildTwitter,
-  getSiteUrl,
-} from "@/lib/metadata";
+import { getSiteContext, getSiteUrl } from "@/lib/metadata";
 import {
   getProjectUnlockCookieName,
   hasProjectUnlockAccess,
 } from "@/lib/project-password";
+import { buildPageMetadata, type PagePlatformSeo } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createStaticClient } from "@/lib/supabase/static";
 import type { Metadata } from "next";
@@ -90,25 +87,15 @@ export async function generateMetadata({
 
   const description =
     project.subtitle ?? project.summary ?? `Case study: ${project.title}`;
-  const images = project.cover_image_url
-    ? [project.cover_image_url]
-    : undefined;
+  const { siteName } = await getSiteContext();
 
-  return {
+  return buildPageMetadata(project.seo as PagePlatformSeo | null, {
     title: project.title,
     description,
-    openGraph: buildOpenGraph({
-      title: project.title,
-      description,
-      images,
-      url: `${getSiteUrl()}/projects/${project.slug}`,
-    }),
-    twitter: buildTwitter({
-      title: project.title,
-      description,
-      images,
-    }),
-  };
+    image: project.cover_image_url,
+    url: `${getSiteUrl()}/projects/${project.slug}`,
+    siteName,
+  });
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {

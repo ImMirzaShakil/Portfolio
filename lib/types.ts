@@ -1,3 +1,5 @@
+import type { PagePlatformSeo, SitePageSeo } from "@/lib/seo";
+
 export interface ProjectStatusOption {
   id: string;
   label: string;
@@ -21,6 +23,10 @@ export interface Project {
   is_published: boolean;
   is_featured: boolean;
   is_password_protected: boolean;
+  /** Per-platform SEO overrides (google, facebook, twitter, …). */
+  seo?: PagePlatformSeo | null;
+  /** Show share icon on project cards. Defaults to true. */
+  show_share_button?: boolean | null;
   order_index: number;
   created_at: string;
   updated_at: string;
@@ -163,4 +169,6 @@ export interface SiteSettings {
   meta_pixel_snippet: string | null;
   hotjar_snippet: string | null;
   custom_scripts: CustomScript[] | null;
+  /** Per-page SEO keyed by home | work | about | fun. */
+  page_seo?: SitePageSeo | null;
 }

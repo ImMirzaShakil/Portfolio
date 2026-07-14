@@ -1,10 +1,28 @@
 import { FunProjectCard } from "@/components/fun/FunProjectCard";
+import { getSiteContext, getSiteUrl } from "@/lib/metadata";
+import {
+  buildPageMetadata,
+  type PagePlatformSeo,
+  type StaticSeoPageId,
+} from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Fun",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { about, settings, siteName } = await getSiteContext();
+
+  return buildPageMetadata(
+    (settings?.page_seo as Record<StaticSeoPageId, PagePlatformSeo> | null)
+      ?.fun,
+    {
+      title: `Fun · ${settings?.site_title ?? siteName}`,
+      description: `Experimental work and side projects by ${siteName}.`,
+      image: about?.profile_image_url,
+      url: `${getSiteUrl()}/fun`,
+      siteName,
+    }
+  );
+}
 
 export default async function FunPage() {
   const supabase = createAdminClient();

@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Search,
   Settings2,
   UserRound,
   X,
@@ -26,6 +27,7 @@ const navLinks = [
   { href: "/admin/projects", label: "Projects", icon: FolderKanban, exact: false },
   { href: "/admin/about", label: "Edit About", icon: UserRound, exact: false },
   { href: "/admin/settings", label: "Site Settings", icon: Settings2, exact: false },
+  { href: "/admin/seo", label: "SEO & Metadata", icon: Search, exact: false },
   { href: "/admin/resume", label: "Resume", icon: FileText, exact: false },
 ] as const;
 
