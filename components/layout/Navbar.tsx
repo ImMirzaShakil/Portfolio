@@ -6,7 +6,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { getNavItems, isNavLinkActive } from "@/lib/navigation";
+import {
+  getNavItems,
+  isNavLinkActive,
+  isResumeNavItem,
+} from "@/lib/navigation";
 import type { NavItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +62,7 @@ export function Navbar({
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const initials = getInitials(siteTitle);
-  const links = getNavItems(navItems);
+  const links = getNavItems(navItems, resumeUrl);
   const hasLogo = Boolean(logoUrl || logoUrlDark);
 
   const linkClass = (href: string) =>
@@ -69,28 +73,35 @@ export function Navbar({
         : "text-nav-inactive hover:text-foreground"
     );
 
-  const inactiveLinkClass =
-    "min-h-11 rounded-full px-4 py-2.5 text-base font-semibold text-nav-inactive transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  const renderNavLink = (link: NavItem, onNavigate?: () => void) => {
+    if (isResumeNavItem(link)) {
+      if (!resumeUrl) return null;
 
-  const navLinks = (
-    <>
-      {links.map((link) => (
-        <Link key={link.id} href={link.href} className={linkClass(link.href)}>
-          {link.label}
-        </Link>
-      ))}
-      {resumeUrl ? (
+      return (
         <a
+          key={link.id}
           href={resumeUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={inactiveLinkClass}
+          onClick={onNavigate}
+          className={cn(linkClass(link.href), onNavigate && "w-fit")}
         >
-          Resume
+          {link.label}
         </a>
-      ) : null}
-    </>
-  );
+      );
+    }
+
+    return (
+      <Link
+        key={link.id}
+        href={link.href}
+        onClick={onNavigate}
+        className={cn(linkClass(link.href), onNavigate && "w-fit")}
+      >
+        {link.label}
+      </Link>
+    );
+  };
 
   return (
     <header className="nav-glass sticky top-0 z-50 w-full">
@@ -132,7 +143,7 @@ export function Navbar({
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {navLinks}
+          {links.map((link) => renderNavLink(link))}
           <ThemeToggle />
         </nav>
 
@@ -153,27 +164,9 @@ export function Navbar({
       {mobileOpen ? (
         <nav className="border-t border-border/50 px-4 py-4 sm:px-6 md:hidden">
           <div className="flex flex-col gap-1">
-            {links.map((link) => (
-              <Link
-                key={link.id}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(linkClass(link.href), "w-fit")}
-              >
-                {link.label}
-              </Link>
-            ))}
-            {resumeUrl ? (
-              <a
-                href={resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileOpen(false)}
-                className={cn(inactiveLinkClass, "w-fit")}
-              >
-                Resume
-              </a>
-            ) : null}
+            {links.map((link) =>
+              renderNavLink(link, () => setMobileOpen(false))
+            )}
           </div>
         </nav>
       ) : null}

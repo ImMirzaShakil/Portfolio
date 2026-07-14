@@ -80,7 +80,8 @@ export function ResumeUpload({ initialResumeUrl }: ResumeUploadProps) {
       <div>
         <h1 className="text-3xl font-bold">Resume</h1>
         <p className="mt-2 text-muted-foreground">
-          Upload the PDF linked from the navbar Resume button.
+          Upload the PDF linked from the navbar Resume item. Visibility of that
+          menu link is controlled in Site Settings → Navigation.
         </p>
       </div>
 
