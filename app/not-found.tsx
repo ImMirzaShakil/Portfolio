@@ -1,20 +1,29 @@
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { NotFoundContent } from "@/components/not-found/NotFoundContent";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const supabase = createAdminClient();
+
+  const [{ data: settings }, { data: about }] = await Promise.all([
+    supabase.from("site_settings").select("*").limit(1).maybeSingle(),
+    supabase.from("about_content").select("*").limit(1).maybeSingle(),
+  ]);
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        404
-      </p>
-      <h1 className="mt-3 text-4xl font-bold">Page not found</h1>
-      <p className="mt-4 max-w-md text-muted-foreground">
-        The page you are looking for does not exist or may have been moved.
-      </p>
-      <Link href="/" className={cn(buttonVariants(), "mt-8")}>
-        Go home
-      </Link>
+    <div className="flex min-h-screen flex-col">
+      <Navbar
+        siteTitle={settings?.site_title}
+        logoUrl={settings?.logo_url}
+        logoUrlDark={settings?.logo_url_dark}
+        resumeUrl={settings?.resume_url}
+        navItems={settings?.nav_items}
+      />
+      <main className="site-container flex-1 py-8 sm:py-10 lg:py-12">
+        <NotFoundContent />
+      </main>
+      <Footer settings={settings} about={about} />
     </div>
   );
 }
