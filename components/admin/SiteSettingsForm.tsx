@@ -16,6 +16,10 @@ import {
   MIN_GRAIN_OPACITY,
 } from "@/lib/grain-texture";
 import { DEFAULT_NAV_ITEMS, ensureNavItems, isResumeNavItem } from "@/lib/navigation";
+import {
+  isGoogleVerificationOnlySnippet,
+  parseGoogleSiteVerification,
+} from "@/lib/site-verification";
 import type { AboutContent, CustomScript, NavItem, SiteSettings } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -59,9 +63,19 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
   const [grainOpacity, setGrainOpacity] = useState(
     settings?.grain_opacity ?? DEFAULT_GRAIN_OPACITY
   );
-  const [googleAnalyticsSnippet, setGoogleAnalyticsSnippet] = useState(
-    settings?.google_analytics_snippet ?? ""
-  );
+  const [googleSiteVerification, setGoogleSiteVerification] = useState(() => {
+    return (
+      settings?.google_site_verification?.trim() ||
+      parseGoogleSiteVerification(settings?.google_analytics_snippet) ||
+      ""
+    );
+  });
+  const [googleAnalyticsSnippet, setGoogleAnalyticsSnippet] = useState(() => {
+    const snippet = settings?.google_analytics_snippet ?? "";
+    // Verification meta was often pasted here by mistake — move it out of analytics.
+    if (isGoogleVerificationOnlySnippet(snippet)) return "";
+    return snippet;
+  });
   const [metaPixelSnippet, setMetaPixelSnippet] = useState(
     settings?.meta_pixel_snippet ?? ""
   );
@@ -117,6 +131,7 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
       ),
       footer_tagline: footerTagline,
       grain_opacity: grainOpacity,
+      google_site_verification: googleSiteVerification,
       google_analytics_snippet: googleAnalyticsSnippet,
       meta_pixel_snippet: metaPixelSnippet,
       hotjar_snippet: hotjarSnippet,
@@ -462,10 +477,29 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
         <div>
           <h2 className="text-xl font-bold">Analytics &amp; tracking</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Paste tracking snippets from Google Analytics, Meta Pixel, Hotjar, or
-            other tools. These run on every public page to measure traffic and
-            behavior — they do not directly affect SEO, but help you understand
-            visitors.
+            Search Console verification is rendered in the page{" "}
+            <code className="rounded bg-muted px-1 text-xs">&lt;head&gt;</code>{" "}
+            (required for Google). Tracking scripts (Analytics, Pixel, Hotjar)
+            load separately to measure visitors — they are not used for SEO
+            ownership checks.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="google-site-verification">
+            Google Search Console verification
+          </Label>
+          <Input
+            id="google-site-verification"
+            value={googleSiteVerification}
+            onChange={(e) => setGoogleSiteVerification(e.target.value)}
+            placeholder='Paste the content token or full <meta name="google-site-verification" …> tag'
+            className="font-mono text-xs"
+          />
+          <p className="text-xs text-muted-foreground">
+            From Search Console → HTML tag method. Paste either the full meta tag
+            or just the content value. Save, wait for deploy, then click Verify
+            again in Google.
           </p>
         </div>
 
@@ -476,9 +510,12 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             value={googleAnalyticsSnippet}
             onChange={(e) => setGoogleAnalyticsSnippet(e.target.value)}
             rows={5}
-            placeholder="Paste your Google Analytics / gtag.js code here…"
+            placeholder="Paste your Google Analytics / gtag.js <script> code here…"
             className="font-mono text-xs"
           />
+          <p className="text-xs text-muted-foreground">
+            Use the real Analytics script here — not the Search Console meta tag.
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -490,7 +527,7 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             rows={5}
             placeholder="Paste your Meta (Facebook) Pixel code here…"
             className="font-mono text-xs"
-          />
+            />
         </div>
 
         <div className="space-y-2">

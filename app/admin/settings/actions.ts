@@ -16,6 +16,7 @@ export interface SiteSettingsPayload {
   nav_items: NavItem[];
   footer_tagline: string;
   grain_opacity: number;
+  google_site_verification: string;
   google_analytics_snippet: string;
   meta_pixel_snippet: string;
   hotjar_snippet: string;
@@ -52,6 +53,8 @@ export async function saveSiteSettingsAction(
           100,
           Math.max(0, Math.round(payload.grain_opacity))
         ),
+        google_site_verification:
+          payload.google_site_verification.trim() || null,
         google_analytics_snippet:
           payload.google_analytics_snippet.trim() || null,
         meta_pixel_snippet: payload.meta_pixel_snippet.trim() || null,

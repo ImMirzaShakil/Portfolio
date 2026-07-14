@@ -169,6 +169,8 @@ export interface SiteSettings {
   meta_pixel_snippet: string | null;
   hotjar_snippet: string | null;
   custom_scripts: CustomScript[] | null;
+  /** Google Search Console HTML-tag verification content. */
+  google_site_verification?: string | null;
   /** Per-page SEO keyed by home | work | about | fun (shared across platforms). */
   page_seo?: SitePageSeo | null;
 }
