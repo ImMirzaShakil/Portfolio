@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,12 +22,42 @@ interface SeoPlatformFieldsEditorProps {
     description?: string;
     image_url?: string;
   };
-  /** Collapse to only Google by default when true; platforms start closed via details. */
+  /** Platform left open on first mount when no customized platforms exist. */
   defaultOpenPlatform?: SeoPlatformId;
 }
 
 function FieldHint({ children }: { children: React.ReactNode }) {
   return <p className="text-xs text-muted-foreground">{children}</p>;
+}
+
+function platformHasContent(fields?: PlatformSeoFields | null) {
+  if (!fields) return false;
+  return Boolean(
+    fields.title?.trim() ||
+      fields.description?.trim() ||
+      fields.image_url?.trim() ||
+      fields.scholar_author?.trim()
+  );
+}
+
+function getInitialOpenMap(
+  seo: PagePlatformSeo,
+  defaultOpenPlatform: SeoPlatformId
+): Partial<Record<SeoPlatformId, boolean>> {
+  const customizedIds = SEO_PLATFORMS.filter((platform) =>
+    platformHasContent(seo[platform.id])
+  ).map((platform) => platform.id);
+
+  const openMap: Partial<Record<SeoPlatformId, boolean>> = {};
+
+  for (const platform of SEO_PLATFORMS) {
+    const hasContent = platformHasContent(seo[platform.id]);
+    openMap[platform.id] =
+      hasContent ||
+      (customizedIds.length === 0 && platform.id === defaultOpenPlatform);
+  }
+
+  return openMap;
 }
 
 export function SeoPlatformFieldsEditor({
@@ -36,6 +67,13 @@ export function SeoPlatformFieldsEditor({
   defaultOpenPlatform = "google",
 }: SeoPlatformFieldsEditorProps) {
   const seo = normalizePagePlatformSeo(value);
+  const customizedIds = SEO_PLATFORMS.filter((platform) =>
+    platformHasContent(seo[platform.id])
+  ).map((platform) => platform.id);
+
+  const [openMap, setOpenMap] = useState(() =>
+    getInitialOpenMap(normalizePagePlatformSeo(value), defaultOpenPlatform)
+  );
 
   const updatePlatform = (
     platformId: SeoPlatformId,
@@ -59,19 +97,45 @@ export function SeoPlatformFieldsEditor({
         WhatsApp → Instagram → GitHub).
       </p>
 
+      {customizedIds.length > 0 ? (
+        <p className="text-sm font-medium text-foreground">
+          Saved customizations:{" "}
+          {SEO_PLATFORMS.filter((platform) =>
+            customizedIds.includes(platform.id)
+          )
+            .map((platform) => platform.label)
+            .join(" · ")}
+        </p>
+      ) : null}
+
       {SEO_PLATFORMS.map((platform) => {
         const fields = seo[platform.id] ?? {};
         const isScholar = platform.id === "google_scholar";
+        const hasContent = platformHasContent(fields);
 
         return (
           <details
             key={platform.id}
             className="rounded-xl border border-border"
-            open={platform.id === defaultOpenPlatform}
+            open={Boolean(openMap[platform.id])}
+            onToggle={(event) => {
+              const isOpen = event.currentTarget.open;
+              setOpenMap((current) => ({
+                ...current,
+                [platform.id]: isOpen,
+              }));
+            }}
           >
             <summary className="cursor-pointer list-none px-4 py-3 font-medium [&::-webkit-details-marker]:hidden">
               <span className="flex items-center justify-between gap-2">
-                <span>{platform.label}</span>
+                <span className="flex items-center gap-2">
+                  {platform.label}
+                  {hasContent ? (
+                    <span className="rounded-full border border-border px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                      Customized
+                    </span>
+                  ) : null}
+                </span>
                 <span className="text-xs font-normal text-muted-foreground">
                   Expand
                 </span>

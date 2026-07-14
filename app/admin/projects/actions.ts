@@ -176,6 +176,7 @@ export async function saveProjectAction(
   revalidatePath("/");
   revalidatePath("/work");
   revalidatePath("/admin/projects");
+  revalidatePath(`/admin/projects/${savedProject.id}`);
   revalidatePath(`/projects/${savedProject.slug}`);
   revalidatePath("/sitemap.xml");
   revalidatePath("/llms.txt");

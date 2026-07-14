@@ -147,6 +147,7 @@ export function ProjectForm({
     if (result.error) {
       setSaving(false);
       setError(result.error);
+      toast.error(result.error);
       return;
     }
 
@@ -363,7 +364,18 @@ export function ProjectForm({
       <AdminCollapsibleSection
         title="SEO & social metadata"
         description="Customize how this project appears in Google and when shared on social platforms. Blank fields use the project title, summary/subtitle, and cover image."
-        defaultOpen={false}
+        defaultOpen={Boolean(
+          project?.seo &&
+            Object.keys(project.seo).some((key) => {
+              const fields = project.seo?.[key as keyof typeof project.seo];
+              return Boolean(
+                fields?.title?.trim() ||
+                  fields?.description?.trim() ||
+                  fields?.image_url?.trim() ||
+                  fields?.scholar_author?.trim()
+              );
+            })
+        )}
       >
         <div className="flex items-start gap-3 rounded-xl border border-border p-4">
           <Switch
