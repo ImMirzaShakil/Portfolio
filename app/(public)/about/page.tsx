@@ -4,36 +4,33 @@ import { WritingList } from "@/components/about/WritingList";
 import { FeaturedInList } from "@/components/about/FeaturedInList";
 import { GalleryStrip } from "@/components/about/GalleryStrip";
 import { SocialLinks } from "@/components/social/SocialLinks";
+import { getSiteContext, getSiteUrl } from "@/lib/metadata";
 import {
-  buildOpenGraph,
-  buildTwitter,
-  getSiteContext,
-  getSiteUrl,
-} from "@/lib/metadata";
+  buildPageMetadata,
+  type PagePlatformSeo,
+  type StaticSeoPageId,
+} from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { about, siteName } = await getSiteContext();
+  const { about, settings, siteName } = await getSiteContext();
   const title = `About ${siteName}`;
   const description =
     about?.intro_text?.trim().slice(0, 160) ??
     `Learn more about ${siteName}.`;
-  const images = about?.profile_image_url
-    ? [about.profile_image_url]
-    : undefined;
 
-  return {
-    title,
-    description,
-    openGraph: buildOpenGraph({
+  return buildPageMetadata(
+    (settings?.page_seo as Record<StaticSeoPageId, PagePlatformSeo> | null)
+      ?.about,
+    {
       title,
       description,
-      images,
+      image: about?.profile_image_url,
       url: `${getSiteUrl()}/about`,
-    }),
-    twitter: buildTwitter({ title, description, images }),
-  };
+      siteName,
+    }
+  );
 }
 
 export default async function AboutPage() {

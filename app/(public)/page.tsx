@@ -1,13 +1,13 @@
 import { HeroSection } from "@/components/home/HeroSection";
 import { ProjectGrid } from "@/components/home/ProjectGrid";
 import { getFunFacts } from "@/lib/homepage";
-import {
-  buildOpenGraph,
-  buildTwitter,
-  getSiteContext,
-  getSiteUrl,
-} from "@/lib/metadata";
+import { getSiteContext, getSiteUrl } from "@/lib/metadata";
 import { PROJECT_WITH_STATUS_SELECT } from "@/lib/project-queries";
+import {
+  buildPageMetadata,
+  type PagePlatformSeo,
+  type StaticSeoPageId,
+} from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Metadata } from "next";
 
@@ -21,21 +21,21 @@ export async function generateMetadata(): Promise<Metadata> {
   const description =
     about?.intro_text?.trim().slice(0, 160) ??
     `${role}${company} — portfolio and selected work.`;
-  const images = about?.profile_image_url
-    ? [about.profile_image_url]
-    : undefined;
+  const images = settings?.profile_image_url
+    ? settings.profile_image_url
+    : about?.profile_image_url;
 
-  return {
-    title,
-    description,
-    openGraph: buildOpenGraph({
+  return buildPageMetadata(
+    (settings?.page_seo as Record<StaticSeoPageId, PagePlatformSeo> | null)
+      ?.home,
+    {
       title,
       description,
-      images,
+      image: images,
       url: getSiteUrl(),
-    }),
-    twitter: buildTwitter({ title, description, images }),
-  };
+      siteName,
+    }
+  );
 }
 
 export default async function HomePage() {

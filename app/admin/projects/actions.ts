@@ -6,6 +6,7 @@ import { encryptPassword } from "@/lib/password-encryption";
 import { hashProjectPassword } from "@/lib/project-password";
 import { revalidatePath } from "next/cache";
 import { sanitizeAdminHtml } from "@/lib/project-sections";
+import { compactPagePlatformSeo, type PagePlatformSeo } from "@/lib/seo";
 
 export interface SectionFormPayload {
   section_type: string;
@@ -39,6 +40,8 @@ export interface ProjectFormPayload {
   password: string;
   order_index: number;
   sections: SectionFormPayload[];
+  seo: PagePlatformSeo;
+  show_share_button: boolean;
 }
 
 async function requireAdminUser() {
@@ -108,6 +111,8 @@ export async function saveProjectAction(
     password_hash: passwordHash,
     password_encrypted: passwordEncrypted,
     order_index: payload.order_index,
+    seo: compactPagePlatformSeo(payload.seo),
+    show_share_button: payload.show_share_button,
     updated_at: new Date().toISOString(),
   };
 
@@ -172,6 +177,8 @@ export async function saveProjectAction(
   revalidatePath("/work");
   revalidatePath("/admin/projects");
   revalidatePath(`/projects/${savedProject.slug}`);
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/llms.txt");
 
   return { error: null };
 }
@@ -199,6 +206,8 @@ export async function toggleProjectPublishedAction(
   revalidatePath("/");
   revalidatePath("/work");
   revalidatePath("/admin/projects");
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/llms.txt");
 
   return { error: null };
 }
@@ -226,6 +235,8 @@ export async function toggleProjectFeaturedAction(
   revalidatePath("/");
   revalidatePath("/work");
   revalidatePath("/admin/projects");
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/llms.txt");
 
   return { error: null };
 }
@@ -249,6 +260,8 @@ export async function deleteProjectAction(
   revalidatePath("/");
   revalidatePath("/work");
   revalidatePath("/admin/projects");
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/llms.txt");
 
   return { error: null };
 }

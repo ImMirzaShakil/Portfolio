@@ -36,17 +36,19 @@ export function buildOpenGraph({
   description,
   images,
   url,
+  siteName,
 }: {
   title: string;
   description: string;
   images?: string[];
   url?: string;
+  siteName?: string;
 }): NonNullable<Metadata["openGraph"]> {
   return {
     title,
     description,
     url,
-    siteName: title,
+    siteName: siteName ?? title,
     type: "website",
     images: images?.length
       ? images.map((image) => ({ url: image }))

@@ -9,6 +9,8 @@ import {
   SectionBuilder,
   type SectionFormItem,
 } from "@/components/admin/SectionBuilder";
+import { SeoPlatformFieldsEditor } from "@/components/admin/SeoPlatformFieldsEditor";
+import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +21,10 @@ import {
   normalizeMediaUrls,
   normalizeSectionItems,
 } from "@/lib/project-sections";
+import {
+  normalizePagePlatformSeo,
+  type PagePlatformSeo,
+} from "@/lib/seo";
 import type { Project, ProjectSection, ProjectStatusOption } from "@/lib/types";
 import { generateSlug } from "@/lib/utils";
 
@@ -79,6 +85,12 @@ export function ProjectForm({
   const [sectionItems, setSectionItems] = useState<SectionFormItem[]>(
     mapSectionsToForm(sections)
   );
+  const [seo, setSeo] = useState<PagePlatformSeo>(() =>
+    normalizePagePlatformSeo(project?.seo)
+  );
+  const [showShareButton, setShowShareButton] = useState(
+    project?.show_share_button !== false
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,6 +140,8 @@ export function ProjectForm({
         media_urls: section.media_urls.filter((url) => url.trim().length > 0),
         items: section.items,
       })),
+      seo,
+      show_share_button: showShareButton,
     });
 
     if (result.error) {
@@ -345,6 +359,40 @@ export function ProjectForm({
           ) : null}
         </div>
       </div>
+
+      <AdminCollapsibleSection
+        title="SEO & social metadata"
+        description="Customize how this project appears in Google and when shared on social platforms. Blank fields use the project title, summary/subtitle, and cover image."
+        defaultOpen={false}
+      >
+        <div className="flex items-start gap-3 rounded-xl border border-border p-4">
+          <Switch
+            checked={showShareButton}
+            onCheckedChange={setShowShareButton}
+            aria-label="Show share button"
+          />
+          <div className="space-y-1">
+            <Label>Show share button on project cards</Label>
+            <FieldHint>
+              Displays a share icon on Home / Work cards so visitors can share
+              this project link.
+            </FieldHint>
+          </div>
+        </div>
+
+        <SeoPlatformFieldsEditor
+          value={seo}
+          onChange={setSeo}
+          placeholders={{
+            title: title || "Project title",
+            description:
+              summary || subtitle || "Project summary / subtitle",
+            image_url: coverImageUrl
+              ? "cover image"
+              : "cover image (none set yet)",
+          }}
+        />
+      </AdminCollapsibleSection>
 
       <SectionBuilder sections={sectionItems} onChange={setSectionItems} />
 
