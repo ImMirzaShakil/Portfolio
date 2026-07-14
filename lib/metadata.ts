@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createStaticClient } from "@/lib/supabase/static";
+import { parseGoogleSiteVerification } from "@/lib/site-verification";
 
 const FALLBACK_SITE_NAME = "Mirza Md Shakil";
 const FALLBACK_DESCRIPTION =
@@ -82,6 +83,10 @@ export async function getDefaultMetadata(): Promise<Metadata> {
   const iconVersion = getIconVersion(settings?.logo_url);
   const iconPath = `/icon${iconVersion}`;
 
+  const googleVerification =
+    parseGoogleSiteVerification(settings?.google_site_verification) ??
+    parseGoogleSiteVerification(settings?.google_analytics_snippet);
+
   return {
     metadataBase: new URL(siteUrl),
     title: {
@@ -92,7 +97,13 @@ export async function getDefaultMetadata(): Promise<Metadata> {
     icons: {
       icon: [{ url: iconPath, type: "image/png", sizes: "32x32" }],
       shortcut: [{ url: iconPath, type: "image/png" }],
-      apple: [{ url: `/apple-icon${iconVersion}`, type: "image/png", sizes: "180x180" }],
+      apple: [
+        {
+          url: `/apple-icon${iconVersion}`,
+          type: "image/png",
+          sizes: "180x180",
+        },
+      ],
     },
     openGraph: buildOpenGraph({
       title: siteName,
@@ -105,5 +116,12 @@ export async function getDefaultMetadata(): Promise<Metadata> {
       description,
       images,
     }),
+    ...(googleVerification
+      ? {
+          verification: {
+            google: googleVerification,
+          },
+        }
+      : {}),
   };
 }
