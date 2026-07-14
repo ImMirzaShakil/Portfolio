@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 function Sparkle({ className }: { className?: string }) {
   return (
     <svg
@@ -16,17 +14,17 @@ function Sparkle({ className }: { className?: string }) {
 function HatchedBlobs() {
   return (
     <svg
-      viewBox="0 0 520 360"
+      viewBox="0 0 320 280"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="absolute inset-0 h-full w-full text-foreground"
+      className="h-full w-full text-foreground"
       aria-hidden="true"
     >
       <defs>
         <pattern
-          id="hatch"
-          width="10"
-          height="10"
+          id="not-found-hatch"
+          width="9"
+          height="9"
           patternUnits="userSpaceOnUse"
           patternTransform="rotate(42)"
         >
@@ -34,37 +32,34 @@ function HatchedBlobs() {
             x1="0"
             y1="0"
             x2="0"
-            y2="10"
+            y2="9"
             stroke="currentColor"
-            strokeWidth="1.4"
+            strokeWidth="1.25"
           />
         </pattern>
       </defs>
 
-      {/* Back blob — upper right */}
       <path
-        d="M268 48c52-28 118-18 156 28 34 40 42 98 18 144-28 52-92 78-148 70-58-8-112-42-126-98-14-58 40-104 100-144Z"
-        fill="url(#hatch)"
+        d="M78 36c46-26 108-20 146 22 34 36 40 94 12 136-30 46-92 70-146 58-52-12-98-48-108-98C-28 98 22 68 78 36Z"
+        fill="url(#not-found-hatch)"
         stroke="currentColor"
-        strokeWidth="2.25"
+        strokeWidth="2"
         strokeLinejoin="round"
       />
 
-      {/* Mid blob — lower right */}
       <path
-        d="M310 168c48-8 98 18 118 62 22 48 4 108-44 132-42 22-102 12-136-22-38-38-42-98-8-132 28-28 42-36 70-40Z"
-        fill="url(#hatch)"
+        d="M148 148c42-10 90 14 108 54 18 42-2 96-44 116-38 18-90 6-118-28-30-36-30-88 2-116 20-18 30-22 52-26Z"
+        fill="url(#not-found-hatch)"
         stroke="currentColor"
-        strokeWidth="2.25"
+        strokeWidth="2"
         strokeLinejoin="round"
       />
 
-      {/* Small accent blob — left of apology */}
       <path
-        d="M248 232c28-16 62-4 74 28 12 30-4 66-34 78-28 12-64 2-78-26-14-28 4-60 38-80Z"
-        fill="url(#hatch)"
+        d="M96 178c22-14 52-6 62 22 10 26-2 56-28 66-24 10-54 0-66-22-12-24 4-50 32-66Z"
+        fill="url(#not-found-hatch)"
         stroke="currentColor"
-        strokeWidth="2.25"
+        strokeWidth="2"
         strokeLinejoin="round"
       />
     </svg>
@@ -73,38 +68,33 @@ function HatchedBlobs() {
 
 export function NotFoundContent() {
   return (
-    <section className="relative flex min-h-[58vh] flex-col items-center justify-center py-10 sm:min-h-[64vh] sm:py-14">
-      <div className="relative mx-auto w-full max-w-xl px-2 sm:max-w-2xl">
-        <div className="relative aspect-[520/360] w-full">
-          <HatchedBlobs />
-
-          <Sparkle className="absolute left-[8%] top-[18%] size-4 text-foreground sm:size-5" />
-          <Sparkle className="absolute right-[12%] top-[8%] size-3 text-foreground sm:size-4" />
-          <Sparkle className="absolute right-[22%] top-[36%] size-5 text-foreground sm:size-6" />
-          <Sparkle className="absolute bottom-[28%] left-[42%] size-3.5 text-foreground sm:size-4" />
-          <Sparkle className="absolute bottom-[12%] right-[18%] size-4 text-foreground sm:size-5" />
-
-          <div className="absolute left-[4%] top-[22%] z-10 max-w-[58%] sm:left-[6%] sm:top-[24%]">
-            <h1 className="font-hero text-6xl font-bold leading-none tracking-tight sm:text-7xl md:text-8xl">
+    <section className="flex min-h-[52vh] items-center justify-center py-8 sm:min-h-[58vh] sm:py-12 lg:min-h-[62vh]">
+      <div className="mx-auto w-full max-w-[18rem] sm:max-w-sm md:max-w-md lg:max-w-lg">
+        <div className="grid grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] items-center gap-2 sm:gap-3 md:gap-4">
+          <div className="relative z-10 min-w-0">
+            <h1 className="font-hero text-[clamp(2.75rem,14vw,5.5rem)] font-bold leading-none tracking-tight">
               404
             </h1>
-            <p className="mt-2 text-base font-medium text-foreground sm:mt-3 sm:text-lg md:text-xl">
+            <p className="mt-1.5 text-[clamp(0.85rem,3.4vw,1.15rem)] font-medium leading-snug text-foreground sm:mt-2">
               Page not found :(
             </p>
           </div>
 
-          <p className="absolute bottom-[10%] right-[4%] z-10 text-sm font-medium text-foreground sm:bottom-[12%] sm:right-[6%] sm:text-base">
-            Sorry about that ++
-          </p>
+          <div className="relative mx-auto w-[min(100%,13rem)] sm:w-[min(100%,15rem)] md:w-[min(100%,17rem)] lg:w-[min(100%,18.5rem)]">
+            <div className="relative aspect-[320/280] w-full">
+              <HatchedBlobs />
+              <Sparkle className="absolute left-[4%] top-[10%] size-2.5 text-foreground sm:size-3 md:size-3.5" />
+              <Sparkle className="absolute right-[10%] top-[2%] size-2 text-foreground sm:size-2.5" />
+              <Sparkle className="absolute right-[18%] top-[38%] size-3 text-foreground sm:size-3.5 md:size-4" />
+              <Sparkle className="absolute bottom-[16%] left-[8%] size-2.5 text-foreground sm:size-3" />
+            </div>
+          </div>
         </div>
-      </div>
 
-      <Link
-        href="/"
-        className="mt-8 text-sm font-semibold text-nav-inactive underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        Back to home
-      </Link>
+        <p className="mt-3 text-right text-[clamp(0.8rem,2.8vw,1rem)] font-medium text-foreground sm:mt-4">
+          Sorry about that ++
+        </p>
+      </div>
     </section>
   );
 }
