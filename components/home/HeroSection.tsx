@@ -69,7 +69,7 @@ export function HeroSection({ name, heroHeading, profileImageUrl, about, funFact
 
         <div className="min-w-0 lg:w-[34%] lg:max-w-md lg:shrink-0 xl:max-w-lg">
           {heroImage ? (
-            <div className="relative mx-auto size-32 overflow-hidden rounded-full border border-border sm:size-40 lg:mx-0 lg:size-48">
+            <div className="relative mx-auto size-32 overflow-hidden rounded-full sm:size-40 lg:mx-0 lg:size-48">
               <Image
                 src={heroImage}
                 alt={displayName}
