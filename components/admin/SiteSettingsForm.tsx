@@ -1,8 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { saveSiteSettingsAction } from "@/app/admin/settings/actions";
+import {
+  saveSiteSettingsAction,
+  saveSiteSettingsSectionAction,
+  type SettingsSectionId,
+} from "@/app/admin/settings/actions";
+import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
 import { AdminToggle } from "@/components/admin/AdminToggle";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
@@ -23,6 +28,16 @@ import {
 import type { AboutContent, CustomScript, NavItem, SiteSettings } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+const SECTION_LABELS: Record<SettingsSectionId, string> = {
+  identity: "Identity",
+  "hero-heading": "Homepage hero heading",
+  "homepage-copy": "Homepage intro & rotating lines",
+  navigation: "Navigation menu",
+  grain: "Grain texture",
+  analytics: "Analytics & tracking",
+  footer: "Footer",
+};
+
 interface SiteSettingsFormProps {
   settings?: SiteSettings | null;
   about?: Pick<
@@ -42,6 +57,8 @@ function createNavItem(label = "", href = "/"): NavItem {
 }
 
 export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
+  const [settingsId, setSettingsId] = useState(settings?.id);
+  const [aboutId, setAboutId] = useState(about?.id);
   const [siteTitle, setSiteTitle] = useState(
     settings?.site_title ?? "Mirza Md Shakil"
   );
@@ -75,7 +92,6 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
   });
   const [googleAnalyticsSnippet, setGoogleAnalyticsSnippet] = useState(() => {
     const snippet = settings?.google_analytics_snippet ?? "";
-    // Verification meta was often pasted here by mistake — move it out of analytics.
     if (isGoogleVerificationOnlySnippet(snippet)) return "";
     return snippet;
   });
@@ -99,7 +115,9 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
     const displayed = getFunFacts(about as AboutContent | null);
     return displayed.length > 0 ? displayed : [""];
   });
-  const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState<
+    SettingsSectionId | "all" | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
 
   const updateNavItem = (
@@ -119,14 +137,10 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
     );
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSaving(true);
-    setError(null);
-
-    const result = await saveSiteSettingsAction({
-      settings_id: settings?.id,
-      about_id: about?.id,
+  const buildPayload = useCallback(
+    () => ({
+      settings_id: settingsId,
+      about_id: aboutId,
       site_title: siteTitle,
       profile_image_url: homeProfileImageUrl,
       logo_url: logoUrl,
@@ -145,37 +159,84 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
       greeting_text: greetingText,
       home_intro_text: homeIntroText,
       fun_facts: funFacts,
-    });
+    }),
+    [
+      settingsId,
+      aboutId,
+      siteTitle,
+      homeProfileImageUrl,
+      logoUrl,
+      logoUrlDark,
+      heroHeading,
+      navItems,
+      footerTagline,
+      grainOpacity,
+      googleSiteVerification,
+      googleAnalyticsSnippet,
+      metaPixelSnippet,
+      hotjarSnippet,
+      customScripts,
+      greetingText,
+      homeIntroText,
+      funFacts,
+    ]
+  );
 
-    setSaving(false);
+  const saveSection = async (section: SettingsSectionId) => {
+    setSavingSection(section);
+    setError(null);
+
+    const result = await saveSiteSettingsSectionAction(section, buildPayload());
+
+    setSavingSection(null);
 
     if (result.error) {
       setError(result.error);
       return;
     }
 
+    if (result.settingsId) setSettingsId(result.settingsId);
+    if (result.aboutId) setAboutId(result.aboutId);
+
+    toast.success(`${SECTION_LABELS[section]} saved.`);
+  };
+
+  const handleSaveAll = async () => {
+    setSavingSection("all");
+    setError(null);
+
+    const result = await saveSiteSettingsAction(buildPayload());
+
+    setSavingSection(null);
+
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+
+    if (result.settingsId) setSettingsId(result.settingsId);
+    if (result.aboutId) setAboutId(result.aboutId);
+
     toast.success("Site settings saved.");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl space-y-8">
-      <div>
+    <div className="max-w-3xl space-y-4">
+      <div className="pb-2">
         <h1 className="text-3xl font-bold">Site Settings</h1>
         <p className="mt-2 text-muted-foreground">
-          Control your site identity, navigation, homepage hero, rotating lines,
-          and footer.
+          Control your site identity, navigation, homepage hero, and footer —
+          expand a section to edit it.
         </p>
       </div>
 
-      {/* Identity */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Identity</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your name and logos used across the site.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="Identity"
+        description="Your name, homepage profile photo, and logos used across the site."
+        defaultOpen
+        onSave={() => saveSection("identity")}
+        saving={savingSection === "identity"}
+      >
         <div className="space-y-2">
           <Label htmlFor="site-title">Your name / site title</Label>
           <Input
@@ -220,17 +281,14 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
           Optional white/light logo for dark mode. Falls back to the light logo
           if removed.
         </p>
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Homepage hero heading */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Homepage hero heading</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            The large cursive greeting displayed at the top of your homepage.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="Homepage hero heading"
+        description="The large cursive greeting displayed at the top of your homepage."
+        onSave={() => saveSection("hero-heading")}
+        saving={savingSection === "hero-heading"}
+      >
         <div className="space-y-2">
           <Label htmlFor="hero-heading">Hero heading</Label>
           <Input
@@ -243,17 +301,14 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             Leave blank to auto-generate from your first name.
           </p>
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Rotating hero lines */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Homepage rotating lines</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Short phrases that rotate in the subtitle below the hero heading.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="Homepage intro & rotating lines"
+        description="Greeting, intro paragraph, and short phrases that rotate below the hero heading."
+        onSave={() => saveSection("homepage-copy")}
+        saving={savingSection === "homepage-copy"}
+      >
         <div className="space-y-2">
           <Label htmlFor="greeting-text">Greeting text</Label>
           <Input
@@ -340,18 +395,12 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             </p>
           ) : null}
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Navigation */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold">Navigation menu</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Rename, hide, or add pages. Resume uses the PDF from the Resume
-              admin page — toggle visibility here like Work and About.
-            </p>
-          </div>
+      <AdminCollapsibleSection
+        title="Navigation menu"
+        description="Rename, hide, or add pages. Resume uses the PDF from the Resume admin page."
+        headerExtra={
           <Button
             type="button"
             variant="outline"
@@ -360,8 +409,10 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
           >
             Add item
           </Button>
-        </div>
-
+        }
+        onSave={() => saveSection("navigation")}
+        saving={savingSection === "navigation"}
+      >
         {navItems.map((item, index) => {
           const isResume = isResumeNavItem(item);
 
@@ -423,18 +474,14 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             </div>
           );
         })}
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Grain texture */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Grain texture</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Controls how visible the film-grain speckles are (not page brightness or
-            color). Save, then refresh the public site to preview.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="Grain texture"
+        description="Controls how visible the film-grain speckles are. Save, then refresh the public site to preview."
+        onSave={() => saveSection("grain")}
+        saving={savingSection === "grain"}
+      >
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <Label htmlFor="grain-opacity">Grain intensity</Label>
@@ -491,21 +538,14 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             Preview at {grainOpacity}% — matches the live site after you save.
           </p>
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Analytics & tracking */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Analytics &amp; tracking</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Search Console verification is rendered in the page{" "}
-            <code className="rounded bg-muted px-1 text-xs">&lt;head&gt;</code>{" "}
-            (required for Google). Tracking scripts (Analytics, Pixel, Hotjar)
-            load separately to measure visitors — they are not used for SEO
-            ownership checks.
-          </p>
-        </div>
-
+      <AdminCollapsibleSection
+        title="Analytics & tracking"
+        description="Search Console verification and tracking scripts for Analytics, Pixel, Hotjar, and custom snippets."
+        onSave={() => saveSection("analytics")}
+        saving={savingSection === "analytics"}
+      >
         <div className="space-y-2">
           <Label htmlFor="google-site-verification">
             Google Search Console verification
@@ -548,7 +588,7 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             rows={5}
             placeholder="Paste your Meta (Facebook) Pixel code here…"
             className="font-mono text-xs"
-            />
+          />
         </div>
 
         <div className="space-y-2">
@@ -639,13 +679,14 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             ))
           )}
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
-      {/* Footer */}
-      <section className="space-y-4 rounded-2xl border border-border p-6">
-        <div>
-          <h2 className="text-xl font-bold">Footer</h2>
-        </div>
+      <AdminCollapsibleSection
+        title="Footer"
+        description="Tagline shown in the site footer."
+        onSave={() => saveSection("footer")}
+        saving={savingSection === "footer"}
+      >
         <div className="space-y-2">
           <Label htmlFor="footer-tagline">Footer tagline</Label>
           <Input
@@ -655,7 +696,7 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             placeholder="Coded in the twilight of endless refactors"
           />
         </div>
-      </section>
+      </AdminCollapsibleSection>
 
       {error ? (
         <p className="text-sm text-destructive" role="alert">
@@ -663,9 +704,13 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
         </p>
       ) : null}
 
-      <Button type="submit" disabled={saving}>
-        {saving ? "Saving…" : "Save settings"}
+      <Button
+        type="button"
+        onClick={handleSaveAll}
+        disabled={savingSection !== null}
+      >
+        {savingSection === "all" ? "Saving…" : "Save entire Site Settings"}
       </Button>
-    </form>
+    </div>
   );
 }
