@@ -70,7 +70,7 @@ function FeatureMediaGrid({
             key={`${url}-${index}`}
             src={url}
             alt={`${title ?? "Feature"} image ${index + 1}`}
-            className="aspect-[16/10]"
+            className="aspect-[16/9]"
           />
         ))}
       </div>
@@ -85,7 +85,7 @@ function FeatureMediaGrid({
             key={`${url}-${index}`}
             src={url}
             alt={`${title ?? "Feature"} image ${index + 1}`}
-            className="aspect-[3/4]"
+            className="aspect-[4/5]"
           />
         ))}
       </div>
@@ -98,19 +98,19 @@ function FeatureMediaGrid({
         <SectionMediaImage
           src={urls[0]}
           alt={`${title ?? "Feature"} image 1`}
-          className="aspect-[3/4] md:col-span-1"
+          className="aspect-[4/5] md:col-span-1"
         />
         <SectionMediaImage
           src={urls[1]}
           alt={`${title ?? "Feature"} image 2`}
-          className="aspect-[16/10] md:col-span-2"
+          className="aspect-[16/9] md:col-span-2"
         />
         {urls.slice(2).map((url, index) => (
           <SectionMediaImage
             key={`${url}-${index}`}
             src={url}
             alt={`${title ?? "Feature"} image ${index + 3}`}
-            className="aspect-[16/10] md:col-span-3"
+            className="aspect-[16/9] md:col-span-3"
           />
         ))}
       </div>
@@ -124,7 +124,7 @@ function FeatureMediaGrid({
           key={`${url}-${index}`}
           src={url}
           alt={`${title ?? "Feature"} image ${index + 1}`}
-          className="aspect-[4/5]"
+          className="aspect-[5/6]"
         />
       ))}
     </div>
