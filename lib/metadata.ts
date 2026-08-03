@@ -27,7 +27,9 @@ export async function getSiteContext() {
 
   const siteName = settings?.site_title ?? FALLBACK_SITE_NAME;
   const description =
-    about?.intro_text?.trim().slice(0, 160) || FALLBACK_DESCRIPTION;
+    about?.home_intro_text?.trim().slice(0, 160) ||
+    about?.intro_text?.trim().slice(0, 160) ||
+    FALLBACK_DESCRIPTION;
 
   return { about, settings, siteName, description };
 }

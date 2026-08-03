@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
     : "";
   const title = settings?.site_title ?? siteName;
   const description =
-    about?.intro_text?.trim().slice(0, 160) ??
+    about?.home_intro_text?.trim().slice(0, 160) ??
     `${role}${company} — portfolio and selected work.`;
   const images = settings?.profile_image_url
     ? settings.profile_image_url

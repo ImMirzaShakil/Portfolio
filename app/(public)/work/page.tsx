@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     : "";
   const title = `Work · ${settings?.site_title ?? siteName}`;
   const description =
-    about?.intro_text?.trim().slice(0, 160) ??
+    about?.home_intro_text?.trim().slice(0, 160) ??
     `${role}${company} — portfolio and selected work.`;
 
   return buildPageMetadata(

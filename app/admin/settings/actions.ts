@@ -22,6 +22,7 @@ export interface SiteSettingsPayload {
   hotjar_snippet: string;
   custom_scripts: CustomScript[];
   greeting_text: string;
+  home_intro_text: string;
   fun_facts: string[];
 }
 
@@ -76,9 +77,10 @@ export async function saveSiteSettingsAction(
     if (error) return { error: error.message };
   }
 
-  // Save greeting_text and fun_facts back to about_content
+  // Save homepage copy fields back to about_content
   const aboutUpdate = {
     greeting_text: payload.greeting_text.trim() || null,
+    home_intro_text: payload.home_intro_text.trim() || null,
     fun_facts: payload.fun_facts.map((f) => f.trim()).filter(Boolean),
     updated_at: new Date().toISOString(),
   };
@@ -88,11 +90,27 @@ export async function saveSiteSettingsAction(
       .from("about_content")
       .update(aboutUpdate)
       .eq("id", payload.about_id);
-    if (error) return { error: error.message };
+    if (error) {
+      if (error.message.includes("home_intro_text")) {
+        return {
+          error:
+            "Database is missing home_intro_text. Run supabase/migrations/20260803_home_intro_text.sql in the Supabase SQL editor, then try again.",
+        };
+      }
+      return { error: error.message };
+    }
   } else {
     // No about row yet — upsert a new one
     const { error } = await admin.from("about_content").upsert(aboutUpdate);
-    if (error) return { error: error.message };
+    if (error) {
+      if (error.message.includes("home_intro_text")) {
+        return {
+          error:
+            "Database is missing home_intro_text. Run supabase/migrations/20260803_home_intro_text.sql in the Supabase SQL editor, then try again.",
+        };
+      }
+      return { error: error.message };
+    }
   }
 
   revalidatePath("/", "layout");

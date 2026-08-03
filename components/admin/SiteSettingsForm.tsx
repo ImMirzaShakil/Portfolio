@@ -25,7 +25,10 @@ import { cn } from "@/lib/utils";
 
 interface SiteSettingsFormProps {
   settings?: SiteSettings | null;
-  about?: Pick<AboutContent, "id" | "greeting_text" | "fun_facts"> | null;
+  about?: Pick<
+    AboutContent,
+    "id" | "greeting_text" | "fun_facts" | "home_intro_text" | "intro_text"
+  > | null;
 }
 
 function createNavItem(label = "", href = "/"): NavItem {
@@ -88,6 +91,9 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
   const [greetingText, setGreetingText] = useState(
     about?.greeting_text ?? "Nice to meet you!"
   );
+  const [homeIntroText, setHomeIntroText] = useState(
+    about?.home_intro_text ?? about?.intro_text ?? ""
+  );
   const [funFacts, setFunFacts] = useState<string[]>(() => {
     if (about?.fun_facts && about.fun_facts.length > 0) return about.fun_facts;
     const displayed = getFunFacts(about as AboutContent | null);
@@ -137,6 +143,7 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
       hotjar_snippet: hotjarSnippet,
       custom_scripts: customScripts,
       greeting_text: greetingText,
+      home_intro_text: homeIntroText,
       fun_facts: funFacts,
     });
 
@@ -256,7 +263,21 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
             placeholder="Nice to meet you!"
           />
           <p className="text-xs text-muted-foreground">
-            Shown in the sidebar / intro on the homepage.
+            Shown above the intro paragraph on the homepage.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="home-intro-text">Homepage intro paragraph</Label>
+          <Textarea
+            id="home-intro-text"
+            value={homeIntroText}
+            onChange={(e) => setHomeIntroText(e.target.value)}
+            rows={4}
+            placeholder="I'm a software engineer who…"
+          />
+          <p className="text-xs text-muted-foreground">
+            Separate from the About page intro. Managed only here.
           </p>
         </div>
 

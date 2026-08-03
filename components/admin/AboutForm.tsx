@@ -310,7 +310,7 @@ export function AboutForm({
 
       <AdminCollapsibleSection
         title="Intro"
-        description="Shown beside your photo at the top of the About page."
+        description="Shown beside your photo at the top of the About page only. Homepage intro is managed in Site Settings."
         onSave={() => saveSection("intro")}
         saving={savingSection === "intro"}
       >
@@ -328,7 +328,7 @@ export function AboutForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="intro-text">Intro paragraph</Label>
+          <Label htmlFor="intro-text">About page intro paragraph</Label>
           <Textarea
             id="intro-text"
             value={introText}
@@ -336,6 +336,10 @@ export function AboutForm({
             rows={4}
             placeholder="I&apos;m a software engineer who…"
           />
+          <p className="text-xs text-muted-foreground">
+            Separate from the homepage intro (Site Settings → Homepage rotating
+            lines).
+          </p>
         </div>
       </AdminCollapsibleSection>
 

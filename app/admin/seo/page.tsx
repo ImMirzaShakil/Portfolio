@@ -27,7 +27,7 @@ export default async function AdminSeoPage() {
     home: {
       title: settings?.site_title ?? siteName,
       description:
-        about?.intro_text?.trim().slice(0, 160) ||
+        about?.home_intro_text?.trim().slice(0, 160) ||
         `${role}${company} — portfolio and selected work.`,
       image_url: homeImage
         ? "home / about profile image"
@@ -36,7 +36,7 @@ export default async function AdminSeoPage() {
     work: {
       title: `Work · ${settings?.site_title ?? siteName}`,
       description:
-        about?.intro_text?.trim().slice(0, 160) ||
+        about?.home_intro_text?.trim().slice(0, 160) ||
         `${role}${company} — portfolio and selected work.`,
       image_url: profileImage
         ? "about profile image"
