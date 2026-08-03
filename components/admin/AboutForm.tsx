@@ -138,6 +138,9 @@ export function AboutForm({
   const [showFeaturedIn, setShowFeaturedIn] = useState(
     about?.show_featured_in !== false
   );
+  const [showFeaturedInHome, setShowFeaturedInHome] = useState(
+    about?.show_featured_in_home === true
+  );
   const [experienceSectionVisibility, setExperienceSectionVisibility] = useState({
     job: about?.show_experience !== false,
     internship: about?.show_internships !== false,
@@ -187,6 +190,7 @@ export function AboutForm({
       show_education: experienceSectionVisibility.education,
       show_writing: showWriting,
       show_featured_in: showFeaturedIn,
+      show_featured_in_home: showFeaturedInHome,
       featured_in: featuredIn,
       experiences,
       writings,
@@ -221,6 +225,7 @@ export function AboutForm({
       experienceSectionVisibility,
       showWriting,
       showFeaturedIn,
+      showFeaturedInHome,
       featuredIn,
       experiences,
       writings,
@@ -566,11 +571,18 @@ export function AboutForm({
         onSave={() => saveSection("featured-in")}
         saving={savingSection === "featured-in"}
         headerExtra={
-          <AdminToggle
-            checked={showFeaturedIn}
-            onCheckedChange={setShowFeaturedIn}
-            label="Section"
-          />
+          <div className="flex flex-wrap items-center gap-4">
+            <AdminToggle
+              checked={showFeaturedIn}
+              onCheckedChange={setShowFeaturedIn}
+              label="About page"
+            />
+            <AdminToggle
+              checked={showFeaturedInHome}
+              onCheckedChange={setShowFeaturedInHome}
+              label="Also show on homepage"
+            />
+          </div>
         }
       >
         <FeaturedInManager value={featuredIn} onChange={setFeaturedIn} />

@@ -9,6 +9,7 @@ export type SettingsSectionId =
   | "identity"
   | "hero-heading"
   | "homepage-copy"
+  | "home-video"
   | "navigation"
   | "grain"
   | "analytics"
@@ -25,6 +26,11 @@ export interface SiteSettingsPayload {
   nav_items: NavItem[];
   footer_tagline: string;
   grain_opacity: number;
+  home_video_section_title: string;
+  home_video_youtube_url: string;
+  home_video_title: string;
+  home_video_subtitle: string;
+  show_home_video: boolean;
   google_site_verification: string;
   google_analytics_snippet: string;
   meta_pixel_snippet: string;
@@ -207,6 +213,19 @@ export async function saveSiteSettingsSectionAction(
         await updateAboutHomepageCopy(admin, aboutId, payload);
         break;
       }
+      case "home-video": {
+        settingsId = await ensureSettingsId(admin, payload.settings_id);
+        await updateSiteSettings(admin, settingsId, {
+          home_video_section_title:
+            payload.home_video_section_title.trim() || null,
+          home_video_youtube_url:
+            payload.home_video_youtube_url.trim() || null,
+          home_video_title: payload.home_video_title.trim() || null,
+          home_video_subtitle: payload.home_video_subtitle.trim() || null,
+          show_home_video: payload.show_home_video,
+        });
+        break;
+      }
       case "navigation": {
         settingsId = await ensureSettingsId(admin, payload.settings_id);
         await updateSiteSettings(admin, settingsId, {
@@ -285,6 +304,12 @@ export async function saveSiteSettingsAction(
         100,
         Math.max(0, Math.round(payload.grain_opacity))
       ),
+      home_video_section_title:
+        payload.home_video_section_title.trim() || null,
+      home_video_youtube_url: payload.home_video_youtube_url.trim() || null,
+      home_video_title: payload.home_video_title.trim() || null,
+      home_video_subtitle: payload.home_video_subtitle.trim() || null,
+      show_home_video: payload.show_home_video,
       google_site_verification:
         payload.google_site_verification.trim() || null,
       google_analytics_snippet:

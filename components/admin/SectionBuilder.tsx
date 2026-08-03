@@ -44,7 +44,7 @@ function createEmptySection(): SectionFormItem {
     content: "",
     image_url: null,
     video_url: null,
-    layout: "grid-2",
+    layout: "feature-split-grid-2",
     media_urls: [],
     items: [],
   };
@@ -107,7 +107,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
           : section.items,
       media_urls: config.supportsMediaGallery ? section.media_urls : [],
       layout: config.supportsMediaGallery
-        ? section.layout || "grid-2"
+        ? section.layout || "feature-split-grid-2"
         : section.layout,
       image_url: config.supportsImage ? section.image_url : null,
       video_url: config.supportsVideo ? section.video_url : null,
@@ -341,29 +341,41 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                         ? "Optional title"
                         : "Title"}
                 </Label>
-                <Input
-                  id={`section-title-${section.clientId}`}
-                  value={section.title}
-                  onChange={(event) =>
-                    updateSection(section.clientId, {
-                      title: event.target.value,
-                    })
-                  }
-                  placeholder={
-                    section.section_type === "quickfact"
-                      ? "Role"
-                      : section.section_type === "feature"
-                        ? "Feature #1 — Mentorship"
+                {section.section_type === "feature" ? (
+                  <Textarea
+                    id={`section-title-${section.clientId}`}
+                    value={section.title}
+                    onChange={(event) =>
+                      updateSection(section.clientId, {
+                        title: event.target.value,
+                      })
+                    }
+                    rows={2}
+                    placeholder={"Feature #1\nDigital waivers"}
+                  />
+                ) : (
+                  <Input
+                    id={`section-title-${section.clientId}`}
+                    value={section.title}
+                    onChange={(event) =>
+                      updateSection(section.clientId, {
+                        title: event.target.value,
+                      })
+                    }
+                    placeholder={
+                      section.section_type === "quickfact"
+                        ? "Role"
                         : isHtml
                           ? "Leave blank if the HTML includes its own heading"
                           : "Section heading"
-                  }
-                />
+                    }
+                  />
+                )}
                 <FieldHint>
                   {section.section_type === "quickfact"
                     ? "Short label shown above the value (Role, Time, Team, Problem…)."
                     : section.section_type === "feature"
-                      ? "Shown as the feature heading. Use “Feature #1 Mentorship” style."
+                      ? "Left column heading. Put “Feature #1” on the first line and the feature name on the second (newline) for an eyebrow + title."
                       : isHtml
                         ? "Optional. If set, shown above your HTML as an H2."
                         : "Main heading for this block on the public page."}
@@ -399,10 +411,12 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
               />
               <FieldHint>
                 {section.section_type === "quickfact"
-                  ? "The value under the label in the Quick Facts bar."
-                  : isHtml
-                    ? "Rendered as HTML on the live page. Scripts and inline event handlers are stripped for safety. You can use tags like div, p, img, a, ul, table, iframe."
-                    : "Body text for this section. Blank lines split into paragraphs."}
+                  ? "The value under the label (legacy Quick Facts; prefer Role/Timeline/Team on the project form)."
+                  : section.section_type === "feature"
+                    ? "Right-column body copy for split layouts (or full-width text for stacked layouts)."
+                    : isHtml
+                      ? "Rendered as HTML on the live page. Scripts and inline event handlers are stripped for safety. You can use tags like div, p, img, a, ul, table, iframe."
+                      : "Body text for this section. Blank lines split into paragraphs."}
               </FieldHint>
             </div>
 
@@ -561,17 +575,17 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
               <div className="space-y-4 rounded-xl border border-border p-4">
                 <div className="space-y-2">
                   <Label htmlFor={`layout-${section.clientId}`}>
-                    Image layout
+                    Text + image layout
                   </Label>
                   <select
                     id={`layout-${section.clientId}`}
-                    value={section.layout || "grid-2"}
+                    value={section.layout || "feature-split-grid-2"}
                     onChange={(event) =>
                       updateSection(section.clientId, {
                         layout: event.target.value as FeatureLayout,
                       })
                     }
-                    className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:max-w-xs"
+                    className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:max-w-md"
                   >
                     {FEATURE_LAYOUT_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -581,8 +595,11 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                   </select>
                   <FieldHint>
                     {FEATURE_LAYOUT_OPTIONS.find(
-                      (option) => option.value === (section.layout || "grid-2")
-                    )?.description ?? "Choose how feature images are arranged."}
+                      (option) =>
+                        option.value ===
+                        (section.layout || "feature-split-grid-2")
+                    )?.description ??
+                      "Choose how feature text and images are arranged."}
                   </FieldHint>
                 </div>
 

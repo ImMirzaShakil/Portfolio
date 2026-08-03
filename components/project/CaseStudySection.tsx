@@ -1,8 +1,12 @@
 import Image from "next/image";
 import {
+  getFeatureImageGrid,
+  isFeatureSplitLayout,
   normalizeMediaUrls,
   normalizeSectionItems,
   sanitizeAdminHtml,
+  splitFeatureTitle,
+  type FeatureImageGrid,
   type FeatureLayout,
 } from "@/lib/project-sections";
 import type { ProjectSection } from "@/lib/types";
@@ -53,7 +57,7 @@ function FeatureMediaGrid({
   title,
 }: {
   urls: string[];
-  layout: FeatureLayout;
+  layout: FeatureImageGrid;
   title?: string | null;
 }) {
   if (urls.length === 0) return null;
@@ -67,6 +71,21 @@ function FeatureMediaGrid({
             src={url}
             alt={`${title ?? "Feature"} image ${index + 1}`}
             className="aspect-[16/10]"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (layout === "grid-3") {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        {urls.map((url, index) => (
+          <SectionMediaImage
+            key={`${url}-${index}`}
+            src={url}
+            alt={`${title ?? "Feature"} image ${index + 1}`}
+            className="aspect-[3/4]"
           />
         ))}
       </div>
@@ -127,7 +146,11 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
   const paragraphs = splitParagraphs(content);
   const listItems = normalizeSectionItems(items);
   const gallery = normalizeMediaUrls(media_urls);
-  const featureLayout = (layout as FeatureLayout) || "grid-2";
+  const featureLayout = (layout as FeatureLayout) || "feature-split-grid-2";
+  const featureImageGrid = getFeatureImageGrid(featureLayout);
+  const featureSplit = isFeatureSplitLayout(featureLayout);
+  const { eyebrow: featureEyebrow, heading: featureHeading } =
+    splitFeatureTitle(title);
 
   if (section_type === "media-hero") {
     if (!image_url && !video_url) return null;
@@ -267,21 +290,59 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
   if (section_type === "feature") {
     return (
       <section className="space-y-8" data-section-type={section_type}>
-        <div className="space-y-4">
-          {title ? <h2 className="text-2xl font-bold md:text-3xl">{title}</h2> : null}
-          {paragraphs.map((paragraph, index) => (
-            <p
-              key={index}
-              className="max-w-3xl text-base leading-relaxed text-muted-foreground"
-            >
-              {paragraph}
-            </p>
-          ))}
-        </div>
+        {featureSplit ? (
+          (featureEyebrow || featureHeading || paragraphs.length > 0) && (
+            <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-10 lg:gap-14">
+              <div className="space-y-2">
+                {featureEyebrow ? (
+                  <p className="text-sm font-semibold text-muted-foreground md:text-base">
+                    {featureEyebrow}
+                  </p>
+                ) : null}
+                {featureHeading ? (
+                  <h2 className="text-2xl font-bold leading-tight md:text-3xl">
+                    {featureHeading}
+                  </h2>
+                ) : null}
+              </div>
+              {paragraphs.length > 0 ? (
+                <div className="space-y-4">
+                  {paragraphs.map((paragraph, index) => (
+                    <p
+                      key={index}
+                      className="text-base leading-relaxed text-muted-foreground"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )
+        ) : (
+          <div className="space-y-4">
+            {featureEyebrow ? (
+              <p className="text-sm font-semibold text-muted-foreground">
+                {featureEyebrow}
+              </p>
+            ) : null}
+            {featureHeading ? (
+              <h2 className="text-2xl font-bold md:text-3xl">{featureHeading}</h2>
+            ) : null}
+            {paragraphs.map((paragraph, index) => (
+              <p
+                key={index}
+                className="max-w-3xl text-base leading-relaxed text-muted-foreground"
+              >
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        )}
         <FeatureMediaGrid
           urls={gallery}
-          layout={featureLayout}
-          title={title}
+          layout={featureImageGrid}
+          title={featureHeading ?? title}
         />
       </section>
     );
