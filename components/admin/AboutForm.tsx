@@ -337,8 +337,8 @@ export function AboutForm({
             placeholder="I&apos;m a software engineer who…"
           />
           <p className="text-xs text-muted-foreground">
-            Separate from the homepage intro (Site Settings → Homepage rotating
-            lines).
+            Separate from the homepage intro (Site Settings → Homepage intro
+            &amp; rotating lines).
           </p>
         </div>
       </AdminCollapsibleSection>
