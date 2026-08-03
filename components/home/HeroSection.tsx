@@ -85,9 +85,9 @@ export function HeroSection({ name, heroHeading, profileImageUrl, about, funFact
             <h2 className="text-xl font-bold sm:text-2xl">
               {about?.greeting_text ?? "Nice to meet you!"}
             </h2>
-            {about?.intro_text ? (
+            {(about?.home_intro_text ?? about?.intro_text) ? (
               <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                {about.intro_text}
+                {about?.home_intro_text ?? about?.intro_text}
               </p>
             ) : null}
 

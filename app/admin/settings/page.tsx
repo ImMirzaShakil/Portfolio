@@ -8,7 +8,7 @@ export default async function AdminSettingsPage() {
     supabase.from("site_settings").select("*").limit(1).maybeSingle(),
     supabase
       .from("about_content")
-      .select("id, greeting_text, fun_facts")
+      .select("*")
       .limit(1)
       .maybeSingle(),
   ]);

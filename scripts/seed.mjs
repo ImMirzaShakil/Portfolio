@@ -69,9 +69,11 @@ async function seed() {
 
   await upsertSingleton("about_content", {
     id: IDS.about,
+    home_intro_text:
+      "I'm a software engineer who enjoys building clean, accessible web experiences. I care about thoughtful design, solid engineering, and products that feel simple to use.",
     intro_text:
-        "I'm a software engineer who enjoys building clean, accessible web experiences. I care about thoughtful design, solid engineering, and products that feel simple to use.",
-      currently_role: "Software Engineer",
+      "I'm a software engineer who enjoys building clean, accessible web experiences. I care about thoughtful design, solid engineering, and products that feel simple to use.",
+    currently_role: "Software Engineer",
       currently_company: "Tech Company",
       previously_companies: "Startup Inc, Design Agency, Freelance",
       superpower_1: "Turning complex ideas into clear, user-friendly interfaces",

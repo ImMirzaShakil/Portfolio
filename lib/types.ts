@@ -65,6 +65,7 @@ export interface ProjectSection {
 export interface AboutContent {
   id: string;
   intro_text: string | null;
+  home_intro_text: string | null;
   greeting_text: string | null;
   fun_facts: string[] | null;
   pronunciation: string | null;
