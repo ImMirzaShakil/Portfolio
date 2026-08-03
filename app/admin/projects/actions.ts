@@ -34,6 +34,12 @@ export interface ProjectFormPayload {
   type: string;
   year: string;
   summary: string;
+  problem_text: string;
+  outcome_text: string;
+  impact_text: string;
+  role_text: string;
+  timeline_text: string;
+  team_text: string;
   cover_image_url: string | null;
   is_published: boolean;
   is_password_protected: boolean;
@@ -105,6 +111,12 @@ export async function saveProjectAction(
     type: payload.type.trim() || null,
     year: payload.year.trim() || null,
     summary: payload.summary.trim() || null,
+    problem_text: payload.problem_text.trim() || null,
+    outcome_text: payload.outcome_text.trim() || null,
+    impact_text: payload.impact_text.trim() || null,
+    role_text: payload.role_text.trim() || null,
+    timeline_text: payload.timeline_text.trim() || null,
+    team_text: payload.team_text.trim() || null,
     cover_image_url: payload.cover_image_url,
     is_published: payload.is_published,
     is_password_protected: payload.is_password_protected,

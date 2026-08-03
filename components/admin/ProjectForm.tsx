@@ -48,7 +48,7 @@ function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
     content: section.content ?? "",
     image_url: section.image_url,
     video_url: section.video_url,
-    layout: section.layout || "grid-2",
+    layout: section.layout || "feature-split-grid-2",
     media_urls: normalizeMediaUrls(section.media_urls),
     items: normalizeSectionItems(section.items),
   }));
@@ -72,6 +72,12 @@ export function ProjectForm({
   const [type, setType] = useState(project?.type ?? "");
   const [year, setYear] = useState(project?.year ?? "");
   const [summary, setSummary] = useState(project?.summary ?? "");
+  const [problemText, setProblemText] = useState(project?.problem_text ?? "");
+  const [outcomeText, setOutcomeText] = useState(project?.outcome_text ?? "");
+  const [impactText, setImpactText] = useState(project?.impact_text ?? "");
+  const [roleText, setRoleText] = useState(project?.role_text ?? "");
+  const [timelineText, setTimelineText] = useState(project?.timeline_text ?? "");
+  const [teamText, setTeamText] = useState(project?.team_text ?? "");
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(
     project?.cover_image_url ?? null
   );
@@ -126,6 +132,12 @@ export function ProjectForm({
       type,
       year,
       summary,
+      problem_text: problemText,
+      outcome_text: outcomeText,
+      impact_text: impactText,
+      role_text: roleText,
+      timeline_text: timelineText,
+      team_text: teamText,
       cover_image_url: coverImageUrl,
       is_published: isPublished,
       is_password_protected: isPasswordProtected,
@@ -286,6 +298,82 @@ export function ProjectForm({
           <FieldHint>
             Longer intro under the subtitle. Also used as the card excerpt and
             SEO description fallback.
+          </FieldHint>
+        </div>
+
+        <div className="space-y-2 md:col-span-2">
+          <p className="text-sm font-semibold">Case study summary block</p>
+          <p className="text-xs text-muted-foreground">
+            Shown under the cover image in a two-column layout. Empty fields are
+            hidden on the public page.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="problem-text">Problem</Label>
+          <Textarea
+            id="problem-text"
+            value={problemText}
+            onChange={(event) => setProblemText(event.target.value)}
+            rows={3}
+            placeholder="What challenge were you solving?"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="outcome-text">Outcome</Label>
+          <Textarea
+            id="outcome-text"
+            value={outcomeText}
+            onChange={(event) => setOutcomeText(event.target.value)}
+            rows={3}
+            placeholder="What did you deliver or achieve?"
+          />
+        </div>
+
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="impact-text">Impact</Label>
+          <Textarea
+            id="impact-text"
+            value={impactText}
+            onChange={(event) => setImpactText(event.target.value)}
+            rows={3}
+            placeholder="Broader impact, metrics, or reflection…"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="role-text">Role</Label>
+          <Input
+            id="role-text"
+            value={roleText}
+            onChange={(event) => setRoleText(event.target.value)}
+            placeholder="Lead designer"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="timeline-text">Timeline</Label>
+          <Input
+            id="timeline-text"
+            value={timelineText}
+            onChange={(event) => setTimelineText(event.target.value)}
+            placeholder="Sep '20 – Aug '21"
+          />
+        </div>
+
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="team-text">Team</Label>
+          <Textarea
+            id="team-text"
+            value={teamText}
+            onChange={(event) => setTeamText(event.target.value)}
+            rows={2}
+            placeholder="2 designers, 6 engineers, 1 PM…"
+          />
+          <FieldHint>
+            Role, Timeline, and Team appear in the right sidebar of the summary
+            block (replaces the old Quick Facts bar).
           </FieldHint>
         </div>
 

@@ -62,6 +62,7 @@ export interface AboutFormPayload {
   show_education: boolean;
   show_writing: boolean;
   show_featured_in: boolean;
+  show_featured_in_home: boolean;
   featured_in: FeaturedIn[];
   experiences: Experience[];
   writings: Writing[];
@@ -163,6 +164,7 @@ export async function saveAboutSectionAction(
       case "featured-in":
         await updateAboutContent(admin, aboutId, {
           show_featured_in: payload.show_featured_in,
+          show_featured_in_home: payload.show_featured_in_home,
         });
         await saveFeaturedIn(admin, payload.featured_in);
         break;
@@ -243,6 +245,7 @@ export async function saveAboutAction(
       show_education: payload.show_education,
       show_writing: payload.show_writing,
       show_featured_in: payload.show_featured_in,
+      show_featured_in_home: payload.show_featured_in_home,
     });
 
     await saveFeaturedIn(admin, payload.featured_in);

@@ -62,6 +62,8 @@ async function seed() {
     id: IDS.settings,
     site_title: "Mirza Md Shakil",
     footer_tagline: "Building thoughtful digital experiences",
+    home_video_section_title: "Watch",
+    show_home_video: false,
     resume_url:
       "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
   });
@@ -73,6 +75,7 @@ async function seed() {
       "I'm a software engineer who enjoys building clean, accessible web experiences. I care about thoughtful design, solid engineering, and products that feel simple to use.",
     intro_text:
       "I'm a software engineer who enjoys building clean, accessible web experiences. I care about thoughtful design, solid engineering, and products that feel simple to use.",
+    show_featured_in_home: false,
     currently_role: "Software Engineer",
       currently_company: "Tech Company",
       previously_companies: "Startup Inc, Design Agency, Freelance",
@@ -96,6 +99,14 @@ async function seed() {
       status: "SHIPPED",
       summary:
         "Designed and built a full-stack portfolio inspired by clean, text-forward layouts — with Supabase-backed content management and light/dark themes.",
+      problem_text:
+        "Portfolio sites often feel generic or hard to update without a developer.",
+      outcome_text:
+        "A content-driven site with a private admin panel for projects and about content.",
+      impact_text: "Faster content updates without redeploys for copy changes.",
+      role_text: "Designer & engineer",
+      timeline_text: "2025",
+      team_text: "Solo",
       company: "Personal",
       type: "Case study",
       year: "2025",

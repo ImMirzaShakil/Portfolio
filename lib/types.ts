@@ -16,6 +16,12 @@ export interface Project {
   status_id: string | null;
   project_status?: Pick<ProjectStatusOption, "label"> | null;
   summary: string | null;
+  problem_text: string | null;
+  outcome_text: string | null;
+  impact_text: string | null;
+  role_text: string | null;
+  timeline_text: string | null;
+  team_text: string | null;
   company: string | null;
   type: string | null;
   year: string | null;
@@ -96,6 +102,7 @@ export interface AboutContent {
   show_education: boolean;
   show_writing: boolean;
   show_featured_in: boolean;
+  show_featured_in_home: boolean;
   profile_image_url: string | null;
   twitter_url: string | null;
   linkedin_url: string | null;
@@ -166,6 +173,11 @@ export interface SiteSettings {
   footer_tagline: string | null;
   profile_image_url: string | null;
   grain_opacity: number | null;
+  home_video_section_title: string | null;
+  home_video_youtube_url: string | null;
+  home_video_title: string | null;
+  home_video_subtitle: string | null;
+  show_home_video: boolean;
   google_analytics_snippet: string | null;
   meta_pixel_snippet: string | null;
   hotjar_snippet: string | null;

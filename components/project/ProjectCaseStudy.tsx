@@ -7,13 +7,33 @@ interface ProjectCaseStudyProps {
   sections: ProjectSection[];
 }
 
-export function ProjectCaseStudy({ project, sections }: ProjectCaseStudyProps) {
-  const quickFacts = sections.filter(
-    (section) => section.section_type === "quickfact"
+function MetaBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-sm font-bold text-foreground">{label}</p>
+      <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+        {value}
+      </p>
+    </div>
   );
+}
+
+export function ProjectCaseStudy({ project, sections }: ProjectCaseStudyProps) {
   const contentSections = sections.filter(
     (section) => section.section_type !== "quickfact"
   );
+
+  const problem = project.problem_text?.trim() || null;
+  const outcome = project.outcome_text?.trim() || null;
+  const impact = project.impact_text?.trim() || null;
+  const role = project.role_text?.trim() || null;
+  const timeline = project.timeline_text?.trim() || null;
+  const team = project.team_text?.trim() || null;
+  const subtitle = project.subtitle?.trim() || null;
+  const summary = project.summary?.trim() || null;
+
+  const showSidebar = Boolean(role || timeline || team);
+  const showProblemOutcome = Boolean(problem || outcome);
 
   return (
     <article className="space-y-12">
@@ -30,35 +50,68 @@ export function ProjectCaseStudy({ project, sections }: ProjectCaseStudyProps) {
         </div>
       ) : null}
 
-      <header className="space-y-4">
-        <h1 className="text-4xl font-bold md:text-5xl">{project.title}</h1>
-        {project.subtitle ? (
-          <p className="text-lg text-muted-foreground">{project.subtitle}</p>
-        ) : null}
-        {project.summary ? (
-          <p className="max-w-3xl text-base leading-relaxed text-muted-foreground">
-            {project.summary}
-          </p>
+      <header
+        className={
+          showSidebar
+            ? "grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(200px,280px)] lg:gap-14 xl:gap-20"
+            : "space-y-6"
+        }
+      >
+        <div className="min-w-0 space-y-6">
+          <div className="space-y-3">
+            <h1 className="text-4xl font-bold md:text-5xl">{project.title}</h1>
+            {subtitle ? (
+              <p className="text-lg leading-relaxed text-muted-foreground md:text-xl">
+                {subtitle}
+              </p>
+            ) : null}
+          </div>
+
+          {summary ? (
+            <p className="text-base leading-relaxed text-muted-foreground">
+              {summary}
+            </p>
+          ) : null}
+
+          {showProblemOutcome ? (
+            <div className="grid gap-8 border-t border-border pt-6 sm:grid-cols-2 sm:gap-10">
+              {problem ? (
+                <div className="space-y-2">
+                  <h2 className="text-base font-bold">Problem</h2>
+                  <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                    {problem}
+                  </p>
+                </div>
+              ) : null}
+              {outcome ? (
+                <div className="space-y-2">
+                  <h2 className="text-base font-bold">Outcome</h2>
+                  <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                    {outcome}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {impact ? (
+            <div className="space-y-2 border-t border-border pt-6">
+              <h2 className="text-base font-bold">Impact</h2>
+              <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                {impact}
+              </p>
+            </div>
+          ) : null}
+        </div>
+
+        {showSidebar ? (
+          <aside className="space-y-6 lg:pt-2">
+            {role ? <MetaBlock label="Role" value={role} /> : null}
+            {timeline ? <MetaBlock label="Timeline" value={timeline} /> : null}
+            {team ? <MetaBlock label="Team" value={team} /> : null}
+          </aside>
         ) : null}
       </header>
-
-      {quickFacts.length > 0 ? (
-        <section className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="mb-6 text-base font-semibold uppercase tracking-wide text-muted-foreground">
-            Quick Facts
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-            {quickFacts.map((fact) => (
-              <div key={fact.id} className="space-y-2">
-                <p className="text-base font-medium text-muted-foreground">
-                  {fact.title}
-                </p>
-                <p className="text-lg">{fact.content}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       <div className="space-y-16 md:space-y-20">
         {contentSections.map((section) => (

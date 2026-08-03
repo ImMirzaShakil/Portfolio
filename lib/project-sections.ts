@@ -15,7 +15,16 @@ export type ProjectSectionType =
   | "html"
   | "custom";
 
-export type FeatureLayout = "grid-2" | "grid-1-2" | "stack";
+export type FeatureLayout =
+  | "grid-2"
+  | "grid-1-2"
+  | "stack"
+  | "feature-split-grid-2"
+  | "feature-split-grid-1-2"
+  | "feature-split-grid-3"
+  | "feature-split-stack";
+
+export type FeatureImageGrid = "grid-2" | "grid-1-2" | "grid-3" | "stack";
 
 export interface SectionListItem {
   id: string;
@@ -42,21 +51,83 @@ export const FEATURE_LAYOUT_OPTIONS: Array<{
   description: string;
 }> = [
   {
+    value: "feature-split-grid-2",
+    label: "Split text + 2 equal images",
+    description:
+      "Title left / body right, then two equal images below (reference feature style).",
+  },
+  {
+    value: "feature-split-grid-1-2",
+    label: "Split text + narrow & wide images",
+    description:
+      "Title left / body right, then narrow + wide image pair below.",
+  },
+  {
+    value: "feature-split-grid-3",
+    label: "Split text + 3 equal images",
+    description:
+      "Title left / body right, then three equal images in a row.",
+  },
+  {
+    value: "feature-split-stack",
+    label: "Split text + stacked images",
+    description:
+      "Title left / body right, then full-width stacked images.",
+  },
+  {
     value: "grid-2",
-    label: "2 equal images",
-    description: "Side-by-side pair — good for before/after or two screens.",
+    label: "Stacked text + 2 equal images",
+    description: "Legacy: text above, then side-by-side image pair.",
   },
   {
     value: "grid-1-2",
-    label: "1 + wide image",
-    description: "Narrow image beside a wider one — matches Menti feature layouts.",
+    label: "Stacked text + narrow & wide",
+    description: "Legacy: text above, then narrow + wide images.",
   },
   {
     value: "stack",
-    label: "Stacked full width",
-    description: "Each image spans the full content width.",
+    label: "Stacked text + full-width images",
+    description: "Legacy: text above, then each image full width.",
   },
 ];
+
+/** Whether the layout uses the split title/body text row. */
+export function isFeatureSplitLayout(layout?: string | null): boolean {
+  return (layout ?? "").startsWith("feature-split-");
+}
+
+/** Resolve which image grid to use for a feature layout preset. */
+export function getFeatureImageGrid(layout?: string | null): FeatureImageGrid {
+  switch (layout) {
+    case "feature-split-grid-1-2":
+    case "grid-1-2":
+      return "grid-1-2";
+    case "feature-split-grid-3":
+      return "grid-3";
+    case "feature-split-stack":
+    case "stack":
+      return "stack";
+    case "feature-split-grid-2":
+    case "grid-2":
+    default:
+      return "grid-2";
+  }
+}
+
+/** Split feature title into optional eyebrow + heading (newline-separated). */
+export function splitFeatureTitle(title?: string | null): {
+  eyebrow: string | null;
+  heading: string | null;
+} {
+  if (!title?.trim()) return { eyebrow: null, heading: null };
+  const lines = title
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) return { eyebrow: null, heading: null };
+  if (lines.length === 1) return { eyebrow: null, heading: lines[0] };
+  return { eyebrow: lines[0], heading: lines.slice(1).join(" ") };
+}
 
 export const SECTION_TYPE_CONFIG: SectionTypeConfig[] = [
   {
@@ -71,9 +142,9 @@ export const SECTION_TYPE_CONFIG: SectionTypeConfig[] = [
   },
   {
     key: "quickfact",
-    label: "Quick fact",
+    label: "Quick fact (legacy)",
     description:
-      "One metadata chip in the Quick Facts bar (Role, Time, Team, Problem, Outcome, etc.). Title = label, Content = value.",
+      "Legacy metadata chips. Prefer Role / Timeline / Team fields on the project form — quick facts are no longer shown on the case study page.",
     supportsImage: false,
     supportsVideo: false,
     supportsMediaGallery: false,
@@ -115,7 +186,7 @@ export const SECTION_TYPE_CONFIG: SectionTypeConfig[] = [
     key: "feature",
     label: "Feature showcase",
     description:
-      "One product feature: eyebrow/title, body copy, and a multi-image gallery with layout choices.",
+      "Product feature with selectable text+image layouts (split header + image grids).",
     supportsImage: false,
     supportsVideo: false,
     supportsMediaGallery: true,

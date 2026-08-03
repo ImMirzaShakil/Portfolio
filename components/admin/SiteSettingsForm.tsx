@@ -32,6 +32,7 @@ const SECTION_LABELS: Record<SettingsSectionId, string> = {
   identity: "Identity",
   "hero-heading": "Homepage hero heading",
   "homepage-copy": "Homepage intro & rotating lines",
+  "home-video": "Homepage video",
   navigation: "Navigation menu",
   grain: "Grain texture",
   analytics: "Analytics & tracking",
@@ -115,6 +116,21 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
     const displayed = getFunFacts(about as AboutContent | null);
     return displayed.length > 0 ? displayed : [""];
   });
+  const [homeVideoSectionTitle, setHomeVideoSectionTitle] = useState(
+    settings?.home_video_section_title ?? ""
+  );
+  const [homeVideoYoutubeUrl, setHomeVideoYoutubeUrl] = useState(
+    settings?.home_video_youtube_url ?? ""
+  );
+  const [homeVideoTitle, setHomeVideoTitle] = useState(
+    settings?.home_video_title ?? ""
+  );
+  const [homeVideoSubtitle, setHomeVideoSubtitle] = useState(
+    settings?.home_video_subtitle ?? ""
+  );
+  const [showHomeVideo, setShowHomeVideo] = useState(
+    settings?.show_home_video === true
+  );
   const [savingSection, setSavingSection] = useState<
     SettingsSectionId | "all" | null
   >(null);
@@ -151,6 +167,11 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
       ),
       footer_tagline: footerTagline,
       grain_opacity: grainOpacity,
+      home_video_section_title: homeVideoSectionTitle,
+      home_video_youtube_url: homeVideoYoutubeUrl,
+      home_video_title: homeVideoTitle,
+      home_video_subtitle: homeVideoSubtitle,
+      show_home_video: showHomeVideo,
       google_site_verification: googleSiteVerification,
       google_analytics_snippet: googleAnalyticsSnippet,
       meta_pixel_snippet: metaPixelSnippet,
@@ -171,6 +192,11 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
       navItems,
       footerTagline,
       grainOpacity,
+      homeVideoSectionTitle,
+      homeVideoYoutubeUrl,
+      homeVideoTitle,
+      homeVideoSubtitle,
+      showHomeVideo,
       googleSiteVerification,
       googleAnalyticsSnippet,
       metaPixelSnippet,
@@ -394,6 +420,71 @@ export function SiteSettingsForm({ settings, about }: SiteSettingsFormProps) {
               No rotating lines set. A default will show until you add one.
             </p>
           ) : null}
+        </div>
+      </AdminCollapsibleSection>
+
+      <AdminCollapsibleSection
+        title="Homepage video"
+        description="Embed a public or unlisted YouTube video after Featured work. Title and subtitle are optional."
+        headerExtra={
+          <AdminToggle
+            checked={showHomeVideo}
+            onCheckedChange={setShowHomeVideo}
+            label="Show on homepage"
+          />
+        }
+        onSave={() => saveSection("home-video")}
+        saving={savingSection === "home-video"}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="home-video-section-title">Section heading</Label>
+          <Input
+            id="home-video-section-title"
+            value={homeVideoSectionTitle}
+            onChange={(e) => setHomeVideoSectionTitle(e.target.value)}
+            placeholder="Watch"
+          />
+          <p className="text-xs text-muted-foreground">
+            Editable section name above the video (like “Featured work”).
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="home-video-youtube-url">YouTube URL</Label>
+          <Input
+            id="home-video-youtube-url"
+            value={homeVideoYoutubeUrl}
+            onChange={(e) => setHomeVideoYoutubeUrl(e.target.value)}
+            placeholder="https://www.youtube.com/watch?v=… or youtu.be/…"
+          />
+          <p className="text-xs text-muted-foreground">
+            Paste a watch, share, Shorts, or embed link. Video is not uploaded
+            here — host it on YouTube (public or unlisted).
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="home-video-title">Video title (optional)</Label>
+          <Input
+            id="home-video-title"
+            value={homeVideoTitle}
+            onChange={(e) => setHomeVideoTitle(e.target.value)}
+            placeholder="Project walkthrough"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="home-video-subtitle">Video subtitle (optional)</Label>
+          <Textarea
+            id="home-video-subtitle"
+            value={homeVideoSubtitle}
+            onChange={(e) => setHomeVideoSubtitle(e.target.value)}
+            rows={2}
+            placeholder="A short note about the video…"
+          />
+          <p className="text-xs text-muted-foreground">
+            Title and subtitle are hidden when empty — only the embed shows.
+          </p>
         </div>
       </AdminCollapsibleSection>
 
