@@ -10,7 +10,9 @@ interface ProjectCardProps {
 }
 
 function formatMetadata(project: Project) {
-  return [project.company, project.year].filter(Boolean).join(" · ");
+  return [project.type, project.company, project.year]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 function isGifUrl(url: string) {

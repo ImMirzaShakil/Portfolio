@@ -269,7 +269,8 @@ export function ProjectForm({
             placeholder="Case study"
           />
           <FieldHint>
-            Work type label — Case study, Product, Exploration, etc.
+            Work type label shown in project card metadata — Case study,
+            Product, Exploration, etc.
           </FieldHint>
         </div>
 
