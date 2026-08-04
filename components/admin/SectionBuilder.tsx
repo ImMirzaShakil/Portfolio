@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
+import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { VideoUpload } from "@/components/admin/VideoUpload";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ function FieldHint({ children }: { children: string }) {
 export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
 
   const updateSection = (
     clientId: string,
@@ -71,6 +73,18 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
 
   const removeSection = (clientId: string) => {
     onChange(sections.filter((section) => section.clientId !== clientId));
+    setExpandedIds((prev) => {
+      if (!prev.has(clientId)) return prev;
+      const next = new Set(prev);
+      next.delete(clientId);
+      return next;
+    });
+  };
+
+  const addSection = () => {
+    const next = createEmptySection();
+    onChange([...sections, next]);
+    setExpandedIds((prev) => new Set(prev).add(next.clientId));
   };
 
   const moveSectionTo = (fromIndex: number, toIndex: number) => {
@@ -162,23 +176,26 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
     updateSection(sectionId, { media_urls: next });
   };
 
+  const setSectionExpanded = (clientId: string, open: boolean) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (open) {
+        next.add(clientId);
+      } else {
+        next.delete(clientId);
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
-          <h2 className="text-xl font-semibold">Case study sections</h2>
-          <FieldHint>
-            Build the page top-to-bottom. Drag the handle, use Up/Down, or pick
-            a position to reorder. Include Custom HTML for one-off layouts.
-          </FieldHint>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onChange([...sections, createEmptySection()])}
-        >
-          Add section
-        </Button>
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold">Case study sections</h2>
+        <FieldHint>
+          Build the page top-to-bottom. Drag the handle, use Up/Down, or pick a
+          position to reorder. Include Custom HTML for one-off layouts.
+        </FieldHint>
       </div>
 
       {sections.length === 0 ? (
@@ -195,11 +212,11 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         const isDragging = draggingId === section.clientId;
         const isDragOver =
           dragOverId === section.clientId && draggingId !== section.clientId;
+        const isExpanded = expandedIds.has(section.clientId);
 
         return (
           <div
             key={section.clientId}
-            draggable={false}
             onDragOver={(event) => {
               event.preventDefault();
               if (draggingId && draggingId !== section.clientId) {
@@ -221,16 +238,19 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
               setDraggingId(null);
               setDragOverId(null);
             }}
-            className={cn(
-              "space-y-4 rounded-2xl border bg-card p-6 transition-colors",
-              isDragOver
-                ? "border-foreground border-dashed"
-                : "border-border",
-              isDragging && "opacity-60"
-            )}
+            className={cn(isDragging && "opacity-60")}
           >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex min-w-0 items-start gap-3">
+            <AdminCollapsibleSection
+              title={`Section ${index + 1} · ${config.label}`}
+              description={config.description}
+              open={isExpanded}
+              onOpenChange={(open) =>
+                setSectionExpanded(section.clientId, open)
+              }
+              className={cn(
+                isDragOver && "border-dashed border-foreground"
+              )}
+              leading={
                 <button
                   type="button"
                   draggable
@@ -243,445 +263,443 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                     setDraggingId(null);
                     setDragOverId(null);
                   }}
-                  className="mt-0.5 inline-flex size-9 shrink-0 cursor-grab items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted active:cursor-grabbing"
+                  className="inline-flex size-9 shrink-0 cursor-grab items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted active:cursor-grabbing"
                   aria-label={`Drag to reorder section ${index + 1}`}
                   title="Drag to reorder"
                 >
                   <GripVertical className="size-4" />
                 </button>
-                <div className="min-w-0">
-                  <p className="font-medium">
-                    Section {index + 1}
-                    <span className="ml-2 text-sm font-normal text-muted-foreground">
-                      · {config.label}
-                    </span>
-                  </p>
-                  <FieldHint>{config.description}</FieldHint>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => moveSection(index, "up")}
-                  disabled={index === 0}
-                >
-                  <ArrowUp className="size-4" />
-                  Up
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => moveSection(index, "down")}
-                  disabled={index === sections.length - 1}
-                >
-                  <ArrowDown className="size-4" />
-                  Down
-                </Button>
-                <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="whitespace-nowrap">Move to</span>
-                  <select
-                    value={index}
-                    onChange={(event) =>
-                      moveSectionTo(index, Number(event.target.value))
-                    }
-                    className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                    aria-label={`Move section ${index + 1} to position`}
-                  >
-                    {sections.map((_, position) => (
-                      <option key={position} value={position}>
-                        #{position + 1}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => removeSection(section.clientId)}
-                >
-                  <Trash2 className="size-4" />
-                  Delete
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor={`section-type-${section.clientId}`}>
-                  Section type
-                </Label>
-                <select
-                  id={`section-type-${section.clientId}`}
-                  value={section.section_type}
-                  onChange={(event) =>
-                    handleTypeChange(section.clientId, event.target.value)
-                  }
-                  className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  {SECTION_TYPE_CONFIG.map((type) => (
-                    <option key={type.key} value={type.key}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor={`section-title-${section.clientId}`}>
-                  {section.section_type === "quickfact"
-                    ? "Fact label"
-                    : section.section_type === "feature"
-                      ? "Feature title / eyebrow"
-                      : isHtml
-                        ? "Optional title"
-                        : "Title"}
-                </Label>
-                {section.section_type === "feature" ? (
-                  <Textarea
-                    id={`section-title-${section.clientId}`}
-                    value={section.title}
-                    onChange={(event) =>
-                      updateSection(section.clientId, {
-                        title: event.target.value,
-                      })
-                    }
-                    rows={2}
-                    placeholder={"Feature #1\nDigital waivers"}
-                  />
-                ) : (
-                  <Input
-                    id={`section-title-${section.clientId}`}
-                    value={section.title}
-                    onChange={(event) =>
-                      updateSection(section.clientId, {
-                        title: event.target.value,
-                      })
-                    }
-                    placeholder={
-                      section.section_type === "quickfact"
-                        ? "Role"
-                        : isHtml
-                          ? "Leave blank if the HTML includes its own heading"
-                          : "Section heading"
-                    }
-                  />
-                )}
-                <FieldHint>
-                  {section.section_type === "quickfact"
-                    ? "Short label shown above the value (Role, Time, Team, Problem…)."
-                    : section.section_type === "feature"
-                      ? "Left column heading. Put “Feature #1” on the first line and the feature name on the second (newline) for an eyebrow + title."
-                      : isHtml
-                        ? "Optional. If set, shown above your HTML as an H2."
-                        : "Main heading for this block on the public page."}
-                </FieldHint>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor={`section-content-${section.clientId}`}>
-                {section.section_type === "quickfact"
-                  ? "Fact value"
-                  : isHtml
-                    ? "HTML content"
-                    : "Content"}
-              </Label>
-              <Textarea
-                id={`section-content-${section.clientId}`}
-                value={section.content}
-                onChange={(event) =>
-                  updateSection(section.clientId, {
-                    content: event.target.value,
-                  })
-                }
-                rows={isHtml ? 12 : section.section_type === "quickfact" ? 2 : 5}
-                className={cn(isHtml && "font-mono text-xs leading-relaxed")}
-                placeholder={
-                  section.section_type === "quickfact"
-                    ? "Product designer & developer"
-                    : isHtml
-                      ? `<div class="my-block">\n  <p>Custom markup here…</p>\n</div>`
-                      : "Write the body copy. Separate paragraphs with a blank line."
-                }
-              />
-              <FieldHint>
-                {section.section_type === "quickfact"
-                  ? "The value under the label (legacy Quick Facts; prefer Role/Timeline/Team on the project form)."
-                  : section.section_type === "feature"
-                    ? "Right-column body copy for split layouts (or full-width text for stacked layouts)."
-                    : isHtml
-                      ? "Rendered as HTML on the live page. Scripts and inline event handlers are stripped for safety. You can use tags like div, p, img, a, ul, table, iframe."
-                      : "Body text for this section. Blank lines split into paragraphs."}
-              </FieldHint>
-            </div>
-
-            {config.supportsItems && config.itemKind === "process" ? (
-              <div className="space-y-3 rounded-xl border border-border p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium">Timeline steps</p>
-                    <FieldHint>
-                      Numbered phases like Week 1 / Research & Design. Label =
-                      number or short tag, Title = step name, Description =
-                      details.
-                    </FieldHint>
-                  </div>
+              }
+              headerExtra={
+                <>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => addItem(section.clientId, "process")}
+                    onClick={() => moveSection(index, "up")}
+                    disabled={index === 0}
                   >
-                    Add step
+                    <ArrowUp className="size-4" />
+                    Up
                   </Button>
-                </div>
-                {section.items.map((item, itemIndex) => (
-                  <div
-                    key={item.id}
-                    className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[100px_1fr_auto]"
-                  >
-                    <div className="space-y-1.5">
-                      <Label>Label</Label>
-                      <Input
-                        value={item.label}
-                        onChange={(event) =>
-                          updateItem(section.clientId, item.id, {
-                            label: event.target.value,
-                          })
-                        }
-                        placeholder={String(itemIndex + 1).padStart(2, "0")}
-                      />
-                    </div>
-                    <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <Label>Step title</Label>
-                        <Input
-                          value={item.title}
-                          onChange={(event) =>
-                            updateItem(section.clientId, item.id, {
-                              title: event.target.value,
-                            })
-                          }
-                          placeholder="Week 1 — Research & Design"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>Description</Label>
-                        <Textarea
-                          value={item.description}
-                          onChange={(event) =>
-                            updateItem(section.clientId, item.id, {
-                              description: event.target.value,
-                            })
-                          }
-                          rows={2}
-                          placeholder="What happened in this phase…"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => removeItem(section.clientId, item.id)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-
-            {config.supportsItems && config.itemKind === "stats" ? (
-              <div className="space-y-3 rounded-xl border border-border p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium">Stat callouts</p>
-                    <FieldHint>
-                      Big number/value, short headline, and supporting sentence
-                      (e.g. 87% — of survey takers ask friends for help…).
-                    </FieldHint>
-                  </div>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => addItem(section.clientId, "stats")}
+                    onClick={() => moveSection(index, "down")}
+                    disabled={index === sections.length - 1}
                   >
-                    Add stat
+                    <ArrowDown className="size-4" />
+                    Down
                   </Button>
-                </div>
-                {section.items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[120px_1fr_auto]"
-                  >
-                    <div className="space-y-1.5">
-                      <Label>Value</Label>
-                      <Input
-                        value={item.label}
-                        onChange={(event) =>
-                          updateItem(section.clientId, item.id, {
-                            label: event.target.value,
-                          })
-                        }
-                        placeholder="87%"
-                      />
-                    </div>
-                    <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <Label>Headline</Label>
-                        <Input
-                          value={item.title}
-                          onChange={(event) =>
-                            updateItem(section.clientId, item.id, {
-                              title: event.target.value,
-                            })
-                          }
-                          placeholder="of survey takers ask friends for help"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>Details</Label>
-                        <Textarea
-                          value={item.description}
-                          onChange={(event) =>
-                            updateItem(section.clientId, item.id, {
-                              description: event.target.value,
-                            })
-                          }
-                          rows={2}
-                          placeholder="Extra context for this finding…"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => removeItem(section.clientId, item.id)}
+                  <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="whitespace-nowrap">Move to</span>
+                    <select
+                      value={index}
+                      onChange={(event) =>
+                        moveSectionTo(index, Number(event.target.value))
+                      }
+                      className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                      aria-label={`Move section ${index + 1} to position`}
                     >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-
-            {config.supportsMediaGallery ? (
-              <div className="space-y-4 rounded-xl border border-border p-4">
+                      {sections.map((_, position) => (
+                        <option key={position} value={position}>
+                          #{position + 1}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => removeSection(section.clientId)}
+                  >
+                    <Trash2 className="size-4" />
+                    Delete
+                  </Button>
+                </>
+              }
+            >
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor={`layout-${section.clientId}`}>
-                    Text + image layout
+                  <Label htmlFor={`section-type-${section.clientId}`}>
+                    Section type
                   </Label>
                   <select
-                    id={`layout-${section.clientId}`}
-                    value={section.layout || "feature-split-grid-2"}
+                    id={`section-type-${section.clientId}`}
+                    value={section.section_type}
                     onChange={(event) =>
-                      updateSection(section.clientId, {
-                        layout: event.target.value as FeatureLayout,
-                      })
+                      handleTypeChange(section.clientId, event.target.value)
                     }
-                    className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:max-w-md"
+                    className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
-                    {FEATURE_LAYOUT_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
+                    {SECTION_TYPE_CONFIG.map((type) => (
+                      <option key={type.key} value={type.key}>
+                        {type.label}
                       </option>
                     ))}
                   </select>
-                  <FieldHint>
-                    {FEATURE_LAYOUT_OPTIONS.find(
-                      (option) =>
-                        option.value ===
-                        (section.layout || "feature-split-grid-2")
-                    )?.description ??
-                      "Choose how feature text and images are arranged."}
-                  </FieldHint>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor={`section-title-${section.clientId}`}>
+                    {section.section_type === "quickfact"
+                      ? "Fact label"
+                      : section.section_type === "feature"
+                        ? "Feature title / eyebrow"
+                        : isHtml
+                          ? "Optional title"
+                          : "Title"}
+                  </Label>
+                  {section.section_type === "feature" ? (
+                    <Textarea
+                      id={`section-title-${section.clientId}`}
+                      value={section.title}
+                      onChange={(event) =>
+                        updateSection(section.clientId, {
+                          title: event.target.value,
+                        })
+                      }
+                      rows={2}
+                      placeholder={"Feature #1\nDigital waivers"}
+                    />
+                  ) : (
+                    <Input
+                      id={`section-title-${section.clientId}`}
+                      value={section.title}
+                      onChange={(event) =>
+                        updateSection(section.clientId, {
+                          title: event.target.value,
+                        })
+                      }
+                      placeholder={
+                        section.section_type === "quickfact"
+                          ? "Role"
+                          : isHtml
+                            ? "Leave blank if the HTML includes its own heading"
+                            : "Section heading"
+                      }
+                    />
+                  )}
+                  <FieldHint>
+                    {section.section_type === "quickfact"
+                      ? "Short label shown above the value (Role, Time, Team, Problem…)."
+                      : section.section_type === "feature"
+                        ? "Left column heading. Put “Feature #1” on the first line and the feature name on the second (newline) for an eyebrow + title."
+                        : isHtml
+                          ? "Optional. If set, shown above your HTML as an H2."
+                          : "Main heading for this block on the public page."}
+                  </FieldHint>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`section-content-${section.clientId}`}>
+                  {section.section_type === "quickfact"
+                    ? "Fact value"
+                    : isHtml
+                      ? "HTML content"
+                      : "Content"}
+                </Label>
+                <Textarea
+                  id={`section-content-${section.clientId}`}
+                  value={section.content}
+                  onChange={(event) =>
+                    updateSection(section.clientId, {
+                      content: event.target.value,
+                    })
+                  }
+                  rows={
+                    isHtml ? 12 : section.section_type === "quickfact" ? 2 : 5
+                  }
+                  className={cn(isHtml && "font-mono text-xs leading-relaxed")}
+                  placeholder={
+                    section.section_type === "quickfact"
+                      ? "Product designer & developer"
+                      : isHtml
+                        ? `<div class="my-block">\n  <p>Custom markup here…</p>\n</div>`
+                        : "Write the body copy. Separate paragraphs with a blank line."
+                  }
+                />
+                <FieldHint>
+                  {section.section_type === "quickfact"
+                    ? "The value under the label (legacy Quick Facts; prefer Role/Timeline/Team on the project form)."
+                    : section.section_type === "feature"
+                      ? "Right-column body copy for split layouts (or full-width text for stacked layouts)."
+                      : isHtml
+                        ? "Rendered as HTML on the live page. Scripts and inline event handlers are stripped for safety. You can use tags like div, p, img, a, ul, table, iframe."
+                        : "Body text for this section. Blank lines split into paragraphs."}
+                </FieldHint>
+              </div>
+
+              {config.supportsItems && config.itemKind === "process" ? (
+                <div className="space-y-3 rounded-xl border border-border p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium">Feature images</p>
+                      <p className="text-sm font-medium">Timeline steps</p>
                       <FieldHint>
-                        Upload 1–4 screenshots or mockups for this feature.
+                        Numbered phases like Week 1 / Research & Design. Label =
+                        number or short tag, Title = step name, Description =
+                        details.
                       </FieldHint>
                     </div>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() =>
-                        updateSection(section.clientId, {
-                          media_urls: [...section.media_urls, ""],
-                        })
-                      }
+                      onClick={() => addItem(section.clientId, "process")}
                     >
-                      Add image slot
+                      Add step
                     </Button>
                   </div>
-
-                  {section.media_urls.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No images yet. Add slots, then upload into each one.
-                    </p>
-                  ) : null}
-
-                  {section.media_urls.map((url, mediaIndex) => (
+                  {section.items.map((item, itemIndex) => (
                     <div
-                      key={`${section.clientId}-media-${mediaIndex}`}
-                      className="rounded-lg border border-border p-3"
+                      key={item.id}
+                      className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[100px_1fr_auto]"
                     >
-                      <ImageUpload
-                        label={`Image ${mediaIndex + 1}`}
-                        value={url || null}
-                        onChange={(nextUrl) =>
-                          updateMediaUrl(
-                            section.clientId,
-                            mediaIndex,
-                            nextUrl
-                          )
-                        }
-                        requirementsKind="image"
-                      />
+                      <div className="space-y-1.5">
+                        <Label>Label</Label>
+                        <Input
+                          value={item.label}
+                          onChange={(event) =>
+                            updateItem(section.clientId, item.id, {
+                              label: event.target.value,
+                            })
+                          }
+                          placeholder={String(itemIndex + 1).padStart(2, "0")}
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <Label>Step title</Label>
+                          <Input
+                            value={item.title}
+                            onChange={(event) =>
+                              updateItem(section.clientId, item.id, {
+                                title: event.target.value,
+                              })
+                            }
+                            placeholder="Week 1 — Research & Design"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Description</Label>
+                          <Textarea
+                            value={item.description}
+                            onChange={(event) =>
+                              updateItem(section.clientId, item.id, {
+                                description: event.target.value,
+                              })
+                            }
+                            rows={2}
+                            placeholder="What happened in this phase…"
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => removeItem(section.clientId, item.id)}
+                      >
+                        Remove
+                      </Button>
                     </div>
                   ))}
                 </div>
-              </div>
-            ) : null}
+              ) : null}
 
-            {config.supportsImage ? (
-              <ImageUpload
-                label={
-                  section.section_type === "media-hero" ||
-                  section.section_type === "video"
-                    ? "Poster / background image"
-                    : "Section image"
-                }
-                value={section.image_url}
-                onChange={(url) =>
-                  updateSection(section.clientId, { image_url: url })
-                }
-                requirementsKind="image"
-              />
-            ) : null}
+              {config.supportsItems && config.itemKind === "stats" ? (
+                <div className="space-y-3 rounded-xl border border-border p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Stat callouts</p>
+                      <FieldHint>
+                        Big number/value, short headline, and supporting sentence
+                        (e.g. 87% — of survey takers ask friends for help…).
+                      </FieldHint>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addItem(section.clientId, "stats")}
+                    >
+                      Add stat
+                    </Button>
+                  </div>
+                  {section.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[120px_1fr_auto]"
+                    >
+                      <div className="space-y-1.5">
+                        <Label>Value</Label>
+                        <Input
+                          value={item.label}
+                          onChange={(event) =>
+                            updateItem(section.clientId, item.id, {
+                              label: event.target.value,
+                            })
+                          }
+                          placeholder="87%"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <Label>Headline</Label>
+                          <Input
+                            value={item.title}
+                            onChange={(event) =>
+                              updateItem(section.clientId, item.id, {
+                                title: event.target.value,
+                              })
+                            }
+                            placeholder="of survey takers ask friends for help"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Details</Label>
+                          <Textarea
+                            value={item.description}
+                            onChange={(event) =>
+                              updateItem(section.clientId, item.id, {
+                                description: event.target.value,
+                              })
+                            }
+                            rows={2}
+                            placeholder="Extra context for this finding…"
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => removeItem(section.clientId, item.id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
 
-            {config.supportsVideo ? (
-              <VideoUpload
-                label="Section video"
-                value={section.video_url}
-                onChange={(url) =>
-                  updateSection(section.clientId, { video_url: url })
-                }
-              />
-            ) : null}
+              {config.supportsMediaGallery ? (
+                <div className="space-y-4 rounded-xl border border-border p-4">
+                  <div className="space-y-2">
+                    <Label htmlFor={`layout-${section.clientId}`}>
+                      Text + image layout
+                    </Label>
+                    <select
+                      id={`layout-${section.clientId}`}
+                      value={section.layout || "feature-split-grid-2"}
+                      onChange={(event) =>
+                        updateSection(section.clientId, {
+                          layout: event.target.value as FeatureLayout,
+                        })
+                      }
+                      className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:max-w-md"
+                    >
+                      {FEATURE_LAYOUT_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <FieldHint>
+                      {FEATURE_LAYOUT_OPTIONS.find(
+                        (option) =>
+                          option.value ===
+                          (section.layout || "feature-split-grid-2")
+                      )?.description ??
+                        "Choose how feature text and images are arranged."}
+                    </FieldHint>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium">Feature images</p>
+                        <FieldHint>
+                          Upload 1–4 screenshots or mockups for this feature.
+                        </FieldHint>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateSection(section.clientId, {
+                            media_urls: [...section.media_urls, ""],
+                          })
+                        }
+                      >
+                        Add image slot
+                      </Button>
+                    </div>
+
+                    {section.media_urls.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No images yet. Add slots, then upload into each one.
+                      </p>
+                    ) : null}
+
+                    {section.media_urls.map((url, mediaIndex) => (
+                      <div
+                        key={`${section.clientId}-media-${mediaIndex}`}
+                        className="rounded-lg border border-border p-3"
+                      >
+                        <ImageUpload
+                          label={`Image ${mediaIndex + 1}`}
+                          value={url || null}
+                          onChange={(nextUrl) =>
+                            updateMediaUrl(
+                              section.clientId,
+                              mediaIndex,
+                              nextUrl
+                            )
+                          }
+                          requirementsKind="image"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {config.supportsImage ? (
+                <ImageUpload
+                  label={
+                    section.section_type === "media-hero" ||
+                    section.section_type === "video"
+                      ? "Poster / background image"
+                      : "Section image"
+                  }
+                  value={section.image_url}
+                  onChange={(url) =>
+                    updateSection(section.clientId, { image_url: url })
+                  }
+                  requirementsKind="image"
+                />
+              ) : null}
+
+              {config.supportsVideo ? (
+                <VideoUpload
+                  label="Section video"
+                  value={section.video_url}
+                  onChange={(url) =>
+                    updateSection(section.clientId, { video_url: url })
+                  }
+                />
+              ) : null}
+            </AdminCollapsibleSection>
           </div>
         );
       })}
+
+      <Button type="button" variant="outline" onClick={addSection}>
+        Add section
+      </Button>
     </div>
   );
 }
