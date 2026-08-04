@@ -89,7 +89,7 @@
   }
 
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    @apply m-0 bg-background p-0 font-sans text-foreground antialiased;
   }
 
   h1,
@@ -210,13 +210,20 @@
     top: 0;
     z-index: 50;
     width: 100%;
+    margin: 0;
     isolation: isolate;
+    overflow: visible;
   }
 
   .nav-progressive-blur,
   .nav-progressive-tint {
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    /* Cover any subpixel gap at the viewport top */
+    top: -1px;
+    /* Extend below the bar so the fade blends into page content */
+    height: calc(100% + 4.75rem);
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -227,13 +234,18 @@
     opacity: 1;
   }
 
-  /* Soft wash: denser at top, fades toward the bottom of the bar */
+  /*
+   * Soft wash: solid at the very top (no gap), then fades through the bar
+   * and fully disappears below it — no hard bottom edge.
+   */
   .nav-progressive-tint {
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--background) 72%, transparent) 0%,
-      color-mix(in srgb, var(--background) 40%, transparent) 55%,
-      color-mix(in srgb, var(--background) 8%, transparent) 100%
+      color-mix(in srgb, var(--background) 78%, transparent) 0%,
+      color-mix(in srgb, var(--background) 55%, transparent) 28%,
+      color-mix(in srgb, var(--background) 28%, transparent) 52%,
+      color-mix(in srgb, var(--background) 10%, transparent) 72%,
+      transparent 100%
     );
   }
 
@@ -244,70 +256,74 @@
     -webkit-backdrop-filter: blur(var(--nav-blur)) saturate(160%);
   }
 
-  /* Harder blur toward the top of the nav; softer toward the bottom */
+  /* Harder blur toward the top; softer toward / below the bottom */
   .nav-blur-layer-1 {
-    --nav-blur: 20px;
+    --nav-blur: 22px;
     mask-image: linear-gradient(
       to bottom,
       #000 0%,
-      #000 18%,
-      transparent 52%
+      #000 16%,
+      transparent 42%
     );
     -webkit-mask-image: linear-gradient(
       to bottom,
       #000 0%,
-      #000 18%,
-      transparent 52%
+      #000 16%,
+      transparent 42%
     );
   }
 
   .nav-blur-layer-2 {
-    --nav-blur: 10px;
+    --nav-blur: 12px;
     mask-image: linear-gradient(
       to bottom,
-      transparent 8%,
-      #000 28%,
-      #000 48%,
-      transparent 78%
+      transparent 6%,
+      #000 22%,
+      #000 40%,
+      transparent 62%
     );
     -webkit-mask-image: linear-gradient(
       to bottom,
-      transparent 8%,
-      #000 28%,
-      #000 48%,
-      transparent 78%
+      transparent 6%,
+      #000 22%,
+      #000 40%,
+      transparent 62%
     );
   }
 
   .nav-blur-layer-3 {
-    --nav-blur: 4px;
+    --nav-blur: 5px;
     mask-image: linear-gradient(
       to bottom,
-      transparent 35%,
+      transparent 28%,
+      #000 48%,
       #000 62%,
-      #000 100%
+      transparent 82%
     );
     -webkit-mask-image: linear-gradient(
       to bottom,
-      transparent 35%,
+      transparent 28%,
+      #000 48%,
       #000 62%,
-      #000 100%
+      transparent 82%
     );
   }
 
   .nav-blur-layer-4 {
-    --nav-blur: 1.5px;
+    --nav-blur: 2px;
     mask-image: linear-gradient(
       to bottom,
-      transparent 55%,
-      #000 82%,
-      #000 100%
+      transparent 48%,
+      #000 68%,
+      #000 78%,
+      transparent 100%
     );
     -webkit-mask-image: linear-gradient(
       to bottom,
-      transparent 55%,
-      #000 82%,
-      #000 100%
+      transparent 48%,
+      #000 68%,
+      #000 78%,
+      transparent 100%
     );
   }
 
