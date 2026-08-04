@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import {
   getNavItems,
@@ -61,9 +61,20 @@ export function Navbar({
 }: NavbarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const initials = getInitials(siteTitle);
   const links = getNavItems(navItems, resumeUrl);
   const hasLogo = Boolean(logoUrl || logoUrlDark);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 8);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const linkClass = (href: string) =>
     cn(
@@ -104,8 +115,16 @@ export function Navbar({
   };
 
   return (
-    <header className="nav-glass sticky top-0 z-50 w-full">
-      <div className="site-container flex items-center justify-between py-4 sm:py-5">
+    <header className="nav-header" data-scrolled={scrolled ? "true" : "false"}>
+      <div className="nav-progressive-blur" aria-hidden="true">
+        <div className="nav-blur-layer nav-blur-layer-1" />
+        <div className="nav-blur-layer nav-blur-layer-2" />
+        <div className="nav-blur-layer nav-blur-layer-3" />
+        <div className="nav-blur-layer nav-blur-layer-4" />
+      </div>
+      <div className="nav-progressive-tint" aria-hidden="true" />
+
+      <div className="relative z-10 site-container flex items-center justify-between py-4 sm:py-5">
         <Link
           href="/"
           className={cn(
@@ -162,7 +181,7 @@ export function Navbar({
       </div>
 
       {mobileOpen ? (
-        <nav className="border-t border-border/50 px-4 py-4 sm:px-6 md:hidden">
+        <nav className="relative z-10 border-t border-border/50 px-4 py-4 sm:px-6 md:hidden">
           <div className="flex flex-col gap-1">
             {links.map((link) =>
               renderNavLink(link, () => setMobileOpen(false))
