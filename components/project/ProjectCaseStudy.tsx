@@ -38,13 +38,13 @@ export function ProjectCaseStudy({ project, sections }: ProjectCaseStudyProps) {
   return (
     <article className="space-y-12">
       {project.cover_image_url ? (
-        <div className="relative left-1/2 aspect-[21/9] w-screen max-w-none -translate-x-1/2 overflow-hidden">
+        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl">
           <Image
             src={project.cover_image_url}
             alt={project.title}
             fill
             className="object-cover"
-            sizes="100vw"
+            sizes="(max-width: 1200px) 100vw, 1200px"
             priority
           />
         </div>

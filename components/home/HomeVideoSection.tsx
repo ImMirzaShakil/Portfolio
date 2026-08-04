@@ -21,23 +21,10 @@ export function HomeVideoSection({
   const videoSubtitle = subtitle?.trim() || null;
 
   return (
-    <section className="space-y-8">
+    <section className="mx-auto flex max-w-4xl flex-col items-center space-y-8 text-center">
       {heading ? <h2 className="text-2xl font-bold">{heading}</h2> : null}
 
-      {(videoTitle || videoSubtitle) && (
-        <div className="space-y-2">
-          {videoTitle ? (
-            <h3 className="text-xl font-bold sm:text-2xl">{videoTitle}</h3>
-          ) : null}
-          {videoSubtitle ? (
-            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-              {videoSubtitle}
-            </p>
-          ) : null}
-        </div>
-      )}
-
-      <div className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-muted">
+      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted">
         <iframe
           src={embedUrl}
           title={videoTitle || heading || "Homepage video"}
@@ -48,6 +35,19 @@ export function HomeVideoSection({
           referrerPolicy="strict-origin-when-cross-origin"
         />
       </div>
+
+      {(videoTitle || videoSubtitle) && (
+        <div className="mx-auto max-w-2xl space-y-2">
+          {videoTitle ? (
+            <h3 className="text-xl font-bold sm:text-2xl">{videoTitle}</h3>
+          ) : null}
+          {videoSubtitle ? (
+            <p className="text-base leading-relaxed text-muted-foreground">
+              {videoSubtitle}
+            </p>
+          ) : null}
+        </div>
+      )}
     </section>
   );
 }

@@ -156,18 +156,15 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
     if (!image_url && !video_url) return null;
 
     return (
-      <section
-        className="relative left-1/2 w-screen max-w-none -translate-x-1/2 overflow-hidden"
-        data-section-type={section_type}
-      >
-        <div className="relative aspect-[16/9] w-full bg-muted md:aspect-[21/9]">
+      <section className="space-y-6" data-section-type={section_type}>
+        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-muted md:aspect-[21/9]">
           {image_url ? (
             <Image
               src={image_url}
               alt={title ?? "Project media"}
               fill
               className="object-cover"
-              sizes="100vw"
+              sizes="(max-width: 1200px) 100vw, 1200px"
             />
           ) : null}
           {video_url ? (
@@ -185,7 +182,7 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
           ) : null}
         </div>
         {(title || paragraphs.length > 0) && (
-          <div className="site-container space-y-3 py-8">
+          <div className="space-y-3">
             {title ? <h2 className="text-2xl font-bold">{title}</h2> : null}
             {paragraphs.map((paragraph, index) => (
               <p
