@@ -3,8 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, Lock } from "lucide-react";
 import { ProjectShareButton } from "@/components/project/ProjectShareButton";
 import { getProjectStatusLabel } from "@/lib/project-queries";
-import { getThumbnailAspectClass } from "@/lib/project-thumbnail";
-import { cn } from "@/lib/utils";
+import { getThumbnailAspectRatio } from "@/lib/project-thumbnail";
 import type { Project } from "@/lib/types";
 
 interface ProjectCardProps {
@@ -30,7 +29,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
     project.thumbnail_image_url?.trim() ||
     project.cover_image_url?.trim() ||
     null;
-  const aspectClass = getThumbnailAspectClass(project.thumbnail_aspect_ratio);
+  const aspectRatio = getThumbnailAspectRatio(project.thumbnail_aspect_ratio);
 
   return (
     <div className="group relative">
@@ -40,10 +39,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
       >
         {cardImageUrl ? (
           <div
-            className={cn(
-              "relative overflow-hidden rounded-2xl bg-muted",
-              aspectClass
-            )}
+            className="relative overflow-hidden rounded-2xl bg-muted"
+            style={{ aspectRatio }}
           >
             {isGifUrl(cardImageUrl) ? (
               // Plain <img> preserves GIF animation; Next.js Image strips it
@@ -64,7 +61,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
             )}
           </div>
         ) : (
-          <div className={cn("rounded-2xl bg-muted", aspectClass)} />
+          <div
+            className="rounded-2xl bg-muted"
+            style={{ aspectRatio }}
+          />
         )}
 
         <div className="space-y-2 px-1 pt-4 pb-2">
