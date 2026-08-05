@@ -18,6 +18,8 @@ export interface Project {
   summary: string | null;
   problem_text: string | null;
   outcome_text: string | null;
+  problem_label: string | null;
+  outcome_label: string | null;
   impact_text: string | null;
   role_text: string | null;
   timeline_text: string | null;
@@ -26,6 +28,8 @@ export interface Project {
   type: string | null;
   year: string | null;
   cover_image_url: string | null;
+  thumbnail_image_url: string | null;
+  thumbnail_aspect_ratio: string | null;
   is_published: boolean;
   is_featured: boolean;
   is_password_protected: boolean;

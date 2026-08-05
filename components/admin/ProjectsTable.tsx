@@ -128,9 +128,13 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
                 <tr key={project.id} className="border-b border-border last:border-b-0">
                   <td className="px-4 py-3">
                     <div className="relative size-14 overflow-hidden rounded-lg bg-muted">
-                      {project.cover_image_url ? (
+                      {project.thumbnail_image_url ||
+                      project.cover_image_url ? (
                         <Image
-                          src={project.cover_image_url}
+                          src={
+                            project.thumbnail_image_url ||
+                            project.cover_image_url!
+                          }
                           alt={project.title}
                           fill
                           className="object-cover"

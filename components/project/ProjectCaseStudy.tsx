@@ -25,6 +25,8 @@ export function ProjectCaseStudy({ project, sections }: ProjectCaseStudyProps) {
 
   const problem = project.problem_text?.trim() || null;
   const outcome = project.outcome_text?.trim() || null;
+  const problemLabel = project.problem_label?.trim() || "Problem";
+  const outcomeLabel = project.outcome_label?.trim() || "Outcome";
   const impact = project.impact_text?.trim() || null;
   const role = project.role_text?.trim() || null;
   const timeline = project.timeline_text?.trim() || null;
@@ -77,7 +79,7 @@ export function ProjectCaseStudy({ project, sections }: ProjectCaseStudyProps) {
             <div className="grid gap-8 border-t border-border pt-6 sm:grid-cols-2 sm:gap-10">
               {problem ? (
                 <div className="space-y-2">
-                  <h2 className="text-base font-bold">Problem</h2>
+                  <h2 className="text-base font-bold">{problemLabel}</h2>
                   <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
                     {problem}
                   </p>
@@ -85,7 +87,7 @@ export function ProjectCaseStudy({ project, sections }: ProjectCaseStudyProps) {
               ) : null}
               {outcome ? (
                 <div className="space-y-2">
-                  <h2 className="text-base font-bold">Outcome</h2>
+                  <h2 className="text-base font-bold">{outcomeLabel}</h2>
                   <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
                     {outcome}
                   </p>

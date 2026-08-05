@@ -8,6 +8,7 @@ export const SUPPORTED_IMAGE_FORMATS =
 export type UploadKind =
   | "image"
   | "project-cover"
+  | "project-thumbnail"
   | "gallery"
   | "logo"
   | "resume"
@@ -34,7 +35,17 @@ export function getUploadRequirements(kind: UploadKind): UploadRequirements {
         formats: SUPPORTED_IMAGE_FORMATS,
         maxSizeLabel: imageMax,
         notes: [
-          "GIFs play as animated thumbnails on project cards.",
+          "Shown full-bleed at the top of the case study page.",
+          "HEIC/HEIF from iPhone is auto-converted to JPG.",
+        ],
+      };
+    case "project-thumbnail":
+      return {
+        formats: SUPPORTED_IMAGE_FORMATS,
+        maxSizeLabel: imageMax,
+        notes: [
+          "Used on Home / Work project cards.",
+          "GIFs play as animated thumbnails on cards.",
           "HEIC/HEIF from iPhone is auto-converted to JPG.",
         ],
       };

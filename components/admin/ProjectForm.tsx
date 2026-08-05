@@ -22,12 +22,18 @@ import {
   normalizeSectionItems,
 } from "@/lib/project-sections";
 import {
+  getThumbnailAspectClass,
+  normalizeThumbnailAspectRatio,
+  THUMBNAIL_ASPECT_OPTIONS,
+  type ThumbnailAspectRatio,
+} from "@/lib/project-thumbnail";
+import {
   normalizeSharedSeo,
   sharedSeoHasContent,
   type SharedSeoFields,
 } from "@/lib/seo";
 import type { Project, ProjectSection, ProjectStatusOption } from "@/lib/types";
-import { generateSlug } from "@/lib/utils";
+import { cn, generateSlug } from "@/lib/utils";
 
 interface ProjectFormProps {
   project?: Project | null;
@@ -74,6 +80,12 @@ export function ProjectForm({
   const [summary, setSummary] = useState(project?.summary ?? "");
   const [problemText, setProblemText] = useState(project?.problem_text ?? "");
   const [outcomeText, setOutcomeText] = useState(project?.outcome_text ?? "");
+  const [problemLabel, setProblemLabel] = useState(
+    project?.problem_label?.trim() || "Problem"
+  );
+  const [outcomeLabel, setOutcomeLabel] = useState(
+    project?.outcome_label?.trim() || "Outcome"
+  );
   const [impactText, setImpactText] = useState(project?.impact_text ?? "");
   const [roleText, setRoleText] = useState(project?.role_text ?? "");
   const [timelineText, setTimelineText] = useState(project?.timeline_text ?? "");
@@ -81,6 +93,13 @@ export function ProjectForm({
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(
     project?.cover_image_url ?? null
   );
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState<string | null>(
+    project?.thumbnail_image_url ?? null
+  );
+  const [thumbnailAspectRatio, setThumbnailAspectRatio] =
+    useState<ThumbnailAspectRatio>(() =>
+      normalizeThumbnailAspectRatio(project?.thumbnail_aspect_ratio)
+    );
   const [isPublished, setIsPublished] = useState(project?.is_published ?? false);
   const [isPasswordProtected, setIsPasswordProtected] = useState(
     project?.is_password_protected ?? false
@@ -134,11 +153,15 @@ export function ProjectForm({
       summary,
       problem_text: problemText,
       outcome_text: outcomeText,
+      problem_label: problemLabel,
+      outcome_label: outcomeLabel,
       impact_text: impactText,
       role_text: roleText,
       timeline_text: timelineText,
       team_text: teamText,
       cover_image_url: coverImageUrl,
+      thumbnail_image_url: thumbnailImageUrl,
+      thumbnail_aspect_ratio: thumbnailAspectRatio,
       is_published: isPublished,
       is_password_protected: isPasswordProtected,
       password,
@@ -304,31 +327,56 @@ export function ProjectForm({
         <div className="space-y-2 md:col-span-2">
           <p className="text-sm font-semibold">Case study summary block</p>
           <p className="text-xs text-muted-foreground">
-            Shown under the cover image in a two-column layout. Empty fields are
-            hidden on the public page.
+            Shown under the cover image in a two-column layout. Section names
+            default to Problem and Outcome but can be renamed. Empty text fields
+            are hidden on the public page.
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="problem-text">Problem</Label>
-          <Textarea
-            id="problem-text"
-            value={problemText}
-            onChange={(event) => setProblemText(event.target.value)}
-            rows={3}
-            placeholder="What challenge were you solving?"
-          />
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="problem-label">Section name</Label>
+            <Input
+              id="problem-label"
+              value={problemLabel}
+              onChange={(event) => setProblemLabel(event.target.value)}
+              placeholder="Problem"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="problem-text">{problemLabel.trim() || "Problem"}</Label>
+            <Textarea
+              id="problem-text"
+              value={problemText}
+              onChange={(event) => setProblemText(event.target.value)}
+              rows={3}
+              placeholder="What challenge were you solving?"
+            />
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="outcome-text">Outcome</Label>
-          <Textarea
-            id="outcome-text"
-            value={outcomeText}
-            onChange={(event) => setOutcomeText(event.target.value)}
-            rows={3}
-            placeholder="What did you deliver or achieve?"
-          />
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="outcome-label">Section name</Label>
+            <Input
+              id="outcome-label"
+              value={outcomeLabel}
+              onChange={(event) => setOutcomeLabel(event.target.value)}
+              placeholder="Outcome"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="outcome-text">
+              {outcomeLabel.trim() || "Outcome"}
+            </Label>
+            <Textarea
+              id="outcome-text"
+              value={outcomeText}
+              onChange={(event) => setOutcomeText(event.target.value)}
+              rows={3}
+              placeholder="What did you deliver or achieve?"
+            />
+          </div>
         </div>
 
         <div className="space-y-2 md:col-span-2">
@@ -377,17 +425,58 @@ export function ProjectForm({
           </FieldHint>
         </div>
 
-        <div className="md:col-span-2">
-          <ImageUpload
-            label="Cover image"
-            value={coverImageUrl}
-            onChange={setCoverImageUrl}
-            requirementsKind="project-cover"
-          />
-          <FieldHint>
-            Hero / card thumbnail. Full-bleed on the case study top. GIF works
-            on cards.
-          </FieldHint>
+        <div className="grid gap-6 md:col-span-2 md:grid-cols-2">
+          <div className="space-y-2">
+            <ImageUpload
+              label="Cover image"
+              value={coverImageUrl}
+              onChange={setCoverImageUrl}
+              requirementsKind="project-cover"
+              previewClassName="aspect-[21/9] max-w-full"
+            />
+            <FieldHint>
+              Full-bleed hero on the project detail page. Not used on cards when
+              a thumbnail is set.
+            </FieldHint>
+          </div>
+
+          <div className="space-y-3">
+            <ImageUpload
+              label="Thumbnail"
+              value={thumbnailImageUrl}
+              onChange={setThumbnailImageUrl}
+              requirementsKind="project-thumbnail"
+              previewClassName={cn(
+                getThumbnailAspectClass(thumbnailAspectRatio),
+                "max-w-full"
+              )}
+            />
+            <div className="space-y-2">
+              <Label htmlFor="thumbnail-aspect-ratio">
+                Thumbnail aspect ratio
+              </Label>
+              <select
+                id="thumbnail-aspect-ratio"
+                value={thumbnailAspectRatio}
+                onChange={(event) =>
+                  setThumbnailAspectRatio(
+                    normalizeThumbnailAspectRatio(event.target.value)
+                  )
+                }
+                className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                {THUMBNAIL_ASPECT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <FieldHint>
+                Shown on Home / Work project cards. Falls back to the cover
+                image if empty. GIF works on cards.
+              </FieldHint>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-2">
