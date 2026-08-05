@@ -2,6 +2,7 @@ import Image from "next/image";
 import {
   getFeatureImageGrid,
   isFeatureSplitLayout,
+  isHtmlSectionContent,
   normalizeMediaUrls,
   normalizeSectionItems,
   sanitizeAdminHtml,
@@ -22,6 +23,45 @@ function splitParagraphs(content?: string | null) {
     .split("\n\n")
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
+}
+
+function SectionBody({
+  content,
+  asHtml,
+  className,
+}: {
+  content?: string | null;
+  asHtml: boolean;
+  className?: string;
+}) {
+  if (!content?.trim()) return null;
+
+  if (asHtml) {
+    const html = sanitizeAdminHtml(content);
+    if (!html.trim()) return null;
+    return (
+      <div
+        className={cn("case-study-html", className)}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
+  }
+
+  const paragraphs = splitParagraphs(content);
+  if (paragraphs.length === 0) return null;
+
+  return (
+    <div
+      className={cn(
+        "space-y-4 text-base leading-relaxed text-muted-foreground",
+        className
+      )}
+    >
+      {paragraphs.map((paragraph, index) => (
+        <p key={index}>{paragraph}</p>
+      ))}
+    </div>
+  );
 }
 
 function SectionMediaImage({
@@ -136,6 +176,7 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
     section_type,
     title,
     content,
+    content_format,
     image_url,
     video_url,
     layout,
@@ -143,7 +184,11 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
     items,
   } = section;
 
-  const paragraphs = splitParagraphs(content);
+  const asHtml = isHtmlSectionContent(section_type, content_format);
+  const paragraphs = asHtml ? [] : splitParagraphs(content);
+  const hasBody = asHtml
+    ? Boolean(sanitizeAdminHtml(content ?? "").trim())
+    : paragraphs.length > 0;
   const listItems = normalizeSectionItems(items);
   const gallery = normalizeMediaUrls(media_urls);
   const featureLayout = (layout as FeatureLayout) || "feature-split-grid-2";
@@ -181,17 +226,14 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
             />
           ) : null}
         </div>
-        {(title || paragraphs.length > 0) && (
+        {(title || hasBody) && (
           <div className="space-y-3">
             {title ? <h2 className="text-2xl font-bold">{title}</h2> : null}
-            {paragraphs.map((paragraph, index) => (
-              <p
-                key={index}
-                className="max-w-3xl text-base leading-relaxed text-muted-foreground"
-              >
-                {paragraph}
-              </p>
-            ))}
+            <SectionBody
+              content={content}
+              asHtml={asHtml}
+              className="max-w-3xl"
+            />
           </div>
         )}
       </section>
@@ -201,17 +243,16 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
   if (section_type === "process") {
     return (
       <section className="space-y-8" data-section-type={section_type}>
-        {(title || paragraphs.length > 0) && (
+        {(title || hasBody) && (
           <div className="space-y-4">
-            {title ? <h2 className="text-2xl font-bold md:text-3xl">{title}</h2> : null}
-            {paragraphs.map((paragraph, index) => (
-              <p
-                key={index}
-                className="max-w-3xl text-base leading-relaxed text-muted-foreground"
-              >
-                {paragraph}
-              </p>
-            ))}
+            {title ? (
+              <h2 className="text-2xl font-bold md:text-3xl">{title}</h2>
+            ) : null}
+            <SectionBody
+              content={content}
+              asHtml={asHtml}
+              className="max-w-3xl"
+            />
           </div>
         )}
         <div className="space-y-6">
@@ -243,17 +284,16 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
   if (section_type === "stats") {
     return (
       <section className="space-y-8" data-section-type={section_type}>
-        {(title || paragraphs.length > 0) && (
+        {(title || hasBody) && (
           <div className="space-y-4">
-            {title ? <h2 className="text-2xl font-bold md:text-3xl">{title}</h2> : null}
-            {paragraphs.map((paragraph, index) => (
-              <p
-                key={index}
-                className="max-w-3xl text-base leading-relaxed text-muted-foreground"
-              >
-                {paragraph}
-              </p>
-            ))}
+            {title ? (
+              <h2 className="text-2xl font-bold md:text-3xl">{title}</h2>
+            ) : null}
+            <SectionBody
+              content={content}
+              asHtml={asHtml}
+              className="max-w-3xl"
+            />
           </div>
         )}
         <div className="space-y-8">
@@ -288,7 +328,7 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
     return (
       <section className="space-y-8" data-section-type={section_type}>
         {featureSplit ? (
-          (featureEyebrow || featureHeading || paragraphs.length > 0) && (
+          (featureEyebrow || featureHeading || hasBody) && (
             <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:gap-10 lg:gap-14">
               <div className="space-y-2">
                 {featureEyebrow ? (
@@ -302,17 +342,8 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
                   </h2>
                 ) : null}
               </div>
-              {paragraphs.length > 0 ? (
-                <div className="space-y-4">
-                  {paragraphs.map((paragraph, index) => (
-                    <p
-                      key={index}
-                      className="text-base leading-relaxed text-muted-foreground"
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
+              {hasBody ? (
+                <SectionBody content={content} asHtml={asHtml} />
               ) : null}
             </div>
           )
@@ -326,14 +357,11 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
             {featureHeading ? (
               <h2 className="text-2xl font-bold md:text-3xl">{featureHeading}</h2>
             ) : null}
-            {paragraphs.map((paragraph, index) => (
-              <p
-                key={index}
-                className="max-w-3xl text-base leading-relaxed text-muted-foreground"
-              >
-                {paragraph}
-              </p>
-            ))}
+            <SectionBody
+              content={content}
+              asHtml={asHtml}
+              className="max-w-3xl"
+            />
           </div>
         )}
         <FeatureMediaGrid
@@ -346,23 +374,20 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
   }
 
   if (section_type === "video") {
-    if (!video_url && !image_url && !title && paragraphs.length === 0) {
+    if (!video_url && !image_url && !title && !hasBody) {
       return null;
     }
 
     return (
       <section className="space-y-6" data-section-type={section_type}>
-        {(title || paragraphs.length > 0) && (
+        {(title || hasBody) && (
           <div className="space-y-4">
             {title ? <h2 className="text-2xl font-bold">{title}</h2> : null}
-            {paragraphs.map((paragraph, index) => (
-              <p
-                key={index}
-                className="max-w-3xl text-base leading-relaxed text-muted-foreground"
-              >
-                {paragraph}
-              </p>
-            ))}
+            <SectionBody
+              content={content}
+              asHtml={asHtml}
+              className="max-w-3xl"
+            />
           </div>
         )}
         <div
@@ -427,7 +452,7 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
     );
   }
 
-  if (!title && paragraphs.length === 0 && !image_url) {
+  if (!title && !hasBody && !image_url) {
     return null;
   }
 
@@ -435,13 +460,7 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
     <section className="space-y-6" data-section-type={section_type}>
       {title ? <h2 className="text-2xl font-bold">{title}</h2> : null}
 
-      {paragraphs.length > 0 ? (
-        <div className="space-y-4 text-base leading-relaxed text-muted-foreground">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
-        </div>
-      ) : null}
+      <SectionBody content={content} asHtml={asHtml} />
 
       {image_url ? (
         <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-border">
