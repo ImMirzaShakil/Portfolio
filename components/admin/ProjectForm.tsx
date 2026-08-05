@@ -22,7 +22,7 @@ import {
   normalizeSectionItems,
 } from "@/lib/project-sections";
 import {
-  getThumbnailAspectClass,
+  getThumbnailAspectRatio,
   normalizeThumbnailAspectRatio,
   THUMBNAIL_ASPECT_OPTIONS,
   type ThumbnailAspectRatio,
@@ -33,7 +33,7 @@ import {
   type SharedSeoFields,
 } from "@/lib/seo";
 import type { Project, ProjectSection, ProjectStatusOption } from "@/lib/types";
-import { cn, generateSlug } from "@/lib/utils";
+import { generateSlug } from "@/lib/utils";
 
 interface ProjectFormProps {
   project?: Project | null;
@@ -446,10 +446,10 @@ export function ProjectForm({
               value={thumbnailImageUrl}
               onChange={setThumbnailImageUrl}
               requirementsKind="project-thumbnail"
-              previewClassName={cn(
-                getThumbnailAspectClass(thumbnailAspectRatio),
-                "max-w-full"
-              )}
+              previewClassName="max-w-full"
+              previewStyle={{
+                aspectRatio: getThumbnailAspectRatio(thumbnailAspectRatio),
+              }}
             />
             <div className="space-y-2">
               <Label htmlFor="thumbnail-aspect-ratio">

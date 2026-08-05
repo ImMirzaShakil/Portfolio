@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useId, useRef, useState } from "react";
+import { useId, useRef, useState, type CSSProperties } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { prepareImageForUpload } from "@/lib/prepare-image-upload";
 import type { UploadKind } from "@/lib/upload-requirements";
@@ -17,6 +17,7 @@ interface ImageUploadProps {
   bucket?: string;
   label?: string;
   previewClassName?: string;
+  previewStyle?: CSSProperties;
   requirementsKind?: UploadKind;
 }
 
@@ -26,6 +27,7 @@ export function ImageUpload({
   bucket = "project-images",
   label = "Image",
   previewClassName = "aspect-[16/9] max-w-md",
+  previewStyle,
   requirementsKind = "image",
 }: ImageUploadProps) {
   const inputId = useId();
@@ -98,6 +100,7 @@ export function ImageUpload({
             "relative overflow-hidden rounded-xl border border-border",
             previewClassName
           )}
+          style={previewStyle}
         >
           {value.split("?")[0].toLowerCase().endsWith(".gif") ? (
             // eslint-disable-next-line @next/next/no-img-element
