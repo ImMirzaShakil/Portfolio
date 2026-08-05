@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { saveProjectAction } from "@/app/admin/projects/actions";
 import {
+  normalizeContentFormat,
   normalizeMediaUrls,
   normalizeSectionItems,
 } from "@/lib/project-sections";
@@ -52,6 +53,10 @@ function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
     section_type: section.section_type,
     title: section.title ?? "",
     content: section.content ?? "",
+    content_format: normalizeContentFormat(
+      section.content_format,
+      section.section_type
+    ),
     image_url: section.image_url,
     video_url: section.video_url,
     layout: section.layout || "feature-split-grid-2",
@@ -170,6 +175,7 @@ export function ProjectForm({
         section_type: section.section_type,
         title: section.title,
         content: section.content,
+        content_format: section.content_format,
         image_url: section.image_url,
         video_url: section.video_url,
         layout: section.layout || null,

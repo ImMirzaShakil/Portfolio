@@ -142,9 +142,9 @@ export const SECTION_TYPE_CONFIG: SectionTypeConfig[] = [
   },
   {
     key: "quickfact",
-    label: "Quick fact (legacy)",
+    label: "Quick fact",
     description:
-      "Legacy metadata chips. Prefer Role / Timeline / Team fields on the project form — quick facts are no longer shown on the case study page.",
+      "Label + value chip shown in the Quick facts row on the case study page (e.g. Client, Tools, Platform).",
     supportsImage: false,
     supportsVideo: false,
     supportsMediaGallery: false,
@@ -327,6 +327,23 @@ export function normalizeSectionItems(value: unknown): SectionListItem[] {
 export function normalizeMediaUrls(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+}
+
+export type SectionContentFormat = "text" | "html";
+
+export function normalizeContentFormat(
+  value?: string | null,
+  sectionType?: string | null
+): SectionContentFormat {
+  if (sectionType === "html") return "html";
+  return value === "html" ? "html" : "text";
+}
+
+export function isHtmlSectionContent(
+  sectionType?: string | null,
+  contentFormat?: string | null
+): boolean {
+  return normalizeContentFormat(contentFormat, sectionType) === "html";
 }
 
 /** Strip obvious script injection while keeping admin-authored layout HTML. */

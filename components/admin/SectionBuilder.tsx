@@ -13,9 +13,12 @@ import {
   createEmptySectionItem,
   FEATURE_LAYOUT_OPTIONS,
   getSectionTypeConfig,
+  isHtmlSectionContent,
+  normalizeContentFormat,
   SECTION_TYPE_CONFIG,
   type FeatureLayout,
   type ProjectSectionType,
+  type SectionContentFormat,
   type SectionListItem,
 } from "@/lib/project-sections";
 import { cn } from "@/lib/utils";
@@ -25,6 +28,7 @@ export interface SectionFormItem {
   section_type: ProjectSectionType | string;
   title: string;
   content: string;
+  content_format: SectionContentFormat;
   image_url: string | null;
   video_url: string | null;
   layout: string;
@@ -43,6 +47,7 @@ function createEmptySection(): SectionFormItem {
     section_type: "overview",
     title: "",
     content: "",
+    content_format: "text",
     image_url: null,
     video_url: null,
     layout: "feature-split-grid-2",
@@ -115,6 +120,10 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
 
     updateSection(clientId, {
       section_type: nextType,
+      content_format: normalizeContentFormat(
+        nextType === "html" ? "html" : section.content_format,
+        nextType
+      ),
       items:
         config.supportsItems && section.items.length === 0
           ? [createEmptySectionItem(config.itemKind)]
@@ -200,15 +209,18 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
 
       {sections.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-          No sections yet. Start with Quick facts (Role, Time, Team…), then a
-          Media hero, Process timeline, Research stats, Feature showcase, or
-          Custom HTML blocks.
+          No sections yet. Start with Quick facts, then a Media hero, Process
+          timeline, Research stats, Feature showcase, or Custom HTML blocks.
         </p>
       ) : null}
 
       {sections.map((section, index) => {
         const config = getSectionTypeConfig(section.section_type);
-        const isHtml = Boolean(config.supportsHtml);
+        const isDedicatedHtml = section.section_type === "html";
+        const isHtml = isHtmlSectionContent(
+          section.section_type,
+          section.content_format
+        );
         const isDragging = draggingId === section.clientId;
         const isDragOver =
           dragOverId === section.clientId && draggingId !== section.clientId;
@@ -348,7 +360,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                       ? "Fact label"
                       : section.section_type === "feature"
                         ? "Feature title / eyebrow"
-                        : isHtml
+                        : isDedicatedHtml
                           ? "Optional title"
                           : "Title"}
                   </Label>
@@ -376,7 +388,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                       placeholder={
                         section.section_type === "quickfact"
                           ? "Role"
-                          : isHtml
+                          : isDedicatedHtml
                             ? "Leave blank if the HTML includes its own heading"
                             : "Section heading"
                       }
@@ -384,10 +396,10 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                   )}
                   <FieldHint>
                     {section.section_type === "quickfact"
-                      ? "Short label shown above the value (Role, Time, Team, Problem…)."
+                      ? "Short label shown above the value in the Quick facts row."
                       : section.section_type === "feature"
                         ? "Left column heading. Put “Feature #1” on the first line and the feature name on the second (newline) for an eyebrow + title."
-                        : isHtml
+                        : isDedicatedHtml
                           ? "Optional. If set, shown above your HTML as an H2."
                           : "Main heading for this block on the public page."}
                   </FieldHint>
@@ -395,13 +407,48 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={`section-content-${section.clientId}`}>
-                  {section.section_type === "quickfact"
-                    ? "Fact value"
-                    : isHtml
-                      ? "HTML content"
-                      : "Content"}
-                </Label>
+                {isDedicatedHtml ? (
+                  <Label htmlFor={`section-content-${section.clientId}`}>
+                    HTML content
+                  </Label>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateSection(section.clientId, {
+                          content_format: "text",
+                        })
+                      }
+                      className={cn(
+                        "text-sm transition-colors",
+                        !isHtml
+                          ? "font-semibold text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {section.section_type === "quickfact"
+                        ? "Fact value"
+                        : "Content"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateSection(section.clientId, {
+                          content_format: "html",
+                        })
+                      }
+                      className={cn(
+                        "text-sm transition-colors",
+                        isHtml
+                          ? "font-semibold text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      Custom HTML
+                    </button>
+                  </div>
+                )}
                 <Textarea
                   id={`section-content-${section.clientId}`}
                   value={section.content}
@@ -415,7 +462,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                   }
                   className={cn(isHtml && "font-mono text-xs leading-relaxed")}
                   placeholder={
-                    section.section_type === "quickfact"
+                    section.section_type === "quickfact" && !isHtml
                       ? "Product designer & developer"
                       : isHtml
                         ? `<div class="my-block">\n  <p>Custom markup here…</p>\n</div>`
@@ -423,9 +470,9 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                   }
                 />
                 <FieldHint>
-                  {section.section_type === "quickfact"
-                    ? "The value under the label (legacy Quick Facts; prefer Role/Timeline/Team on the project form)."
-                    : section.section_type === "feature"
+                  {section.section_type === "quickfact" && !isHtml
+                    ? "Value shown under the label in the Quick facts row on the case study page."
+                    : section.section_type === "feature" && !isHtml
                       ? "Right-column body copy for split layouts (or full-width text for stacked layouts)."
                       : isHtml
                         ? "Rendered as HTML on the live page. Scripts and inline event handlers are stripped for safety. You can use tags like div, p, img, a, ul, table, iframe."

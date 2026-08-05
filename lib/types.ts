@@ -63,6 +63,8 @@ export interface ProjectSection {
   section_type: string;
   title: string | null;
   content: string | null;
+  /** 'text' (default) or 'html' — how `content` is rendered on the public page. */
+  content_format: string | null;
   image_url: string | null;
   video_url: string | null;
   layout: string | null;
