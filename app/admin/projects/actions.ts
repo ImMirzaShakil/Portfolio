@@ -6,6 +6,7 @@ import { encryptPassword } from "@/lib/password-encryption";
 import { hashProjectPassword } from "@/lib/project-password";
 import { revalidatePath } from "next/cache";
 import { sanitizeAdminHtml } from "@/lib/project-sections";
+import { normalizeThumbnailAspectRatio } from "@/lib/project-thumbnail";
 import { compactSharedSeo, type SharedSeoFields } from "@/lib/seo";
 
 export interface SectionFormPayload {
@@ -36,11 +37,15 @@ export interface ProjectFormPayload {
   summary: string;
   problem_text: string;
   outcome_text: string;
+  problem_label: string;
+  outcome_label: string;
   impact_text: string;
   role_text: string;
   timeline_text: string;
   team_text: string;
   cover_image_url: string | null;
+  thumbnail_image_url: string | null;
+  thumbnail_aspect_ratio: string;
   is_published: boolean;
   is_password_protected: boolean;
   password: string;
@@ -113,11 +118,17 @@ export async function saveProjectAction(
     summary: payload.summary.trim() || null,
     problem_text: payload.problem_text.trim() || null,
     outcome_text: payload.outcome_text.trim() || null,
+    problem_label: payload.problem_label.trim() || "Problem",
+    outcome_label: payload.outcome_label.trim() || "Outcome",
     impact_text: payload.impact_text.trim() || null,
     role_text: payload.role_text.trim() || null,
     timeline_text: payload.timeline_text.trim() || null,
     team_text: payload.team_text.trim() || null,
     cover_image_url: payload.cover_image_url,
+    thumbnail_image_url: payload.thumbnail_image_url,
+    thumbnail_aspect_ratio: normalizeThumbnailAspectRatio(
+      payload.thumbnail_aspect_ratio
+    ),
     is_published: payload.is_published,
     is_password_protected: payload.is_password_protected,
     password_hash: passwordHash,
