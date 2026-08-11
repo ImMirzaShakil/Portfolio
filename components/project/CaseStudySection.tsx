@@ -11,6 +11,7 @@ import {
   type FeatureLayout,
 } from "@/lib/project-sections";
 import { CanvasSectionRenderer } from "@/components/project/CanvasSectionRenderer";
+import { BlocksSectionRenderer } from "@/components/project/BlocksSectionRenderer";
 import type { ProjectSection } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -458,6 +459,15 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
       <CanvasSectionRenderer
         title={title}
         canvasData={section.canvas_data}
+      />
+    );
+  }
+
+  if (section_type === "blocks") {
+    return (
+      <BlocksSectionRenderer
+        title={title}
+        blocksData={section.blocks_data}
       />
     );
   }

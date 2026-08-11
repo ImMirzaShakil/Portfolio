@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
+import { BlocksEditor } from "@/components/admin/blocks/BlocksEditor";
 import { CanvasEditorClient } from "@/components/admin/canvas/CanvasEditorClient";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { VideoUpload } from "@/components/admin/VideoUpload";
@@ -16,6 +17,11 @@ import {
   listSectionTemplatesAction,
   saveSectionTemplateAction,
 } from "@/app/admin/section-templates/actions";
+import {
+  createEmptyBlocksDocument,
+  normalizeBlocksDocument,
+  type BlocksDocument,
+} from "@/lib/blocks-document";
 import {
   createEmptyCanvasDocument,
   documentFromTemplate,
@@ -49,6 +55,7 @@ export interface SectionFormItem {
   media_urls: string[];
   items: SectionListItem[];
   canvas_data: CanvasDocument | null;
+  blocks_data: BlocksDocument | null;
 }
 
 interface SectionBuilderProps {
@@ -71,6 +78,7 @@ function createEmptySection(
     media_urls: [],
     items: [],
     canvas_data: null,
+    blocks_data: null,
     ...overrides,
   };
 }
@@ -163,6 +171,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         content: "",
         content_format: "text",
         canvas_data: documentFromTemplate(template),
+        blocks_data: null,
         image_url: null,
         video_url: null,
         media_urls: [],
@@ -191,6 +200,10 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
       canvas_data:
         nextValue === "canvas"
           ? section.canvas_data ?? createEmptyCanvasDocument()
+          : null,
+      blocks_data:
+        nextValue === "blocks"
+          ? section.blocks_data ?? createEmptyBlocksDocument()
           : null,
     });
   };
@@ -327,8 +340,8 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
 
       {sections.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-          No sections yet. Start with Quick facts, Canvas design, Media hero,
-          Process timeline, or Custom HTML blocks.
+          No sections yet. Start with Blocks, Canvas design, Quick facts, Media
+          hero, or Custom HTML.
         </p>
       ) : null}
 
@@ -336,6 +349,8 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         const config = getSectionTypeConfig(section.section_type);
         const isDedicatedHtml = section.section_type === "html";
         const isCanvas = section.section_type === "canvas";
+        const isBlocks = section.section_type === "blocks";
+        const isSpecialLayout = isCanvas || isBlocks;
         const isHtml = isHtmlSectionContent(
           section.section_type,
           section.content_format
@@ -485,7 +500,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
 
                 <div className="space-y-2">
                   <Label htmlFor={`section-title-${section.clientId}`}>
-                    {isCanvas
+                    {isSpecialLayout
                       ? "Optional section title"
                       : section.section_type === "quickfact"
                         ? "Fact label"
@@ -517,8 +532,8 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                         })
                       }
                       placeholder={
-                        isCanvas
-                          ? "Shown above the canvas on the public page"
+                        isSpecialLayout
+                          ? "Shown above this section on the public page"
                           : section.section_type === "quickfact"
                             ? "Role"
                             : isDedicatedHtml
@@ -540,6 +555,17 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                     handleSaveTemplate(section.clientId, doc)
                   }
                   savingTemplate={savingTemplateId === section.clientId}
+                />
+              ) : isBlocks ? (
+                <BlocksEditor
+                  value={
+                    section.blocks_data ?? createEmptyBlocksDocument()
+                  }
+                  onChange={(doc) =>
+                    updateSection(section.clientId, {
+                      blocks_data: normalizeBlocksDocument(doc),
+                    })
+                  }
                 />
               ) : (
                 <>

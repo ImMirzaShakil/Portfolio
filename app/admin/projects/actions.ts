@@ -9,6 +9,10 @@ import {
   normalizeCanvasDocument,
   type CanvasDocument,
 } from "@/lib/canvas-document";
+import {
+  normalizeBlocksDocument,
+  type BlocksDocument,
+} from "@/lib/blocks-document";
 import { sanitizeAdminHtml, normalizeContentFormat } from "@/lib/project-sections";
 import { normalizeThumbnailAspectRatio } from "@/lib/project-thumbnail";
 import { compactSharedSeo, type SharedSeoFields } from "@/lib/seo";
@@ -23,6 +27,7 @@ export interface SectionFormPayload {
   layout: string | null;
   media_urls: string[];
   canvas_data: CanvasDocument | Record<string, unknown> | null;
+  blocks_data: BlocksDocument | Record<string, unknown> | null;
   items: Array<{
     id: string;
     label: string;
@@ -185,6 +190,23 @@ export async function saveProjectAction(
       canvas_data:
         section.section_type === "canvas"
           ? normalizeCanvasDocument(section.canvas_data)
+          : null,
+      blocks_data:
+        section.section_type === "blocks"
+          ? (() => {
+              const doc = normalizeBlocksDocument(section.blocks_data);
+              return {
+                ...doc,
+                blocks: doc.blocks.map((block) =>
+                  block.type === "html"
+                    ? {
+                        ...block,
+                        content: sanitizeAdminHtml(block.content),
+                      }
+                    : block
+                ),
+              };
+            })()
           : null,
       items: section.items
         .filter(
