@@ -13,6 +13,7 @@ export type ProjectSectionType =
   | "outcome"
   | "video"
   | "html"
+  | "canvas"
   | "custom";
 
 export type FeatureLayout =
@@ -272,6 +273,16 @@ export const SECTION_TYPE_CONFIG: SectionTypeConfig[] = [
     supportsMediaGallery: false,
     supportsItems: false,
     supportsHtml: true,
+  },
+  {
+    key: "canvas",
+    label: "Canvas design",
+    description:
+      "Free-layout slide with drag-and-drop text, images, and shapes. Save designs as reusable templates.",
+    supportsImage: false,
+    supportsVideo: false,
+    supportsMediaGallery: false,
+    supportsItems: false,
   },
   {
     key: "custom",

@@ -10,6 +10,7 @@ import {
   type FeatureImageGrid,
   type FeatureLayout,
 } from "@/lib/project-sections";
+import { CanvasSectionRenderer } from "@/components/project/CanvasSectionRenderer";
 import type { ProjectSection } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -449,6 +450,15 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
           />
         ) : null}
       </section>
+    );
+  }
+
+  if (section_type === "canvas") {
+    return (
+      <CanvasSectionRenderer
+        title={title}
+        canvasData={section.canvas_data}
+      />
     );
   }
 
