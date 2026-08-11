@@ -13,6 +13,15 @@ const nextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    // Konva optionally requires the native `canvas` package for Node.
+    // We only use Konva in the browser admin editor — stub it out for builds.
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      canvas: false,
+    };
+    return config;
+  },
   async rewrites() {
     return {
       beforeFiles: [
