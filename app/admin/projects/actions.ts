@@ -5,6 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 import { encryptPassword } from "@/lib/password-encryption";
 import { hashProjectPassword } from "@/lib/project-password";
 import { revalidatePath } from "next/cache";
+import {
+  normalizeCanvasDocument,
+  type CanvasDocument,
+} from "@/lib/canvas-document";
 import { sanitizeAdminHtml, normalizeContentFormat } from "@/lib/project-sections";
 import { normalizeThumbnailAspectRatio } from "@/lib/project-thumbnail";
 import { compactSharedSeo, type SharedSeoFields } from "@/lib/seo";
@@ -18,6 +22,7 @@ export interface SectionFormPayload {
   video_url: string | null;
   layout: string | null;
   media_urls: string[];
+  canvas_data: CanvasDocument | Record<string, unknown> | null;
   items: Array<{
     id: string;
     label: string;
@@ -177,6 +182,10 @@ export async function saveProjectAction(
       video_url: section.video_url?.trim() || null,
       layout: section.layout?.trim() || null,
       media_urls: section.media_urls.filter((url) => url.trim().length > 0),
+      canvas_data:
+        section.section_type === "canvas"
+          ? normalizeCanvasDocument(section.canvas_data)
+          : null,
       items: section.items
         .filter(
           (item) =>

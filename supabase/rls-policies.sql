@@ -96,6 +96,14 @@ create policy "Authenticated manage project statuses"
   using (true)
   with check (true);
 
+alter table public.section_templates enable row level security;
+
+create policy "Authenticated manage section templates"
+  on public.section_templates for all
+  to authenticated
+  using (true)
+  with check (true);
+
 -- Storage policies for project-images and resume buckets
 create policy "Public read project images"
   on storage.objects for select

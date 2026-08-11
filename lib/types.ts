@@ -70,8 +70,21 @@ export interface ProjectSection {
   layout: string | null;
   media_urls: string[] | null;
   items: ProjectSectionItem[] | null;
+  /** Free-layout canvas document (Konva editor JSON). */
+  canvas_data?: Record<string, unknown> | null;
   order_index: number;
   created_at: string;
+}
+
+export interface SectionTemplate {
+  id: string;
+  name: string;
+  section_kind: string;
+  document: Record<string, unknown>;
+  thumbnail_url: string | null;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AboutContent {

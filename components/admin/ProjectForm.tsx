@@ -22,6 +22,7 @@ import {
   normalizeMediaUrls,
   normalizeSectionItems,
 } from "@/lib/project-sections";
+import { normalizeCanvasDocument } from "@/lib/canvas-document";
 import {
   getThumbnailAspectRatio,
   normalizeThumbnailAspectRatio,
@@ -62,6 +63,10 @@ function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
     layout: section.layout || "feature-split-grid-2",
     media_urls: normalizeMediaUrls(section.media_urls),
     items: normalizeSectionItems(section.items),
+    canvas_data:
+      section.section_type === "canvas"
+        ? normalizeCanvasDocument(section.canvas_data)
+        : null,
   }));
 }
 
@@ -180,6 +185,7 @@ export function ProjectForm({
         video_url: section.video_url,
         layout: section.layout || null,
         media_urls: section.media_urls.filter((url) => url.trim().length > 0),
+        canvas_data: section.canvas_data,
         items: section.items,
       })),
       seo,
