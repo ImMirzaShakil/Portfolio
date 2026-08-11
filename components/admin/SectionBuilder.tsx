@@ -13,12 +13,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   deleteSectionTemplateAction,
-  documentFromTemplate,
   listSectionTemplatesAction,
   saveSectionTemplateAction,
 } from "@/app/admin/section-templates/actions";
 import {
   createEmptyCanvasDocument,
+  documentFromTemplate,
   normalizeCanvasDocument,
   type CanvasDocument,
 } from "@/lib/canvas-document";

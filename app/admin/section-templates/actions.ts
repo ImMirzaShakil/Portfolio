@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import {
-  cloneCanvasDocument,
   normalizeCanvasDocument,
   type CanvasDocument,
 } from "@/lib/canvas-document";
@@ -108,10 +107,4 @@ export async function deleteSectionTemplateAction(
 
   revalidatePath("/admin/projects");
   return { error: null };
-}
-
-export function documentFromTemplate(template: SectionTemplate): CanvasDocument {
-  const doc = cloneCanvasDocument(normalizeCanvasDocument(template.document));
-  doc.templateId = template.id;
-  return doc;
 }

@@ -115,6 +115,15 @@ export function cloneCanvasDocument(doc: CanvasDocument): CanvasDocument {
   };
 }
 
+export function documentFromTemplate(template: {
+  id: string;
+  document: unknown;
+}): CanvasDocument {
+  const doc = cloneCanvasDocument(normalizeCanvasDocument(template.document));
+  doc.templateId = template.id;
+  return doc;
+}
+
 export function createTextObject(
   partial?: Partial<CanvasTextObject>
 ): CanvasTextObject {
