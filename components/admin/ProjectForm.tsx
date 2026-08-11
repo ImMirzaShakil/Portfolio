@@ -18,11 +18,14 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { saveProjectAction } from "@/app/admin/projects/actions";
 import {
+  normalizeBlocksDocument,
+} from "@/lib/blocks-document";
+import { normalizeCanvasDocument } from "@/lib/canvas-document";
+import {
   normalizeContentFormat,
   normalizeMediaUrls,
   normalizeSectionItems,
 } from "@/lib/project-sections";
-import { normalizeCanvasDocument } from "@/lib/canvas-document";
 import {
   getThumbnailAspectRatio,
   normalizeThumbnailAspectRatio,
@@ -66,6 +69,10 @@ function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
     canvas_data:
       section.section_type === "canvas"
         ? normalizeCanvasDocument(section.canvas_data)
+        : null,
+    blocks_data:
+      section.section_type === "blocks"
+        ? normalizeBlocksDocument(section.blocks_data)
         : null,
   }));
 }
@@ -186,6 +193,7 @@ export function ProjectForm({
         layout: section.layout || null,
         media_urls: section.media_urls.filter((url) => url.trim().length > 0),
         canvas_data: section.canvas_data,
+        blocks_data: section.blocks_data,
         items: section.items,
       })),
       seo,

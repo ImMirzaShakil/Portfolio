@@ -72,6 +72,8 @@ export interface ProjectSection {
   items: ProjectSectionItem[] | null;
   /** Free-layout canvas document (Konva editor JSON). */
   canvas_data?: Record<string, unknown> | null;
+  /** Gutenberg-like blocks document JSON. */
+  blocks_data?: Record<string, unknown> | null;
   order_index: number;
   created_at: string;
 }
