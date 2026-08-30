@@ -15,6 +15,7 @@ export type ProjectSectionType =
   | "html"
   | "canvas"
   | "blocks"
+  | "content"
   | "custom";
 
 export type FeatureLayout =
@@ -296,6 +297,17 @@ export const SECTION_TYPE_CONFIG: SectionTypeConfig[] = [
     supportsItems: false,
   },
   {
+    key: "content",
+    label: "Content",
+    description:
+      "Rich text written in Luthor’s visual editor — headings, images, lists, tables, code, and embeds.",
+    supportsImage: false,
+    supportsVideo: false,
+    supportsMediaGallery: false,
+    supportsItems: false,
+    supportsHtml: true,
+  },
+  {
     key: "custom",
     label: "Custom",
     description:
@@ -357,7 +369,7 @@ export function normalizeContentFormat(
   value?: string | null,
   sectionType?: string | null
 ): SectionContentFormat {
-  if (sectionType === "html") return "html";
+  if (sectionType === "html" || sectionType === "content") return "html";
   return value === "html" ? "html" : "text";
 }
 

@@ -22,6 +22,9 @@ import {
 } from "@/lib/blocks-document";
 import { normalizeCanvasDocument } from "@/lib/canvas-document";
 import {
+  normalizeLuthorDocument,
+} from "@/lib/luthor-document";
+import {
   normalizeContentFormat,
   normalizeMediaUrls,
   normalizeSectionItems,
@@ -73,6 +76,10 @@ function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
     blocks_data:
       section.section_type === "blocks"
         ? normalizeBlocksDocument(section.blocks_data)
+        : null,
+    luthor_data:
+      section.section_type === "content"
+        ? normalizeLuthorDocument(section.luthor_data)
         : null,
   }));
 }
@@ -194,6 +201,7 @@ export function ProjectForm({
         media_urls: section.media_urls.filter((url) => url.trim().length > 0),
         canvas_data: section.canvas_data,
         blocks_data: section.blocks_data,
+        luthor_data: section.luthor_data,
         items: section.items,
       })),
       seo,

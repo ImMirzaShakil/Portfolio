@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
 import { BlocksEditor } from "@/components/admin/blocks/BlocksEditor";
 import { CanvasEditorClient } from "@/components/admin/canvas/CanvasEditorClient";
+import { LuthorEditorClient } from "@/components/admin/luthor/LuthorEditorClient";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { VideoUpload } from "@/components/admin/VideoUpload";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,11 @@ import {
   normalizeCanvasDocument,
   type CanvasDocument,
 } from "@/lib/canvas-document";
+import {
+  createEmptyLuthorDocument,
+  normalizeLuthorDocument,
+  type LuthorDocument,
+} from "@/lib/luthor-document";
 import {
   createEmptySectionItem,
   FEATURE_LAYOUT_OPTIONS,
@@ -56,6 +62,7 @@ export interface SectionFormItem {
   items: SectionListItem[];
   canvas_data: CanvasDocument | null;
   blocks_data: BlocksDocument | null;
+  luthor_data: LuthorDocument | null;
 }
 
 interface SectionBuilderProps {
@@ -79,6 +86,7 @@ function createEmptySection(
     items: [],
     canvas_data: null,
     blocks_data: null,
+    luthor_data: null,
     ...overrides,
   };
 }
@@ -172,6 +180,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         content_format: "text",
         canvas_data: documentFromTemplate(template),
         blocks_data: null,
+        luthor_data: null,
         image_url: null,
         video_url: null,
         media_urls: [],
@@ -184,7 +193,9 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
     updateSection(clientId, {
       section_type: nextValue,
       content_format: normalizeContentFormat(
-        nextValue === "html" ? "html" : section.content_format,
+        nextValue === "html" || nextValue === "content"
+          ? "html"
+          : section.content_format,
         nextValue
       ),
       items:
@@ -204,6 +215,10 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
       blocks_data:
         nextValue === "blocks"
           ? section.blocks_data ?? createEmptyBlocksDocument()
+          : null,
+      luthor_data:
+        nextValue === "content"
+          ? section.luthor_data ?? createEmptyLuthorDocument()
           : null,
     });
   };
@@ -311,8 +326,8 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         <h2 className="text-xl font-semibold">Case study sections</h2>
         <FieldHint>
           Build the page top-to-bottom. Drag the handle, use Up/Down, or pick a
-          position to reorder. Use Canvas design for free-layout slides, or
-          Custom HTML for one-off markup.
+          position to reorder. Use Content for the visual rich-text editor,
+          Canvas design for free-layout slides, or Custom HTML for one-off markup.
         </FieldHint>
       </div>
 
@@ -340,8 +355,8 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
 
       {sections.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-          No sections yet. Start with Blocks, Canvas design, Quick facts, Media
-          hero, or Custom HTML.
+          No sections yet. Start with Content, Blocks, Canvas design, Quick
+          facts, Media hero, or Custom HTML.
         </p>
       ) : null}
 
@@ -350,7 +365,8 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         const isDedicatedHtml = section.section_type === "html";
         const isCanvas = section.section_type === "canvas";
         const isBlocks = section.section_type === "blocks";
-        const isSpecialLayout = isCanvas || isBlocks;
+        const isContent = section.section_type === "content";
+        const isSpecialLayout = isCanvas || isBlocks || isContent;
         const isHtml = isHtmlSectionContent(
           section.section_type,
           section.content_format
@@ -567,6 +583,28 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                     })
                   }
                 />
+              ) : isContent ? (
+                <div className="space-y-2">
+                  <Label>Content</Label>
+                  <LuthorEditorClient
+                    key={section.clientId}
+                    value={
+                      section.luthor_data ?? createEmptyLuthorDocument()
+                    }
+                    html={section.content}
+                    onChange={({ document, html }) =>
+                      updateSection(section.clientId, {
+                        luthor_data: normalizeLuthorDocument(document),
+                        content: html,
+                        content_format: "html",
+                      })
+                    }
+                  />
+                  <FieldHint>
+                    Visual editor only. Images upload to your project media
+                    library. Type / for slash commands.
+                  </FieldHint>
+                </div>
               ) : (
                 <>
                   <div className="space-y-2">
