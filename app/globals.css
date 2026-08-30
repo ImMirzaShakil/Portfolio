@@ -216,6 +216,7 @@
 
   .luthor-editor-host {
     min-height: 28rem;
+    isolation: isolate;
   }
 
   .luthor-editor-host .luthor-mode-tabs {
@@ -224,8 +225,45 @@
 
   .luthor-editor-host .luthor-preset-extensive.luthor-editor-wrapper {
     min-height: 28rem;
+    overflow: visible;
     border: 0;
     border-radius: 0;
+  }
+
+  /*
+   * Luthor mounts Insert Table / similar dialogs inside the toolbar.
+   * position:absolute + inset:0 then clips to the ~48px toolbar, so the
+   * modal header shows and the form body is blank. Pin overlays to the viewport.
+   */
+  .luthor-dialog-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+  }
+
+  .luthor-dropdown-content,
+  .luthor-select-dropdown,
+  .luthor-color-picker,
+  .luthor-slash-menu,
+  .luthor-emoji-menu,
+  .luthor-command-palette-overlay,
+  .luthor-floating-toolbar {
+    z-index: 10000 !important;
+  }
+
+  .luthor-dialog {
+    color: var(--luthor-fg, #0f172a);
+    background: var(--luthor-bg, #ffffff);
+  }
+
+  .luthor-dialog .luthor-input,
+  .luthor-dialog .luthor-form-group label {
+    color: var(--luthor-fg, #0f172a);
+  }
+
+  .luthor-dialog .luthor-input {
+    min-height: 2.25rem;
+    width: 100%;
   }
 
 
