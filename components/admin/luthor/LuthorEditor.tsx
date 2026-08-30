@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTheme } from "next-themes";
 import {
   ExtensiveEditor,
@@ -13,6 +13,14 @@ import {
   type LuthorDocument,
 } from "@/lib/luthor-document";
 import { toast } from "sonner";
+
+function markButtonsAsNonSubmit(root: HTMLElement) {
+  root.querySelectorAll("button").forEach((button) => {
+    if (!button.getAttribute("type")) {
+      button.setAttribute("type", "button");
+    }
+  });
+}
 
 const VISUAL_EDITOR_ONLY = ["visual-editor"] as const;
 
@@ -72,6 +80,7 @@ async function uploadEditorImage(file: File): Promise<string> {
 export function LuthorEditor({ value, html, onChange }: LuthorEditorProps) {
   const { resolvedTheme } = useTheme();
   const editorRef = useRef<ExtensiveEditorRef | null>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
   // Freeze the first payload so parent autosave updates do not remount the editor.
   const initial = useMemo(
     () => ({
@@ -113,12 +122,35 @@ export function LuthorEditor({ value, html, onChange }: LuthorEditorProps) {
     [hasJson, initial.document.json, publishSnapshot]
   );
 
+  useEffect(() => {
+    const node = hostRef.current;
+    if (!node) return;
+
+    markButtonsAsNonSubmit(node);
+    const observer = new MutationObserver(() => markButtonsAsNonSubmit(node));
+    observer.observe(node, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div
-      className="luthor-editor-host overflow-hidden rounded-xl border border-border"
+      ref={hostRef}
+      className="luthor-editor-host overflow-visible rounded-xl border border-border"
+      onMouseDownCapture={(event) => {
+        const button = (event.target as HTMLElement).closest("button");
+        if (
+          button instanceof HTMLButtonElement &&
+          !button.getAttribute("type")
+        ) {
+          button.setAttribute("type", "button");
+        }
+      }}
       onKeyDown={(event) => {
-        if (event.key === "Enter") {
-          event.stopPropagation();
+        if (event.key !== "Enter") return;
+        event.stopPropagation();
+        const target = event.target as HTMLElement;
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
+          event.preventDefault();
         }
       }}
     >

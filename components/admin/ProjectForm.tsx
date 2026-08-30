@@ -154,6 +154,21 @@ export function ProjectForm({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const submitter = (event.nativeEvent as SubmitEvent).submitter as
+      | HTMLElement
+      | null;
+    if (submitter && !submitter.hasAttribute("data-project-save")) {
+      return;
+    }
+    if (
+      !submitter &&
+      document.activeElement instanceof HTMLElement &&
+      document.activeElement.closest(".luthor-editor-host")
+    ) {
+      return;
+    }
+
     setSaving(true);
     setError(null);
 
@@ -611,7 +626,7 @@ export function ProjectForm({
       ) : null}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={saving}>
+        <Button type="submit" data-project-save disabled={saving}>
           {saving ? "Saving..." : isEditing ? "Save changes" : "Create project"}
         </Button>
         <Button
