@@ -74,6 +74,8 @@ export interface ProjectSection {
   canvas_data?: Record<string, unknown> | null;
   /** Gutenberg-like blocks document JSON. */
   blocks_data?: Record<string, unknown> | null;
+  /** Luthor visual-editor document (markdown + Lexical JSON). */
+  luthor_data?: Record<string, unknown> | null;
   order_index: number;
   created_at: string;
 }

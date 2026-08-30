@@ -1,3 +1,5 @@
+@import "@lyfie/luthor/styles.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -190,6 +192,40 @@
 
   .case-study-html :where(th, td) {
     @apply border border-border px-3 py-2 text-left;
+  }
+
+  .case-study-luthor {
+    @apply max-w-none text-base leading-relaxed text-muted-foreground;
+  }
+
+  .case-study-luthor :where(h1, h2, h3, h4, h5, h6) {
+    @apply font-bold text-foreground;
+  }
+
+  .case-study-luthor :where(a) {
+    @apply text-foreground underline underline-offset-4;
+  }
+
+  .case-study-luthor :where(img, video, iframe) {
+    @apply my-4 h-auto max-w-full rounded-2xl;
+  }
+
+  .case-study-luthor :where(iframe) {
+    @apply aspect-video w-full border border-border;
+  }
+
+  .luthor-editor-host {
+    min-height: 28rem;
+  }
+
+  .luthor-editor-host .luthor-mode-tabs {
+    display: none;
+  }
+
+  .luthor-editor-host .luthor-preset-extensive.luthor-editor-wrapper {
+    min-height: 28rem;
+    border: 0;
+    border-radius: 0;
   }
 
 

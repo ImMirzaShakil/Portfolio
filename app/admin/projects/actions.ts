@@ -13,6 +13,11 @@ import {
   normalizeBlocksDocument,
   type BlocksDocument,
 } from "@/lib/blocks-document";
+import {
+  isEmptyLuthorHtml,
+  normalizeLuthorDocument,
+  type LuthorDocument,
+} from "@/lib/luthor-document";
 import { sanitizeAdminHtml, normalizeContentFormat } from "@/lib/project-sections";
 import { normalizeThumbnailAspectRatio } from "@/lib/project-thumbnail";
 import { compactSharedSeo, type SharedSeoFields } from "@/lib/seo";
@@ -28,6 +33,7 @@ export interface SectionFormPayload {
   media_urls: string[];
   canvas_data: CanvasDocument | Record<string, unknown> | null;
   blocks_data: BlocksDocument | Record<string, unknown> | null;
+  luthor_data: LuthorDocument | Record<string, unknown> | null;
   items: Array<{
     id: string;
     label: string;
@@ -181,7 +187,13 @@ export async function saveProjectAction(
       content:
         normalizeContentFormat(section.content_format, section.section_type) ===
         "html"
-          ? sanitizeAdminHtml(section.content).trim() || null
+          ? (() => {
+              const html = sanitizeAdminHtml(section.content);
+              if (section.section_type === "content" && isEmptyLuthorHtml(html)) {
+                return null;
+              }
+              return html.trim() || null;
+            })()
           : section.content.trim() || null,
       image_url: section.image_url,
       video_url: section.video_url?.trim() || null,
@@ -207,6 +219,10 @@ export async function saveProjectAction(
                 ),
               };
             })()
+          : null,
+      luthor_data:
+        section.section_type === "content"
+          ? normalizeLuthorDocument(section.luthor_data)
           : null,
       items: section.items
         .filter(

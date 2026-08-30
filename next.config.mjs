@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ["@lyfie/luthor", "@lyfie/luthor-headless"],
   images: {
     remotePatterns: [
       {

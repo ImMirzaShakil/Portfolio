@@ -12,6 +12,7 @@ import {
 } from "@/lib/project-sections";
 import { CanvasSectionRenderer } from "@/components/project/CanvasSectionRenderer";
 import { BlocksSectionRenderer } from "@/components/project/BlocksSectionRenderer";
+import { ContentSectionRenderer } from "@/components/project/ContentSectionRenderer";
 import type { ProjectSection } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -469,6 +470,12 @@ export function CaseStudySection({ section }: CaseStudySectionProps) {
         title={title}
         blocksData={section.blocks_data}
       />
+    );
+  }
+
+  if (section_type === "content") {
+    return (
+      <ContentSectionRenderer title={title} html={content} />
     );
   }
 
