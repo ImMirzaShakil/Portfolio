@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   isSocialLinkVisible,
   SOCIAL_LINK_CONFIG,
+  toExternalHref,
   type SocialLinkKey,
   type SocialLinkPlacement,
 } from "@/lib/social-links";
@@ -102,7 +103,7 @@ export function SocialLinks({
     return [
       <a
         key={key}
-        href={href.trim()}
+        href={toExternalHref(href)}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={label}
