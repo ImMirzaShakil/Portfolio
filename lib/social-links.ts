@@ -65,6 +65,22 @@ export const DEFAULT_VISIBLE_SOCIAL_LINKS: SocialLinkKey[] = [
   "email",
 ];
 
+const ABSOLUTE_URL = /^(https?:\/\/|mailto:|tel:)/i;
+
+/** URLs stored without a scheme (e.g. www.linkedin.com/in/you) are otherwise resolved against the site origin. */
+export function toExternalHref(value: string): string {
+  const href = value.trim();
+  if (!href || ABSOLUTE_URL.test(href)) {
+    return href;
+  }
+
+  if (href.startsWith("//")) {
+    return `https:${href}`;
+  }
+
+  return `https://${href.replace(/^\/+/, "")}`;
+}
+
 function filterValidSocialKeys(values: string[]): SocialLinkKey[] {
   return values.filter((key): key is SocialLinkKey =>
     ALL_SOCIAL_LINK_KEYS.includes(key as SocialLinkKey)

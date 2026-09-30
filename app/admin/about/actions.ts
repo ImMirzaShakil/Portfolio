@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { toExternalHref } from "@/lib/social-links";
 import type { Experience, FeaturedIn, Writing } from "@/lib/types";
 import {
   ensureAboutId,
@@ -11,6 +12,12 @@ import {
   saveWritings,
   updateAboutContent,
 } from "@/lib/about-save-helpers";
+
+function externalSocialUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return toExternalHref(trimmed);
+}
 
 export type AboutSectionId =
   | "profile"
@@ -170,11 +177,11 @@ export async function saveAboutSectionAction(
         break;
       case "social":
         await updateAboutContent(admin, aboutId, {
-          twitter_url: payload.twitter_url.trim() || null,
-          linkedin_url: payload.linkedin_url.trim() || null,
-          github_url: payload.github_url.trim() || null,
-          facebook_url: payload.facebook_url.trim() || null,
-          instagram_url: payload.instagram_url.trim() || null,
+          twitter_url: externalSocialUrl(payload.twitter_url),
+          linkedin_url: externalSocialUrl(payload.linkedin_url),
+          github_url: externalSocialUrl(payload.github_url),
+          facebook_url: externalSocialUrl(payload.facebook_url),
+          instagram_url: externalSocialUrl(payload.instagram_url),
           email: payload.email.trim() || null,
           visible_social_links_hero: payload.visible_social_links_hero,
           visible_social_links_footer: payload.visible_social_links_footer,
@@ -232,11 +239,11 @@ export async function saveAboutAction(
       superpower_3_desc: payload.superpower_3_desc.trim() || null,
       superpower_4: payload.superpower_4.trim() || null,
       superpower_4_desc: payload.superpower_4_desc.trim() || null,
-      twitter_url: payload.twitter_url.trim() || null,
-      linkedin_url: payload.linkedin_url.trim() || null,
-      github_url: payload.github_url.trim() || null,
-      facebook_url: payload.facebook_url.trim() || null,
-      instagram_url: payload.instagram_url.trim() || null,
+      twitter_url: externalSocialUrl(payload.twitter_url),
+      linkedin_url: externalSocialUrl(payload.linkedin_url),
+      github_url: externalSocialUrl(payload.github_url),
+      facebook_url: externalSocialUrl(payload.facebook_url),
+      instagram_url: externalSocialUrl(payload.instagram_url),
       email: payload.email.trim() || null,
       visible_social_links_hero: payload.visible_social_links_hero,
       visible_social_links_footer: payload.visible_social_links_footer,
