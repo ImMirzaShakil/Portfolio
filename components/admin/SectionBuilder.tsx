@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
 import { BlocksEditor } from "@/components/admin/blocks/BlocksEditor";
 import { CanvasEditorClient } from "@/components/admin/canvas/CanvasEditorClient";
 import { LuthorEditorClient } from "@/components/admin/luthor/LuthorEditorClient";
+import { StoryEditor } from "@/components/admin/story/StoryEditor";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { VideoUpload } from "@/components/admin/VideoUpload";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,13 @@ import {
   type SectionContentFormat,
   type SectionListItem,
 } from "@/lib/project-sections";
+import {
+  createEmptyStoryDocument,
+  createStoryTemplate,
+  storyPlainTitle,
+  type StoryBand,
+  type StoryDocument,
+} from "@/lib/story-section";
 import type { SectionTemplate } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -63,6 +71,7 @@ export interface SectionFormItem {
   canvas_data: CanvasDocument | null;
   blocks_data: BlocksDocument | null;
   luthor_data: LuthorDocument | null;
+  story_data: StoryDocument | null;
 }
 
 interface SectionBuilderProps {
@@ -87,6 +96,7 @@ function createEmptySection(
     canvas_data: null,
     blocks_data: null,
     luthor_data: null,
+    story_data: null,
     ...overrides,
   };
 }
@@ -96,6 +106,28 @@ function FieldHint({ children }: { children: string }) {
 }
 
 const TEMPLATE_PREFIX = "template:";
+
+/** Next band colour so story sections alternate dark / light automatically. */
+function nextStoryBand(
+  sections: SectionFormItem[],
+  beforeIndex = sections.length
+): StoryBand {
+  for (let index = beforeIndex - 1; index >= 0; index -= 1) {
+    const band = sections[index].story_data?.band;
+    if (band === "dark") return "light";
+    if (band === "light") return "dark";
+  }
+  return "dark";
+}
+
+function storySectionFromDocument(doc: StoryDocument): SectionFormItem {
+  return createEmptySection({
+    section_type: "story",
+    title: storyPlainTitle(doc),
+    content: doc.text,
+    story_data: doc,
+  });
+}
 
 export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -144,6 +176,30 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
     setExpandedIds((prev) => new Set(prev).add(next.clientId));
   };
 
+  const addStorySection = () => {
+    const next = storySectionFromDocument(
+      createEmptyStoryDocument({ band: nextStoryBand(sections) })
+    );
+    onChange([...sections, next]);
+    setExpandedIds((prev) => new Set(prev).add(next.clientId));
+  };
+
+  const addStoryTemplate = () => {
+    if (
+      sections.length > 0 &&
+      !window.confirm(
+        "Append the Tammy-style case study outline (11 story sections) after your existing sections?"
+      )
+    ) {
+      return;
+    }
+    onChange([
+      ...sections,
+      ...createStoryTemplate().map(storySectionFromDocument),
+    ]);
+    toast.success("Outline added. Open each section to fill in text and media.");
+  };
+
   const moveSectionTo = (fromIndex: number, toIndex: number) => {
     if (
       fromIndex === toIndex ||
@@ -181,6 +237,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         canvas_data: documentFromTemplate(template),
         blocks_data: null,
         luthor_data: null,
+        story_data: null,
         image_url: null,
         video_url: null,
         media_urls: [],
@@ -219,6 +276,16 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
       luthor_data:
         nextValue === "content"
           ? section.luthor_data ?? createEmptyLuthorDocument()
+          : null,
+      story_data:
+        nextValue === "story"
+          ? section.story_data ??
+            createEmptyStoryDocument({
+              band: nextStoryBand(
+                sections,
+                sections.findIndex((item) => item.clientId === clientId)
+              ),
+            })
           : null,
     });
   };
@@ -326,9 +393,29 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         <h2 className="text-xl font-semibold">Case study sections</h2>
         <FieldHint>
           Build the page top-to-bottom. Drag the handle, use Up/Down, or pick a
-          position to reorder. Use Content for the visual rich-text editor,
-          Canvas design for free-layout slides, or Custom HTML for one-off markup.
+          position to reorder. Use Story sections for the taamannae.dev look
+          (full-width dark/light bands). Any Story section switches the page to
+          that layout.
         </FieldHint>
+        <div className="flex flex-wrap gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addStoryTemplate}
+          >
+            <Sparkles className="size-4" />
+            Start from Tammy-style outline
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addStorySection}
+          >
+            Add story section
+          </Button>
+        </div>
       </div>
 
       {templates.length > 0 ? (
@@ -366,6 +453,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         const isCanvas = section.section_type === "canvas";
         const isBlocks = section.section_type === "blocks";
         const isContent = section.section_type === "content";
+        const isStory = section.section_type === "story";
         const isSpecialLayout = isCanvas || isBlocks || isContent;
         const isHtml = isHtmlSectionContent(
           section.section_type,
@@ -403,7 +491,9 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
             className={cn(isDragging && "opacity-60")}
           >
             <AdminCollapsibleSection
-              title={`Section ${index + 1} · ${config.label}`}
+              title={`Section ${index + 1} · ${config.label}${
+                isStory && section.title ? ` · ${section.title}` : ""
+              }`}
               description={config.description}
               open={isExpanded}
               onOpenChange={(open) =>
@@ -514,6 +604,7 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                   </select>
                 </div>
 
+                {isStory ? null : (
                 <div className="space-y-2">
                   <Label htmlFor={`section-title-${section.clientId}`}>
                     {isSpecialLayout
@@ -559,9 +650,22 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                     />
                   )}
                 </div>
+                )}
               </div>
 
-              {isCanvas ? (
+              {isStory ? (
+                <StoryEditor
+                  value={section.story_data ?? createEmptyStoryDocument()}
+                  onChange={(doc) =>
+                    updateSection(section.clientId, {
+                      story_data: doc,
+                      title: storyPlainTitle(doc),
+                      content: doc.text,
+                      content_format: "text",
+                    })
+                  }
+                />
+              ) : isCanvas ? (
                 <CanvasEditorClient
                   value={section.canvas_data ?? createEmptyCanvasDocument()}
                   onChange={(doc) =>
@@ -928,9 +1032,14 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         );
       })}
 
-      <Button type="button" variant="outline" onClick={addSection}>
-        Add section
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" onClick={addStorySection}>
+          Add story section
+        </Button>
+        <Button type="button" variant="outline" onClick={addSection}>
+          Add other section
+        </Button>
+      </div>
     </div>
   );
 }

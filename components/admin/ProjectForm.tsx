@@ -21,6 +21,7 @@ import {
   normalizeBlocksDocument,
 } from "@/lib/blocks-document";
 import { normalizeCanvasDocument } from "@/lib/canvas-document";
+import { normalizeStoryDocument } from "@/lib/story-section";
 import {
   normalizeLuthorDocument,
 } from "@/lib/luthor-document";
@@ -80,6 +81,10 @@ function mapSectionsToForm(sections: ProjectSection[]): SectionFormItem[] {
     luthor_data:
       section.section_type === "content"
         ? normalizeLuthorDocument(section.luthor_data)
+        : null,
+    story_data:
+      section.section_type === "story"
+        ? normalizeStoryDocument(section.blocks_data)
         : null,
   }));
 }
@@ -215,7 +220,10 @@ export function ProjectForm({
         layout: section.layout || null,
         media_urls: section.media_urls.filter((url) => url.trim().length > 0),
         canvas_data: section.canvas_data,
-        blocks_data: section.blocks_data,
+        blocks_data:
+          section.section_type === "story"
+            ? (section.story_data as unknown as Record<string, unknown> | null)
+            : section.blocks_data,
         luthor_data: section.luthor_data,
         items: section.items,
       })),

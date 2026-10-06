@@ -19,6 +19,7 @@ import {
   type LuthorDocument,
 } from "@/lib/luthor-document";
 import { sanitizeAdminHtml, normalizeContentFormat } from "@/lib/project-sections";
+import { compactStoryDocument } from "@/lib/story-section";
 import { normalizeThumbnailAspectRatio } from "@/lib/project-thumbnail";
 import { compactSharedSeo, type SharedSeoFields } from "@/lib/seo";
 
@@ -203,8 +204,11 @@ export async function saveProjectAction(
         section.section_type === "canvas"
           ? normalizeCanvasDocument(section.canvas_data)
           : null,
+      // Story sections keep their whole document in blocks_data (no extra column).
       blocks_data:
-        section.section_type === "blocks"
+        section.section_type === "story"
+          ? compactStoryDocument(section.blocks_data)
+          : section.section_type === "blocks"
           ? (() => {
               const doc = normalizeBlocksDocument(section.blocks_data);
               return {

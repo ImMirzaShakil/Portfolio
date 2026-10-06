@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { getDefaultMetadata } from "@/lib/metadata";
 import "./globals.css";
+import "./story.css";
 
 const manrope = Manrope({
   subsets: ["latin"],
