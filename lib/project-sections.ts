@@ -1,4 +1,5 @@
 export type ProjectSectionType =
+  | "story"
   | "overview"
   | "quickfact"
   | "media-hero"
@@ -133,6 +134,16 @@ export function splitFeatureTitle(title?: string | null): {
 }
 
 export const SECTION_TYPE_CONFIG: SectionTypeConfig[] = [
+  {
+    key: "story",
+    label: "Story (Tammy-style)",
+    description:
+      "Full-width dark/light band with a two-tone heading and a media layout preset — the taamannae.dev case-study look.",
+    supportsImage: false,
+    supportsVideo: false,
+    supportsMediaGallery: false,
+    supportsItems: false,
+  },
   {
     key: "overview",
     label: "Overview",
