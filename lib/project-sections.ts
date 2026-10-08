@@ -330,6 +330,17 @@ export const SECTION_TYPE_CONFIG: SectionTypeConfig[] = [
   },
 ];
 
+/** Types offered in the admin "Section type" dropdown. Others stay legacy-only. */
+export const SELECTABLE_SECTION_TYPES: ProjectSectionType[] = [
+  "story",
+  "overview",
+  "media-hero",
+  "video",
+  "html",
+  "content",
+  "custom",
+];
+
 export function getSectionTypeConfig(type: string): SectionTypeConfig {
   return (
     SECTION_TYPE_CONFIG.find((item) => item.key === type) ??

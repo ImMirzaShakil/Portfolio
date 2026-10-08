@@ -1,6 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
 import { StoryZoomImage } from "@/components/project/story/StoryZoomImage";
+import { sanitizeAdminHtml } from "@/lib/project-sections";
 import {
+  isStorySplitBody,
   isStoryVideoUrl,
   toEmbedUrl,
   type StoryDocument,
@@ -18,6 +20,18 @@ function paragraphs(text: string) {
     .split(/\n\s*\n/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
+}
+
+/** Section paragraph: plain text split on blank lines, or sanitized HTML. */
+function StoryText({ doc }: { doc: StoryDocument }) {
+  if (doc.textFormat === "html") {
+    const html = sanitizeAdminHtml(doc.text).trim();
+    if (!html) return null;
+    return (
+      <div className="story-html" dangerouslySetInnerHTML={{ __html: html }} />
+    );
+  }
+  return <Paragraphs text={doc.text} />;
 }
 
 function Paragraphs({ text }: { text: string }) {
@@ -59,7 +73,12 @@ function StoryHeading({ doc }: { doc: StoryDocument }) {
     return (
       <div className="story-container story-statement">
         {doc.top ? <h3>{doc.top}</h3> : null}
-        {doc.text || doc.bottom ? (
+        {doc.textFormat === "html" && doc.text ? (
+          <div
+            className="story-statement-text story-html"
+            dangerouslySetInnerHTML={{ __html: sanitizeAdminHtml(doc.text) }}
+          />
+        ) : doc.text || doc.bottom ? (
           <h2 className="story-statement-text">{doc.text || doc.bottom}</h2>
         ) : null}
       </div>
@@ -73,7 +92,14 @@ function StoryHeading({ doc }: { doc: StoryDocument }) {
           &ldquo;
         </p>
         <blockquote>
-          <p className="story-quote-text">{doc.text}</p>
+          {doc.textFormat === "html" ? (
+            <div
+              className="story-quote-text story-html"
+              dangerouslySetInnerHTML={{ __html: sanitizeAdminHtml(doc.text) }}
+            />
+          ) : (
+            <p className="story-quote-text">{doc.text}</p>
+          )}
         </blockquote>
         <figcaption>
           {doc.top ? <h3>{doc.top}</h3> : null}
@@ -98,7 +124,7 @@ function StoryHeading({ doc }: { doc: StoryDocument }) {
         <div className="story-ver">
           <div className="story-ver-title">
             {heading}
-            <Paragraphs text={doc.text} />
+            <StoryText doc={doc} />
           </div>
           {doc.items.length > 0 ? (
             <div className="story-ver-list">
@@ -125,7 +151,7 @@ function StoryHeading({ doc }: { doc: StoryDocument }) {
       <div className="story-hor">
         <div>{heading}</div>
         <div>
-          <Paragraphs text={doc.text} />
+          <StoryText doc={doc} />
         </div>
       </div>
     </div>
@@ -304,8 +330,67 @@ function StoryBodyMedia({ doc, alt }: { doc: StoryDocument; alt: string }) {
   }
 }
 
+/** Narrow (1/3) or half (1/2) media beside the heading + paragraph. */
+function StorySplit({ doc, alt }: { doc: StoryDocument; alt: string }) {
+  const media = doc.media.filter((item) => item.url);
+  const showText = doc.header !== "none";
+  return (
+    <div className="story-container">
+      <div
+        className={cn(
+          "story-split",
+          doc.body === "split-half" ? "story-split--half" : "story-split--narrow",
+          doc.mediaSide === "right" && "story-split--media-right"
+        )}
+      >
+        <div className="story-split-media">
+          {media.map((item) => (
+            <MediaItem key={item.id} media={item} alt={alt} />
+          ))}
+        </div>
+        {showText ? (
+          <div className="story-split-text">
+            {doc.top ? <h2 className="story-heading">{doc.top}</h2> : null}
+            {doc.bottom ? (
+              <h2 className="story-heading story-heading--muted">{doc.bottom}</h2>
+            ) : null}
+            {doc.top || doc.bottom ? <div className="story-split-gap" /> : null}
+            <StoryText doc={doc} />
+            {doc.items.length > 0 ? (
+              <div className="story-split-list">
+                {doc.items.map((item) => (
+                  <div key={item.id} className="story-split-row">
+                    {item.label ? <h3>{item.label}</h3> : <span />}
+                    <div>
+                      {item.title ? <h3>{item.title}</h3> : null}
+                      {item.description ? <p>{item.description}</p> : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function StorySection({ id, doc }: StorySectionProps) {
   const alt = [doc.top, doc.bottom].filter(Boolean).join(" ") || "Case study media";
+
+  if (isStorySplitBody(doc.body)) {
+    return (
+      <section
+        id={id}
+        className={cn("story-band", `story-band--${doc.band}`)}
+        data-section-type="story"
+      >
+        <StorySplit doc={doc} alt={alt} />
+      </section>
+    );
+  }
+
   const heading: ReactNode =
     doc.header === "none" ? null : <StoryHeading doc={doc} />;
   const body = <StoryBodyMedia doc={doc} alt={alt} />;
