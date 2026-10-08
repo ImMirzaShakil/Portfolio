@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   createStoryListItem,
   createStoryMedia,
+  isStorySplitBody,
   STORY_BAND_OPTIONS,
   STORY_BODY_OPTIONS,
   STORY_HEADER_OPTIONS,
@@ -25,6 +26,7 @@ import {
   type StoryHeader,
   type StoryListItem,
   type StoryMedia,
+  type StoryMediaSide,
   type StoryPreset,
 } from "@/lib/story-section";
 import { cn } from "@/lib/utils";
@@ -42,9 +44,36 @@ function Hint({ children }: { children: React.ReactNode }) {
 }
 
 /** Tiny wireframe of a preset so picking a layout is visual. */
-function PresetThumb({ header, body }: { header: StoryHeader; body: StoryBody }) {
+function PresetThumb({
+  header,
+  body,
+  side = "left",
+}: {
+  header: StoryHeader;
+  body: StoryBody;
+  side?: StoryMediaSide;
+}) {
   const bar = "rounded-[2px] bg-current";
   const box = "rounded-[2px] bg-current opacity-30";
+  if (isStorySplitBody(body)) {
+    const media = (
+      <div className={cn(box, body === "split-half" ? "w-1/2" : "w-1/3")} />
+    );
+    const text = (
+      <div className="flex-1 space-y-1 pt-1">
+        <div className={cn(bar, "h-1.5 w-4/5")} />
+        <div className={cn(bar, "h-1.5 w-3/5 opacity-50")} />
+        <div className={cn(bar, "h-1 w-full opacity-50")} />
+        <div className={cn(bar, "h-1 w-4/5 opacity-50")} />
+      </div>
+    );
+    return (
+      <div className="flex h-16 w-full gap-2 rounded-md bg-[#252525] p-2 text-white">
+        {side === "left" ? media : text}
+        {side === "left" ? text : media}
+      </div>
+    );
+  }
   return (
     <div className="flex h-16 w-full flex-col gap-1 rounded-md bg-[#252525] p-2 text-white">
       {header === "horizontal" ? (
@@ -140,6 +169,7 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
       ...doc,
       header: preset.header,
       body: preset.body,
+      ...(preset.side ? { mediaSide: preset.side } : {}),
       ...(isEmpty ? preset.sample : {}),
     };
     if (preset.header === "vertical" && doc.items.length === 0) {
@@ -191,6 +221,8 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
   const headerOption = STORY_HEADER_OPTIONS.find((option) => option.value === doc.header);
   const bodyOption = STORY_BODY_OPTIONS.find((option) => option.value === doc.body);
   const singleMediaOnly = doc.body === "backdrop-video";
+  const isSplit = isStorySplitBody(doc.body);
+  const isHtmlText = doc.textFormat === "html";
 
   const mediaTitleLabel =
     doc.body === "before-after"
@@ -210,7 +242,10 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
         </Hint>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {STORY_PRESETS.map((preset) => {
-            const active = doc.header === preset.header && doc.body === preset.body;
+            const active =
+              doc.header === preset.header &&
+              doc.body === preset.body &&
+              (!preset.side || preset.side === doc.mediaSide);
             return (
               <button
                 key={preset.id}
@@ -222,7 +257,11 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
                 )}
                 title={preset.description}
               >
-                <PresetThumb header={preset.header} body={preset.body} />
+                <PresetThumb
+                  header={preset.header}
+                  body={preset.body}
+                  side={preset.side}
+                />
                 <p className="text-xs font-semibold leading-tight">{preset.label}</p>
                 <p className="text-[11px] leading-tight text-muted-foreground">
                   {preset.description}
@@ -288,6 +327,25 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
             ))}
           </select>
           {bodyOption ? <Hint>{bodyOption.description}</Hint> : null}
+          {isSplit ? (
+            <div className="flex gap-1 pt-1">
+              {(["left", "right"] as const).map((side) => (
+                <button
+                  key={side}
+                  type="button"
+                  onClick={() => update({ mediaSide: side })}
+                  className={cn(
+                    "h-8 flex-1 rounded-lg border text-xs font-semibold",
+                    doc.mediaSide === side
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-muted-foreground"
+                  )}
+                >
+                  Image {side}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div className="space-y-2">
           <Label>Side menu label</Label>
@@ -328,33 +386,65 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
             ) : null}
           </div>
           <div className="space-y-2">
-            <Label>
-              {isStatement ? "Statement" : isQuote ? "Quote" : "Paragraph"}
-            </Label>
+            <div className="flex flex-wrap items-center gap-3">
+              <Label>
+                {isStatement ? "Statement" : isQuote ? "Quote" : "Paragraph"}
+              </Label>
+              <div className="inline-flex rounded-lg border border-border p-0.5">
+                {(["text", "html"] as const).map((format) => (
+                  <button
+                    key={format}
+                    type="button"
+                    onClick={() => update({ textFormat: format })}
+                    className={cn(
+                      "rounded-md px-2.5 py-0.5 text-xs font-semibold",
+                      doc.textFormat === format
+                        ? "bg-foreground text-background"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {format === "text" ? "Plain text" : "HTML"}
+                  </button>
+                ))}
+              </div>
+            </div>
             <Textarea
               value={doc.text}
               onChange={(event) => update({ text: event.target.value })}
-              rows={isStatement || isQuote ? 3 : 4}
+              rows={isHtmlText ? 8 : isStatement || isQuote ? 3 : 4}
+              className={cn(isHtmlText && "font-mono text-xs leading-relaxed")}
               placeholder={
-                isStatement
+                isHtmlText
+                  ? "<p>Paste HTML here, e.g. <strong>bold</strong>, <a href=…>links</a>, <ul><li>lists</li></ul></p>"
+                  : isStatement
                   ? "One big sentence that frames the problem."
                   : isQuote
                     ? "What they said about working with you."
-                    : doc.header === "vertical"
-                      ? "Shown under the heading on the left."
+                    : doc.header === "vertical" || isSplit
+                      ? "Shown under the heading. Blank line = new paragraph."
                       : "Shown to the right of the heading. Blank line = new paragraph."
               }
             />
+            {isHtmlText ? (
+              <Hint>
+                Rendered as HTML on the live page and styled to match the
+                section. Scripts and inline event handlers are removed.
+              </Hint>
+            ) : null}
           </div>
         </div>
       ) : null}
 
       {/* Numbered list -------------------------------------------------- */}
-      {doc.header === "vertical" ? (
+      {doc.header === "vertical" || (isSplit && doc.header !== "none") ? (
         <div className="space-y-3 rounded-xl border border-border p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium">Numbered list (right column)</p>
+              <p className="text-sm font-medium">
+                {isSplit
+                  ? "Numbered list under the text (optional)"
+                  : "Numbered list (right column)"}
+              </p>
               <Hint>Label is the big number: 01, 02… or a stat like 67%.</Hint>
             </div>
             <Button
@@ -571,6 +661,8 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
           {!singleMediaOnly ? (
             <GalleryUpload
               label="Bulk upload images"
+              hint="Select several images at once; each one is added as a media slot above."
+              emptyText={null}
               value={[]}
               onChange={(urls) =>
                 update({

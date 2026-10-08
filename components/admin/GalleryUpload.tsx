@@ -15,6 +15,9 @@ interface GalleryUploadProps {
   onChange: (urls: string[]) => void;
   bucket?: string;
   label?: string;
+  hint?: string;
+  /** Empty-state text; pass null to hide the empty box. */
+  emptyText?: string | null;
 }
 
 export function GalleryUpload({
@@ -22,6 +25,8 @@ export function GalleryUpload({
   onChange,
   bucket = "project-images",
   label = "Gallery photos",
+  hint = "Drag to reorder photos in the gallery strip on your About page.",
+  emptyText = "No gallery photos yet. Upload some to show a photo strip on your About page.",
 }: GalleryUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -107,9 +112,7 @@ export function GalleryUpload({
           <UploadRequirementsHint kind="gallery" />
         </div>
         <UploadRequirementsText kind="gallery" />
-        <p className="text-xs text-muted-foreground">
-          Drag to reorder photos in the gallery strip on your About page.
-        </p>
+        <p className="text-xs text-muted-foreground">{hint}</p>
       </div>
 
       {value.length > 0 ? (
@@ -158,14 +161,11 @@ export function GalleryUpload({
             </div>
           ))}
         </div>
-      ) : (
+      ) : emptyText ? (
         <div className="rounded-xl border border-dashed border-border p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            No gallery photos yet. Upload some to show a photo strip on your
-            About page.
-          </p>
+          <p className="text-sm text-muted-foreground">{emptyText}</p>
         </div>
-      )}
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
         <input

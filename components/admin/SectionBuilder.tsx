@@ -42,6 +42,7 @@ import {
   isHtmlSectionContent,
   normalizeContentFormat,
   SECTION_TYPE_CONFIG,
+  SELECTABLE_SECTION_TYPES,
   type FeatureLayout,
   type ProjectSectionType,
   type SectionContentFormat,
@@ -418,7 +419,8 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
         </div>
       </div>
 
-      {templates.length > 0 ? (
+      {templates.length > 0 &&
+      sections.some((section) => section.section_type === "canvas") ? (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border p-3">
           <p className="text-sm font-medium">Saved canvas templates</p>
           {templates.map((template) => (
@@ -584,23 +586,17 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
                     }
                     className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
-                    {SECTION_TYPE_CONFIG.map((type) => (
+                    {SECTION_TYPE_CONFIG.filter(
+                      (type) =>
+                        SELECTABLE_SECTION_TYPES.includes(type.key) ||
+                        type.key === section.section_type
+                    ).map((type) => (
                       <option key={type.key} value={type.key}>
-                        {type.label}
+                        {SELECTABLE_SECTION_TYPES.includes(type.key)
+                          ? type.label
+                          : `${type.label} (legacy)`}
                       </option>
                     ))}
-                    {templates.length > 0 ? (
-                      <optgroup label="Canvas templates">
-                        {templates.map((template) => (
-                          <option
-                            key={template.id}
-                            value={`${TEMPLATE_PREFIX}${template.id}`}
-                          >
-                            Template: {template.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    ) : null}
                   </select>
                 </div>
 

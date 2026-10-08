@@ -1,3 +1,5 @@
+import { sanitizeAdminHtml } from "@/lib/project-sections";
+
 /**
  * Story sections — the taamannae.dev-style case study building block.
  *
@@ -18,6 +20,8 @@ export type StoryHeader =
 
 export type StoryBody =
   | "none"
+  | "split-narrow"
+  | "split-half"
   | "single"
   | "full-bleed"
   | "grid-2"
@@ -31,6 +35,10 @@ export type StoryBody =
   | "showcase"
   | "marquee"
   | "embed";
+
+export type StoryTextFormat = "text" | "html";
+
+export type StoryMediaSide = "left" | "right";
 
 export interface StoryListItem {
   id: string;
@@ -62,6 +70,10 @@ export interface StoryDocument {
   bottom: string;
   /** Body paragraph (statement text / quote text for those headers). */
   text: string;
+  /** Plain text (blank line = new paragraph) or pasted HTML. */
+  textFormat: StoryTextFormat;
+  /** Which side the media sits on for the split layouts. */
+  mediaSide: StoryMediaSide;
   /** Numbered list shown beside a vertical header (01, 02… or 67%, 85%…). */
   items: StoryListItem[];
   media: StoryMedia[];
@@ -112,6 +124,18 @@ export const STORY_BODY_OPTIONS: Array<{
   description: string;
 }> = [
   { value: "none", label: "No media", description: "Text only." },
+  {
+    value: "split-narrow",
+    label: "Narrow image + text",
+    description:
+      "Image takes 1/3, heading + paragraph take 2/3. Pick the image side below.",
+  },
+  {
+    value: "split-half",
+    label: "Half image + half text",
+    description:
+      "Image and text share the width 50/50. Pick the image side below.",
+  },
   {
     value: "single",
     label: "One image",
@@ -180,6 +204,7 @@ export interface StoryPreset {
   description: string;
   header: StoryHeader;
   body: StoryBody;
+  side?: StoryMediaSide;
   /** Placeholder copy dropped in when the preset is applied to an empty section. */
   sample: { top: string; bottom: string; text: string };
 }
@@ -221,6 +246,42 @@ export const STORY_PRESETS: StoryPreset[] = [
       bottom: "persona",
       text: "Why this artefact mattered.",
     },
+  },
+  {
+    id: "split-narrow-left",
+    label: "Narrow image + text",
+    description: "Phone screen on the left, story on the right.",
+    header: "horizontal",
+    body: "split-narrow",
+    side: "left",
+    sample: { top: "Feature #1", bottom: "Feature name", text: "" },
+  },
+  {
+    id: "split-narrow-right",
+    label: "Text + narrow image",
+    description: "Story on the left, phone screen on the right.",
+    header: "horizontal",
+    body: "split-narrow",
+    side: "right",
+    sample: { top: "Feature #2", bottom: "Feature name", text: "" },
+  },
+  {
+    id: "split-half-left",
+    label: "Half image + text",
+    description: "Image and text 50/50, image on the left.",
+    header: "horizontal",
+    body: "split-half",
+    side: "left",
+    sample: { top: "Feature #1", bottom: "Feature name", text: "" },
+  },
+  {
+    id: "split-half-right",
+    label: "Text + half image",
+    description: "Image and text 50/50, image on the right.",
+    header: "horizontal",
+    body: "split-half",
+    side: "right",
+    sample: { top: "Feature #2", bottom: "Feature name", text: "" },
   },
   {
     id: "grid-2",
@@ -319,7 +380,22 @@ export function storyBodyUsesMedia(body: StoryBody): boolean {
 
 /** Bodies where each media item can be a video instead of an image. */
 export function storyBodyAllowsVideo(body: StoryBody): boolean {
-  return ["backdrop-video", "video", "showcase", "single", "grid-2", "grid-1-2", "full-bleed"].includes(body);
+  return [
+    "backdrop-video",
+    "video",
+    "showcase",
+    "single",
+    "grid-2",
+    "grid-1-2",
+    "full-bleed",
+    "split-narrow",
+    "split-half",
+  ].includes(body);
+}
+
+/** Split layouts render the heading and paragraph beside the media. */
+export function isStorySplitBody(body: StoryBody): boolean {
+  return body === "split-narrow" || body === "split-half";
 }
 
 /** Bodies whose media items carry a title / caption. */
@@ -357,6 +433,8 @@ export function createEmptyStoryDocument(
     top: "",
     bottom: "",
     text: "",
+    textFormat: "text",
+    mediaSide: "left",
     items: [],
     media: [],
     backdropUrl: "",
@@ -416,6 +494,8 @@ export function normalizeStoryDocument(value: unknown): StoryDocument {
     top: str(record.top),
     bottom: str(record.bottom),
     text: str(record.text),
+    textFormat: record.textFormat === "html" ? "html" : "text",
+    mediaSide: record.mediaSide === "right" ? "right" : "left",
     items,
     media,
     backdropUrl: str(record.backdropUrl),
@@ -431,7 +511,10 @@ export function compactStoryDocument(doc: unknown): StoryDocument {
     menuLabel: normalized.menuLabel.trim(),
     top: normalized.top.trim(),
     bottom: normalized.bottom.trim(),
-    text: normalized.text.trim(),
+    text:
+      normalized.textFormat === "html"
+        ? sanitizeAdminHtml(normalized.text).trim()
+        : normalized.text.trim(),
     backdropUrl: normalized.backdropUrl.trim(),
     embedUrl: normalized.embedUrl.trim(),
     items: normalized.items
