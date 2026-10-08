@@ -14,6 +14,8 @@ html:has(.story-page) body {
   --story-muted: rgba(0, 0, 0, 0.4);
   --story-line: rgba(0, 0, 0, 0.12);
   font-family: var(--font-manrope), sans-serif;
+  /* Long words / URLs wrap instead of spilling past small screens. */
+  overflow-wrap: anywhere;
 }
 
 .dark .story-page {
