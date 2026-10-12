@@ -401,16 +401,41 @@ export function StorySection({ id, doc }: StorySectionProps) {
 
   const heading: ReactNode =
     doc.header === "none" ? null : <StoryHeading doc={doc} />;
+
+  if (doc.body === "sandwich") {
+    const media = doc.media.filter((item) => item.url);
+    return (
+      <section
+        id={id}
+        className={cn("story-band", `story-band--${doc.band}`, "story-sandwich")}
+        data-section-type="story"
+      >
+        {media[0] ? (
+          <StoryBodyMedia doc={{ ...doc, body: "single", media: [media[0]] }} alt={alt} />
+        ) : null}
+        {heading ? <div className="story-sandwich-text">{heading}</div> : null}
+        {media.length > 1 ? (
+          <StoryBodyMedia doc={{ ...doc, body: "single", media: media.slice(1) }} alt={alt} />
+        ) : null}
+      </section>
+    );
+  }
+
   const body = <StoryBodyMedia doc={doc} alt={alt} />;
+  const textBelow = doc.textPosition === "below" && heading;
 
   return (
     <section
       id={id}
-      className={cn("story-band", `story-band--${doc.band}`)}
+      className={cn(
+        "story-band",
+        `story-band--${doc.band}`,
+        textBelow && "story-band--text-below"
+      )}
       data-section-type="story"
     >
-      {heading}
-      {body}
+      {textBelow ? body : heading}
+      {textBelow ? <div className="story-text-below">{heading}</div> : body}
     </section>
   );
 }

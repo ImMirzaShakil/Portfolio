@@ -247,13 +247,29 @@ export function ProjectForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-10">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">
-          {isEditing ? "Edit project" : "New project"}
-        </h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-3xl font-bold">
+            {isEditing ? "Edit project" : "New project"}
+          </h1>
+          {isEditing && project?.slug ? (
+            <a
+              href={`/projects/${project.slug}?preview=1`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold hover:bg-muted"
+              title="Opens the last saved version in a new tab"
+            >
+              Preview project ↗
+            </a>
+          ) : null}
+        </div>
         <p className="text-muted-foreground">
           {isEditing
             ? "Update case study details and rich content sections."
             : "Create a portfolio case study with flexible Menti-style sections."}
+          {isEditing
+            ? " Preview shows the last saved version, including drafts. Save first to see new changes."
+            : null}
         </p>
       </div>
 

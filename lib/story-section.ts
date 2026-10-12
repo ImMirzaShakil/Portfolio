@@ -22,6 +22,7 @@ export type StoryBody =
   | "none"
   | "split-narrow"
   | "split-half"
+  | "sandwich"
   | "single"
   | "full-bleed"
   | "grid-2"
@@ -39,6 +40,8 @@ export type StoryBody =
 export type StoryTextFormat = "text" | "html";
 
 export type StoryMediaSide = "left" | "right";
+
+export type StoryTextPosition = "above" | "below";
 
 export interface StoryListItem {
   id: string;
@@ -74,6 +77,8 @@ export interface StoryDocument {
   textFormat: StoryTextFormat;
   /** Which side the media sits on for the split layouts. */
   mediaSide: StoryMediaSide;
+  /** Heading + paragraph above the media (default) or below it. */
+  textPosition: StoryTextPosition;
   /** Numbered list shown beside a vertical header (01, 02… or 67%, 85%…). */
   items: StoryListItem[];
   media: StoryMedia[];
@@ -135,6 +140,12 @@ export const STORY_BODY_OPTIONS: Array<{
     label: "Half image + half text",
     description:
       "Image and text share the width 50/50. Pick the image side below.",
+  },
+  {
+    value: "sandwich",
+    label: "Image, text, image",
+    description:
+      "First image above the heading + paragraph, the rest below it.",
   },
   {
     value: "single",
@@ -205,6 +216,7 @@ export interface StoryPreset {
   header: StoryHeader;
   body: StoryBody;
   side?: StoryMediaSide;
+  textPosition?: StoryTextPosition;
   /** Placeholder copy dropped in when the preset is applied to an empty section. */
   sample: { top: string; bottom: string; text: string };
 }
@@ -241,11 +253,29 @@ export const STORY_PRESETS: StoryPreset[] = [
     description: "Persona, journey map, audit, timeline.",
     header: "horizontal",
     body: "single",
+    textPosition: "above",
     sample: {
       top: "Introducing our",
       bottom: "persona",
       text: "Why this artefact mattered.",
     },
+  },
+  {
+    id: "single-below",
+    label: "Image + text",
+    description: "Image first, heading and paragraph underneath.",
+    header: "horizontal",
+    body: "single",
+    textPosition: "below",
+    sample: { top: "Final", bottom: "screens", text: "" },
+  },
+  {
+    id: "sandwich",
+    label: "Image, text, image",
+    description: "Image above, story in the middle, image below.",
+    header: "horizontal",
+    body: "sandwich",
+    sample: { top: "Ideation", bottom: "and sketches", text: "" },
   },
   {
     id: "split-narrow-left",
@@ -400,12 +430,18 @@ export function storyBodyAllowsVideo(body: StoryBody): boolean {
     "full-bleed",
     "split-narrow",
     "split-half",
+    "sandwich",
   ].includes(body);
 }
 
 /** Layouts with a Left / Right switch (image side, or narrow-image side). */
 export function storyBodyHasSide(body: StoryBody): boolean {
   return isStorySplitBody(body) || body === "grid-1-2";
+}
+
+/** Layouts where the heading can sit above or below the media. */
+export function storyBodyHasTextPosition(body: StoryBody): boolean {
+  return storyBodyUsesMedia(body) && !isStorySplitBody(body) && body !== "sandwich";
 }
 
 /** Split layouts render the heading and paragraph beside the media. */
@@ -450,6 +486,7 @@ export function createEmptyStoryDocument(
     text: "",
     textFormat: "text",
     mediaSide: "left",
+    textPosition: "above",
     items: [],
     media: [],
     backdropUrl: "",
@@ -511,6 +548,7 @@ export function normalizeStoryDocument(value: unknown): StoryDocument {
     text: str(record.text),
     textFormat: record.textFormat === "html" ? "html" : "text",
     mediaSide: record.mediaSide === "right" ? "right" : "left",
+    textPosition: record.textPosition === "below" ? "below" : "above",
     items,
     media,
     backdropUrl: str(record.backdropUrl),

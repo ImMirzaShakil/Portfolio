@@ -289,8 +289,7 @@
     overflow: visible;
   }
 
-  .nav-progressive-blur,
-  .nav-progressive-tint {
+  .nav-progressive-blur {
     position: absolute;
     left: 0;
     right: 0;
@@ -303,24 +302,12 @@
     transition: opacity 0.3s ease;
   }
 
-  .nav-header[data-scrolled="true"] .nav-progressive-blur,
-  .nav-header[data-scrolled="true"] .nav-progressive-tint {
-    opacity: 1;
-  }
-
   /*
-   * Soft wash: solid at the very top (no gap), then fades through the bar
-   * and fully disappears below it — no hard bottom edge.
+   * Blur only, no colour wash: a background-coloured tint showed as a
+   * whitish band over dark sections in light mode.
    */
-  .nav-progressive-tint {
-    background: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--background) 78%, transparent) 0%,
-      color-mix(in srgb, var(--background) 55%, transparent) 28%,
-      color-mix(in srgb, var(--background) 28%, transparent) 52%,
-      color-mix(in srgb, var(--background) 10%, transparent) 72%,
-      transparent 100%
-    );
+  .nav-header[data-scrolled="true"] .nav-progressive-blur {
+    opacity: 1;
   }
 
   .nav-blur-layer {

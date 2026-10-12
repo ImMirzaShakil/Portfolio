@@ -500,6 +500,22 @@ html:has(.story-page) body {
   }
 }
 
+/* Text below the media, and image / text / image -------------------------- */
+
+.story-text-below,
+.story-sandwich-text {
+  margin-top: 40px;
+}
+
+.story-sandwich-text {
+  margin-bottom: 16px;
+}
+
+.story-text-below .story-hor,
+.story-sandwich-text .story-hor {
+  margin-bottom: 0;
+}
+
 /* Edge-to-edge media at the end of a band sits flush with the next band. */
 .story-band--dark > .story-flush:last-child,
 .story-band--light > .story-flush:last-child {
