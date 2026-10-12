@@ -297,6 +297,16 @@ export const STORY_PRESETS: StoryPreset[] = [
     description: "Mobile screen next to a desktop screen.",
     header: "horizontal",
     body: "grid-1-2",
+    side: "left",
+    sample: { top: "Feature #2", bottom: "Feature name", text: "" },
+  },
+  {
+    id: "grid-2-1",
+    label: "Text + wide & narrow",
+    description: "Desktop screen next to a mobile screen.",
+    header: "horizontal",
+    body: "grid-1-2",
+    side: "right",
     sample: { top: "Feature #2", bottom: "Feature name", text: "" },
   },
   {
@@ -391,6 +401,11 @@ export function storyBodyAllowsVideo(body: StoryBody): boolean {
     "split-narrow",
     "split-half",
   ].includes(body);
+}
+
+/** Layouts with a Left / Right switch (image side, or narrow-image side). */
+export function storyBodyHasSide(body: StoryBody): boolean {
+  return isStorySplitBody(body) || body === "grid-1-2";
 }
 
 /** Split layouts render the heading and paragraph beside the media. */

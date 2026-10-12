@@ -418,6 +418,15 @@ html:has(.story-page) body {
   grid-column: span 2 / span 2;
 }
 
+/* Wide & narrow: the wide image comes first, the narrow one sits on the right. */
+.story-grid--1-2.story-grid--narrow-right > :nth-child(2n + 1) {
+  grid-column: span 2 / span 2;
+}
+
+.story-grid--1-2.story-grid--narrow-right > :nth-child(2n) {
+  grid-column: span 1 / span 1;
+}
+
 .story-grid--2-wide > :nth-child(3n) {
   grid-column: span 2 / span 2;
 }
