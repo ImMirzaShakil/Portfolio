@@ -14,6 +14,7 @@ import {
   createStoryListItem,
   createStoryMedia,
   isStorySplitBody,
+  storyBodyHasSide,
   STORY_BAND_OPTIONS,
   STORY_BODY_OPTIONS,
   STORY_HEADER_OPTIONS,
@@ -127,10 +128,17 @@ function PresetThumb({
               <div className={cn(box, "flex-1")} />
             </>
           ) : body === "grid-1-2" ? (
-            <>
-              <div className={cn(box, "w-1/3")} />
-              <div className={cn(box, "flex-1")} />
-            </>
+            side === "right" ? (
+              <>
+                <div className={cn(box, "flex-1")} />
+                <div className={cn(box, "w-1/3")} />
+              </>
+            ) : (
+              <>
+                <div className={cn(box, "w-1/3")} />
+                <div className={cn(box, "flex-1")} />
+              </>
+            )
           ) : body === "showcase" ? (
             <>
               <div className={cn(box, "w-3/4")} />
@@ -327,7 +335,7 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
             ))}
           </select>
           {bodyOption ? <Hint>{bodyOption.description}</Hint> : null}
-          {isSplit ? (
+          {storyBodyHasSide(doc.body) ? (
             <div className="flex gap-1 pt-1">
               {(["left", "right"] as const).map((side) => (
                 <button
@@ -341,7 +349,7 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
                       : "border-border text-muted-foreground"
                   )}
                 >
-                  Image {side}
+                  {doc.body === "grid-1-2" ? "Narrow" : "Image"} {side}
                 </button>
               ))}
             </div>

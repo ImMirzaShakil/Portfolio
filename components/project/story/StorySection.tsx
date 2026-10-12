@@ -305,7 +305,15 @@ function StoryBodyMedia({ doc, alt }: { doc: StoryDocument; alt: string }) {
       if (media.length === 0) return null;
       return (
         <div className="story-container">
-          <div className={cn("story-grid", `story-grid--${doc.body.slice(5)}`)}>
+          <div
+            className={cn(
+              "story-grid",
+              `story-grid--${doc.body.slice(5)}`,
+              doc.body === "grid-1-2" &&
+                doc.mediaSide === "right" &&
+                "story-grid--narrow-right"
+            )}
+          >
             {media.map((item) => (
               <div key={item.id}>
                 <MediaItem media={item} alt={alt} />
