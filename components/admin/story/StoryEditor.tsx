@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Trash2 } from "lucide-react";
 import { GalleryUpload } from "@/components/admin/GalleryUpload";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -168,8 +168,15 @@ function PresetThumb({
 
 export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
+  // Uploads resolve later; always merge into the newest document.
+  const latest = useRef(doc);
+  latest.current = doc;
+  const commit = (next: StoryDocument) => {
+    latest.current = next;
+    onChange(next);
+  };
   const update = (updates: Partial<StoryDocument>) =>
-    onChange({ ...doc, ...updates });
+    commit({ ...latest.current, ...updates });
 
   const applyPreset = (preset: StoryPreset) => {
     const isEmpty = !doc.top && !doc.bottom && !doc.text;
@@ -211,7 +218,9 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
   // ---- media ------------------------------------------------------------
   const updateMedia = (id: string, updates: Partial<StoryMedia>) =>
     update({
-      media: doc.media.map((item) => (item.id === id ? { ...item, ...updates } : item)),
+      media: latest.current.media.map((item) =>
+        item.id === id ? { ...item, ...updates } : item
+      ),
     });
   const moveMedia = (index: number, delta: number) => {
     const next = [...doc.media];
@@ -675,7 +684,7 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
               onChange={(urls) =>
                 update({
                   media: [
-                    ...doc.media,
+                    ...latest.current.media,
                     ...urls.map((url) => createStoryMedia({ url })),
                   ],
                 })
