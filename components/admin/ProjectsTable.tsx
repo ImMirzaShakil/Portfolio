@@ -154,7 +154,21 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
                       </span>
                     ) : null}
                   </td>
-                  <td className="px-4 py-3 font-medium">{project.title}</td>
+                  <td className="px-4 py-3 font-medium">
+                    {project.is_published ? (
+                      <a
+                        href={`/projects/${project.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline-offset-4 hover:underline"
+                        title="Open the live page in a new tab"
+                      >
+                        {project.title}
+                      </a>
+                    ) : (
+                      project.title
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     {getProjectStatusLabel(project) ? (
                       <Badge variant="outline">
@@ -214,6 +228,17 @@ export function ProjectsTable({ projects: initialProjects }: ProjectsTableProps)
                           Edit
                         </Button>
                       </Link>
+                      {!project.is_published ? (
+                        <a
+                          href={`/projects/${project.slug}?preview=1`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="outline" size="sm">
+                            Preview
+                          </Button>
+                        </a>
+                      ) : null}
                       <Button
                         variant="destructive"
                         size="sm"

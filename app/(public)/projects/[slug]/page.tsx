@@ -9,6 +9,7 @@ import {
 } from "@/lib/project-password";
 import { buildPageMetadata, normalizeSharedSeo } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { createStaticClient } from "@/lib/supabase/static";
 import type { Metadata } from "next";
 
@@ -16,11 +17,28 @@ interface ProjectPageProps {
   params: {
     slug: string;
   };
+  searchParams?: {
+    preview?: string;
+  };
 }
 
 export const dynamic = "force-dynamic";
 
-async function getProject(slug: string) {
+/** `?preview=1` from a logged-in admin shows drafts and skips the password gate. */
+async function isAdminPreview(searchParams?: ProjectPageProps["searchParams"]) {
+  if (searchParams?.preview !== "1") return false;
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return Boolean(user);
+  } catch {
+    return false;
+  }
+}
+
+async function getProject(slug: string, allowDraft = false) {
   const supabase = createAdminClient();
 
   const { data: project, error } = await supabase
@@ -29,7 +47,7 @@ async function getProject(slug: string) {
     .eq("slug", slug)
     .maybeSingle();
 
-  if (error || !project || !project.is_published) {
+  if (error || !project || (!project.is_published && !allowDraft)) {
     return null;
   }
 
@@ -63,8 +81,10 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: ProjectPageProps): Promise<Metadata> {
-  const data = await getProject(params.slug);
+  const preview = await isAdminPreview(searchParams);
+  const data = await getProject(params.slug, preview);
 
   if (!data) {
     return {
@@ -73,6 +93,13 @@ export async function generateMetadata({
   }
 
   const { project } = data;
+
+  if (preview) {
+    return {
+      title: `Preview: ${project.title}`,
+      robots: { index: false, follow: false },
+    };
+  }
 
   if (project.is_password_protected && !hasUnlockAccess(project.slug)) {
     return {
@@ -98,8 +125,12 @@ export async function generateMetadata({
   });
 }
 
-export default async function ProjectPage({ params }: ProjectPageProps) {
-  const data = await getProject(params.slug);
+export default async function ProjectPage({
+  params,
+  searchParams,
+}: ProjectPageProps) {
+  const preview = await isAdminPreview(searchParams);
+  const data = await getProject(params.slug, preview);
 
   if (!data) {
     notFound();
@@ -107,9 +138,23 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   const { project, sections } = data;
 
-  if (project.is_password_protected && !hasUnlockAccess(project.slug)) {
+  if (
+    !preview &&
+    project.is_password_protected &&
+    !hasUnlockAccess(project.slug)
+  ) {
     return <ProjectPasswordGate slug={project.slug} />;
   }
 
-  return <ProjectCaseStudy project={project} sections={sections} />;
+  return (
+    <>
+      {preview ? (
+        <div className="fixed left-1/2 top-3 z-[60] -translate-x-1/2 rounded-full border border-border bg-background/90 px-4 py-1.5 text-sm font-semibold shadow-sm backdrop-blur">
+          {project.is_published ? "Admin preview" : "Draft preview"} · only you
+          can see this
+        </div>
+      ) : null}
+      <ProjectCaseStudy project={project} sections={sections} />
+    </>
+  );
 }
