@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { prepareImageForUpload } from "@/lib/prepare-image-upload";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,8 @@ export function GalleryUpload({
   hint = "Drag to reorder photos in the gallery strip on your About page.",
   emptyText = "No gallery photos yet. Upload some to show a photo strip on your About page.",
 }: GalleryUploadProps) {
+  // Unique per instance: several galleries can be on one page (one per story section).
+  const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -175,11 +177,11 @@ export function GalleryUpload({
           multiple
           onChange={handleFileChange}
           className="sr-only"
-          id="gallery-upload-input"
+          id={inputId}
           disabled={uploading}
         />
         <label
-          htmlFor="gallery-upload-input"
+          htmlFor={inputId}
           className={cn(
             buttonVariants({ variant: "outline" }),
             uploading ? "pointer-events-none opacity-50" : "cursor-pointer"

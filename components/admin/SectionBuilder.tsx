@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, GripVertical, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminCollapsibleSection } from "@/components/admin/AdminCollapsibleSection";
@@ -150,15 +150,20 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
     };
   }, []);
 
+  // Uploads resolve seconds after they start, so read the latest sections
+  // rather than the copy captured when the upload began.
+  const latestSections = useRef(sections);
+  latestSections.current = sections;
+
   const updateSection = (
     clientId: string,
     updates: Partial<SectionFormItem>
   ) => {
-    onChange(
-      sections.map((section) =>
-        section.clientId === clientId ? { ...section, ...updates } : section
-      )
+    const next = latestSections.current.map((section) =>
+      section.clientId === clientId ? { ...section, ...updates } : section
     );
+    latestSections.current = next;
+    onChange(next);
   };
 
   const removeSection = (clientId: string) => {
@@ -364,7 +369,9 @@ export function SectionBuilder({ sections, onChange }: SectionBuilderProps) {
     index: number,
     url: string | null
   ) => {
-    const section = sections.find((item) => item.clientId === sectionId);
+    const section = latestSections.current.find(
+      (item) => item.clientId === sectionId
+    );
     if (!section) return;
 
     const next = [...section.media_urls];
