@@ -15,6 +15,7 @@ import {
   createStoryMedia,
   isStorySplitBody,
   storyBodyHasSide,
+  storyBodyHasTextPosition,
   STORY_BAND_OPTIONS,
   STORY_BODY_OPTIONS,
   STORY_HEADER_OPTIONS,
@@ -28,6 +29,7 @@ import {
   type StoryListItem,
   type StoryMedia,
   type StoryMediaSide,
+  type StoryTextPosition,
   type StoryPreset,
 } from "@/lib/story-section";
 import { cn } from "@/lib/utils";
@@ -49,13 +51,32 @@ function PresetThumb({
   header,
   body,
   side = "left",
+  textPosition = "above",
 }: {
   header: StoryHeader;
   body: StoryBody;
   side?: StoryMediaSide;
+  textPosition?: StoryTextPosition;
 }) {
   const bar = "rounded-[2px] bg-current";
   const box = "rounded-[2px] bg-current opacity-30";
+  if (body === "sandwich") {
+    return (
+      <div
+      className={cn(
+        "flex h-16 w-full gap-1 rounded-md bg-[#252525] p-2 text-white",
+        textPosition === "below" ? "flex-col-reverse" : "flex-col"
+      )}
+    >
+        <div className={cn(box, "flex-1")} />
+        <div className="flex gap-2">
+          <div className={cn(bar, "h-1.5 w-1/3")} />
+          <div className={cn(bar, "h-1 flex-1 self-center opacity-50")} />
+        </div>
+        <div className={cn(box, "flex-1")} />
+      </div>
+    );
+  }
   if (isStorySplitBody(body)) {
     const media = (
       <div className={cn(box, body === "split-half" ? "w-1/2" : "w-1/3")} />
@@ -185,6 +206,7 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
       header: preset.header,
       body: preset.body,
       ...(preset.side ? { mediaSide: preset.side } : {}),
+      ...(preset.textPosition ? { textPosition: preset.textPosition } : {}),
       ...(isEmpty ? preset.sample : {}),
     };
     if (preset.header === "vertical" && doc.items.length === 0) {
@@ -262,7 +284,8 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
             const active =
               doc.header === preset.header &&
               doc.body === preset.body &&
-              (!preset.side || preset.side === doc.mediaSide);
+              (!preset.side || preset.side === doc.mediaSide) &&
+              (!preset.textPosition || preset.textPosition === doc.textPosition);
             return (
               <button
                 key={preset.id}
@@ -278,6 +301,7 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
                   header={preset.header}
                   body={preset.body}
                   side={preset.side}
+                  textPosition={preset.textPosition}
                 />
                 <p className="text-xs font-semibold leading-tight">{preset.label}</p>
                 <p className="text-[11px] leading-tight text-muted-foreground">
@@ -359,6 +383,25 @@ export function StoryEditor({ value: doc, onChange }: StoryEditorProps) {
                   )}
                 >
                   {doc.body === "grid-1-2" ? "Narrow" : "Image"} {side}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          {storyBodyHasTextPosition(doc.body) && doc.header !== "none" ? (
+            <div className="flex gap-1 pt-1">
+              {(["above", "below"] as const).map((position) => (
+                <button
+                  key={position}
+                  type="button"
+                  onClick={() => update({ textPosition: position })}
+                  className={cn(
+                    "h-8 flex-1 rounded-lg border text-xs font-semibold",
+                    doc.textPosition === position
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-muted-foreground"
+                  )}
+                >
+                  Text {position}
                 </button>
               ))}
             </div>
