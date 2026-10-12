@@ -122,7 +122,6 @@ export function Navbar({
         <div className="nav-blur-layer nav-blur-layer-3" />
         <div className="nav-blur-layer nav-blur-layer-4" />
       </div>
-      <div className="nav-progressive-tint" aria-hidden="true" />
 
       <div className="relative z-10 site-container flex items-center justify-between py-4 sm:py-5">
         <Link
