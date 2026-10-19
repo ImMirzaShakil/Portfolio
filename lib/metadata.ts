@@ -93,7 +93,8 @@ export async function getDefaultMetadata(): Promise<Metadata> {
     metadataBase: new URL(siteUrl),
     title: {
       default: siteName,
-      template: `%s | ${siteName}`,
+      // Use each page's title exactly as set (no "| Site name" suffix).
+      template: "%s",
     },
     description,
     icons: {
